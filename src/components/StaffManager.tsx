@@ -702,9 +702,32 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       <span className="font-extrabold text-slate-700">{staff.joinDate}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center text-xs">
                     <span>ទូរស័ព្ទ៖</span>
-                    <span className="font-extrabold text-indigo-600 font-mono text-[11px]">{staff.phoneNumber}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-extrabold text-indigo-600 font-mono text-[11px]">{staff.phoneNumber}</span>
+                      {staff.phoneNumber && staff.phoneNumber !== 'N/A' && staff.phoneNumber !== 'គ្មាន' && (
+                        <a
+                          href={(() => {
+                            const clean = staff.phoneNumber.replace(/[^0-9]/g, '');
+                            const international = clean.startsWith('855') 
+                              ? clean 
+                              : clean.startsWith('0') 
+                                ? `855${clean.slice(1)}` 
+                                : `855${clean}`;
+                            return `https://t.me/+${international}`;
+                          })()}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center p-1 rounded-md bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white transition duration-200 cursor-pointer border border-sky-100"
+                          title="បើកឆាត Telegram (Instant Contact)"
+                        >
+                          <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-.97.53-1.35.52-.42-.01-1.23-.24-1.83-.44-.74-.24-1.33-.37-1.28-.79.03-.22.33-.45.91-.69 3.56-1.55 5.93-2.57 7.12-3.06 3.4-1.4 4.1-1.64 4.56-1.65.11 0 .34.03.49.15.12.1.15.24.17.34 0 .07.01.21 0 .28z" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
                   </div>
                   {staff.icom && (
                     <div className="flex justify-between items-center bg-amber-50 border border-amber-100/60 rounded-lg p-1.5 mt-2 text-[10px] text-amber-900 font-extrabold">
@@ -713,9 +736,35 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                     </div>
                   )}
                   {staff.responsibleLocation && (
-                    <div className="flex justify-between items-center bg-emerald-50 border border-emerald-100/60 rounded-lg p-1.5 mt-2 text-[10px] text-emerald-900 font-extrabold">
-                      <span className="flex items-center gap-1">📍 ទីតាំងទទួលខុសត្រូវ៖</span>
-                      <span className="font-black bg-white px-1.5 py-0.5 rounded border border-emerald-200">{staff.responsibleLocation}</span>
+                    <div className="space-y-1.5 mt-2">
+                      <div className="flex justify-between items-center bg-emerald-50 border border-emerald-100/60 rounded-lg p-1.5 text-[10px] text-emerald-900 font-extrabold shadow-2xs">
+                        <span className="flex items-center gap-1">📍 ទីតាំងទទួលខុសត្រូវ៖</span>
+                        <span className="font-black bg-white px-1.5 py-0.5 rounded border border-emerald-200">{staff.responsibleLocation}</span>
+                      </div>
+                      {staff.phoneNumber && (
+                        <div className="flex items-center gap-1">
+                          <a
+                            href={(() => {
+                              const clean = staff.phoneNumber.replace(/[^0-9]/g, '');
+                              const international = clean.startsWith('855') 
+                                ? clean 
+                                : clean.startsWith('0') 
+                                  ? `855${clean.slice(1)}` 
+                                  : `855${clean}`;
+                              return `https://t.me/+${international}`;
+                            })()}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-center gap-1.5 w-full bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-100 hover:border-sky-600 rounded-lg py-1.5 px-2 text-[10px] font-extrabold transition-all duration-200 cursor-pointer shadow-2xs group"
+                            title="ចុចទីនេះដើម្បីបើកឆាត Telegram ទៅកាន់អ្នកទទួលខុសត្រូវ"
+                          >
+                            <svg className="w-3.5 h-3.5 text-sky-500 group-hover:text-white shrink-0 fill-current transition-colors" viewBox="0 0 24 24">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-.97.53-1.35.52-.42-.01-1.23-.24-1.83-.44-.74-.24-1.33-.37-1.28-.79.03-.22.33-.45.91-.69 3.56-1.55 5.93-2.57 7.12-3.06 3.4-1.4 4.1-1.64 4.56-1.65.11 0 .34.03.49.15.12.1.15.24.17.34 0 .07.01.21 0 .28z" />
+                            </svg>
+                            <span>ទាក់ទងតាម Telegram</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -945,6 +994,48 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       placeholder="ឧទាហរណ៍៖ អគារ A, បណ្ណាល័យ, ច្រកទ្វារធំ..."
                       className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
+                    {formResponsibleLocation.trim() && formPhone.trim() && (
+                      <div className="mt-2.5 bg-sky-50 border border-sky-100/75 rounded-xl p-3 text-[11px] text-sky-900 font-extrabold animate-fade-in space-y-1.5 shadow-sm">
+                        <div className="flex items-center gap-1.5 text-sky-850">
+                          <svg className="w-4 h-4 text-sky-550 shrink-0 fill-current animate-pulse" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-.97.53-1.35.52-.42-.01-1.23-.24-1.83-.44-.74-.24-1.33-.37-1.28-.79.03-.22.33-.45.91-.69 3.56-1.55 5.93-2.57 7.12-3.06 3.4-1.4 4.1-1.64 4.56-1.65.11 0 .34.03.49.15.12.1.15.24.17.34 0 .07.01.21 0 .28z" />
+                          </svg>
+                          <span>សាកល្បងបំលែងទូរស័ព្ទទៅ Telegram៖</span>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 bg-white px-2.5 py-1.5 border border-sky-100 rounded-lg">
+                          <span className="font-mono text-sky-850 font-extrabold tracking-wide text-xs select-all shrink-0">
+                            {(() => {
+                              const clean = formPhone.replace(/[^0-9]/g, '');
+                              const international = clean.startsWith('855') 
+                                ? clean 
+                                : clean.startsWith('0') 
+                                  ? `855${clean.slice(1)}` 
+                                  : `855${clean}`;
+                              return `t.me/+${international}`;
+                            })()}
+                          </span>
+                          <a
+                            href={(() => {
+                              const clean = formPhone.replace(/[^0-9]/g, '');
+                              const international = clean.startsWith('855') 
+                                ? clean 
+                                : clean.startsWith('0') 
+                                  ? `855${clean.slice(1)}` 
+                                  : `855${clean}`;
+                              return `https://t.me/+${international}`;
+                            })()}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-sky-600 hover:bg-sky-700 text-white text-[10px] px-3 py-1.5 rounded-lg font-black transition-all shadow-md shadow-sky-100 shrink-0 cursor-pointer"
+                          >
+                            បើកឆាតភ្លាមៗ
+                          </a>
+                        </div>
+                        <p className="text-[9.5px] text-slate-400 font-semibold leading-normal">
+                          ប្រព័ន្ធនឹងបំលែងលេខទូរស័ព្ទ ({formPhone || 'គ្មាន'}) ទៅជាតំណភ្ជាប់គណនី Telegram ប្រទេសកម្ពុជា (+855) ស្វ័យប្រវត្ត។
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Profile Photo (Size: 4*6) Upload */}

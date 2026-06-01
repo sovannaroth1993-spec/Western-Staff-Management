@@ -181,35 +181,16 @@ export default function App() {
   const totalPresentToday = todayAttendance.filter(r => r.status === 'Present').length;
 
   return (
-    <div className="min-h-screen bg-emerald-50/60 text-slate-800 flex flex-col font-sans selection:bg-amber-100 selection:text-slate-900 pb-12">
+    <div className="min-h-screen bg-emerald-50/60 text-slate-800 flex flex-col lg:flex-row font-sans selection:bg-amber-100 selection:text-slate-900">
       
-      {/* Upper color accents block */}
-      <div className="bg-slate-900 text-slate-400 py-1 flex items-center justify-between px-6 border-b border-slate-800">
-        <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
-          <Sparkles className="w-4.5 h-4.5 animate-pulse" />
-          <span>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់បុគ្គលិកសាលាវេស្ទើនអន្តរជាតិ (Western International School)</span>
+      {/* Left Navigation Sidebar (System Menu) - Relocated to viewport left corner */}
+      <aside className="w-full lg:w-[290px] shrink-0 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 p-4 lg:p-6 lg:sticky lg:top-0 lg:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-content shadow-sm">
+        <div className="px-3 py-1.5 border-b border-slate-200/70 flex items-center justify-between">
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            បញ្ជីគ្រប់គ្រងសាលា (System Menu)
+          </span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
-        <div className="text-[10px] text-slate-500 font-bold tracking-widest hidden sm:block uppercase">
-          Desktop Environment v2.1.0 • Live Sandbox
-        </div>
-      </div>
-
-      <div className="max-w-full w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 flex-grow flex flex-col">
-        
-        {/* Animated Header */}
-        <Header totalStaff={staffList.length} totalPresentToday={totalPresentToday} />
-
-        {/* Main Workspace Layout under Header: Sidebar Left, Content Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-8 items-start mt-6 flex-grow">
-          
-          {/* Left Navigation Sidebar (Freeze Navigation Pane) */}
-          <aside className="w-full bg-amber-100 border border-amber-200 rounded-2xl p-4 shadow-sm flex flex-col gap-2 lg:sticky lg:top-[205px] z-30">
-            <div className="px-3 py-1.5 border-b border-amber-200/70 flex items-center justify-between">
-              <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">
-                បញ្ជីគ្រប់គ្រងសាលា (System Menu)
-              </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
 
             <nav className="flex flex-col gap-1.5 mt-2">
               {/* Tab 1: Dashboard */}
@@ -218,7 +199,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'dashboard'
                     ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
                 }`}
               >
                 <LayoutDashboard className="w-4.5 h-4.5" />
@@ -231,7 +212,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'electricity'
                     ? 'bg-slate-900 text-amber-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
                 }`}
               >
                 <Zap className="w-4.5 h-4.5 text-amber-500 fill-amber-500/15" />
@@ -244,7 +225,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'water'
                     ? 'bg-slate-900 text-sky-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
                 }`}
               >
                 <Droplet className="w-4.5 h-4.5 text-sky-500 fill-sky-500/15" />
@@ -257,10 +238,10 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'schoolmap'
                     ? 'bg-slate-900 text-teal-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
                 }`}
               >
-                <Map className="w-4.5 h-4.5 text-teal-500" />
+                <Map className="w-4.5 h-4.5 text-teal-505" />
                 <span className="flex-1">ប្លង់សាលារៀន (School Map)</span>
               </button>
 
@@ -270,7 +251,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'fixedassets'
                     ? 'bg-slate-900 text-emerald-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
                 }`}
               >
                 <HardDrive className="w-4.5 h-4.5 text-emerald-500 fill-emerald-500/15" />
@@ -283,7 +264,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'insurance'
                     ? 'bg-slate-900 text-indigo-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <ShieldCheck className="w-4.5 h-4.5 text-indigo-550 fill-indigo-500/15" />
@@ -296,7 +277,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'fireextinguisher'
                     ? 'bg-slate-900 text-rose-500 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <Flame className="w-4.5 h-4.5 text-rose-550 fill-rose-505/15 animate-pulse" />
@@ -309,7 +290,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'acinspection'
                     ? 'bg-slate-900 text-cyan-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <Wind className="w-4.5 h-4.5 text-cyan-500 animate-pulse" />
@@ -322,7 +303,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'admindocs'
                     ? 'bg-slate-900 text-cyan-400 shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <FolderOpen className="w-4.5 h-4.5 text-indigo-500 animate-bounce" />
@@ -330,7 +311,7 @@ export default function App() {
               </button>
 
               {/* Separator */}
-              <div className="h-px bg-amber-200/70 my-2" />
+              <div className="h-px bg-slate-200/80 my-2" />
 
               {/* Tab 2: Staff setups */}
               <button
@@ -338,7 +319,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'staff'
                     ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <Users className="w-4.5 h-4.5" />
@@ -351,7 +332,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'attendance'
                     ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <UserCheck className="w-4.5 h-4.5" />
@@ -364,7 +345,7 @@ export default function App() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
                   activeTab === 'telegram'
                     ? 'bg-slate-900 text-white shadow-md shadow-slate-900/10'
-                    : 'text-amber-900 hover:text-amber-950 hover:bg-amber-200/50'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
                 }`}
               >
                 <Send className="w-4.5 h-4.5" />
@@ -373,9 +354,29 @@ export default function App() {
             </nav>
           </aside>
 
-          {/* Right Main Content Area of the Workspace */}
-          <main className="min-w-0 w-full flex-grow">
-            <div className="w-full">
+          {/* Right Column Layout containing the Top info strip, Brand Header, and active workspace views */}
+          <div className="flex-1 flex flex-col min-w-0 pb-12">
+            
+            {/* Upper color accents block */}
+            <div className="bg-slate-900 text-slate-400 py-1 flex items-center justify-between px-6 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
+                <Sparkles className="w-4.5 h-4.5 animate-pulse" />
+                <span>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់បុគ្គលិកសាលាវេស្ទើនអន្តរជាតិ (Western International School)</span>
+              </div>
+              <div className="text-[10px] text-slate-500 font-bold tracking-widest hidden sm:block uppercase">
+                Desktop Environment v2.1.0 • Live Sandbox
+              </div>
+            </div>
+
+            <div className="max-w-full w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 flex-grow flex flex-col">
+              
+              {/* Animated Header */}
+              <Header totalStaff={staffList.length} totalPresentToday={totalPresentToday} />
+
+              {/* Main Workspace content */}
+              <div className="mt-6 flex-grow flex flex-col">
+                <main className="min-w-0 w-full flex-grow">
+                  <div className="w-full">
               {activeTab === 'dashboard' && (
                 <DashboardStats 
                   staffList={staffList} 
@@ -470,5 +471,7 @@ export default function App() {
       </footer>
 
     </div>
+
+  </div>
   );
 }

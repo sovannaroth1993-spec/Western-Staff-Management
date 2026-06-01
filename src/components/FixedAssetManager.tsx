@@ -378,7 +378,7 @@ export default function FixedAssetManager() {
 
       {/* Stats Cards Dashboard with Emerald/Indigo Styling */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ឧបករណ៍សរុប (Total)</p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-mono font-black text-slate-800">{totalAssetsNum}</span>
@@ -387,7 +387,7 @@ export default function FixedAssetManager() {
           <p className="text-[10px] text-slate-400 font-bold mt-1">រាល់សម្ភារៈក្នុងបញ្ជី</p>
         </div>
 
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
           <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">ដំណើរការល្អ (Operational)</p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-mono font-black text-emerald-600">{operationalNum}</span>
@@ -398,7 +398,7 @@ export default function FixedAssetManager() {
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
           <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">កំពុងថែទាំ (Maintenance)</p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-mono font-black text-amber-600">{maintenanceNum}</span>
@@ -409,7 +409,7 @@ export default function FixedAssetManager() {
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
           <p className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">មិនដំណើរការ (Broken)</p>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-2xl font-mono font-black text-rose-600">{brokenNum}</span>
@@ -420,11 +420,11 @@ export default function FixedAssetManager() {
           </span>
         </div>
 
-        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-slate-900 to-slate-950 p-4 rounded-2xl text-white shadow-xs">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">តម្លៃសរុប (Asset Cost)</p>
+        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-slate-900 to-slate-950 p-4 rounded-2xl text-white shadow-xs font-niroth animate-fade-in-up">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-niroth">តម្លៃសរុប (Asset Cost)</p>
           <div className="flex items-baseline gap-1 mt-1">
             <span className="text-xl sm:text-2xl font-mono font-black text-emerald-400">${totalValueUsd.toLocaleString()}</span>
-            <span className="text-[10px] text-slate-400 font-bold">USD</span>
+            <span className="text-[10px] text-slate-400 font-bold font-niroth">USD</span>
           </div>
           <p className="text-[9px] text-slate-400 mt-2 font-mono">គិតជាមធ្យមគ្រប់គ្រឿង</p>
         </div>

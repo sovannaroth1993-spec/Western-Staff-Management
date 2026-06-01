@@ -265,3 +265,64 @@ export const syncDataToSpreadsheet = async (
     throw new Error(errorData?.error?.message || 'Failed to update Google Sheets cells');
   }
 };
+
+// List Google Drive files matching our search criteria (PDF, Excel, Docs, Images)
+export const listGoogleDriveFiles = async (token: string, search?: string): Promise<any[]> => {
+  let query = "trashed = false and (mimeType = 'application/pdf' or mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType = 'application/vnd.google-apps.spreadsheet' or mimeType.startsWith('image/'))";
+  if (search) {
+    const escapedSearch = search.replace(/'/g, "\\'");
+    query += ` and name contains '${escapedSearch}'`;
+  }
+  
+  const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&pageSize=50&fields=files(id,name,mimeType,size,modifiedTime,iconLink)`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData?.error?.message || 'Failed to fetch files from Google Drive');
+  }
+
+  const data = await response.json();
+  return data.files || [];
+};
+
+// Download Drive binary file
+export const downloadDriveFile = async (token: string, fileId: string): Promise<Blob> => {
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to download Google Drive file contents.');
+  }
+
+  return await response.blob();
+};
+
+// Export native Google Documents/Sheets to PDF or Excel formats
+export const exportGoogleDoc = async (token: string, fileId: string, mimeType: string): Promise<Blob> => {
+  let targetMimeType = 'application/pdf';
+  if (mimeType === 'application/vnd.google-apps.spreadsheet') {
+    targetMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  }
+
+  const url = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=${encodeURIComponent(targetMimeType)}`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to export Google document/sheet to local format.');
+  }
+
+  return await response.blob();
+};

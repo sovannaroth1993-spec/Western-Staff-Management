@@ -1,9 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Moul&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Content:wght@400;700&family=Inter:wght@400;500;600;700;800;900&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Moul&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'Khmer OS Niroth';
+  src: url('https://raw.githubusercontent.com/Khmer-Documentation/khmer-fonts/master/KhmerOSniroth.ttf') format('truetype'),
+       local('Khmer OS Niroth'), local('KhmerOSniroth');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'AKbalthom Kbach';
+  src: url('https://raw.githubusercontent.com/sochiso/khmer-font/master/fonts/Akbalthom_Kbach_v2.ttf') format('truetype'),
+       url('https://raw.githubusercontent.com/sochiso/khmer-font/master/fonts/Akbalthom_Kbach.ttf') format('truetype'),
+       local('AKbalthom Kbach'), local('Akbalthom_Kbach'), local('AKbalthomKbach');
+  font-weight: normal;
+  font-style: normal;
+}
 
 @theme {
   --font-sans: "Kantumruy Pro", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-moul: "Moul", serif;
+  --font-niroth: "Khmer OS Niroth", "KhmerOSniroth", sans-serif;
+  --font-kbach: "AKbalthom Kbach", "Akbalthom Kbach", "AKbalthomKbach", sans-serif;
+  --font-content: "Content", "Content-Regular", sans-serif;
 }
 
 html {

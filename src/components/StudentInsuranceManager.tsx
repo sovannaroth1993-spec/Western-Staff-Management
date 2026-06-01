@@ -6,7 +6,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, Search, PlusCircle, Edit, Trash2, X, Check, AlertTriangle, 
-  User, HeartPulse, FileText, Phone, Landmark, Signpost, HelpCircle, Download, Upload, Eye
+  User, HeartPulse, FileText, Phone, Landmark, Signpost, HelpCircle, Download, Upload, Eye,
+  Send, Share2, Key, MessageSquare, AlertCircle, Settings2, Info
 } from 'lucide-react';
 import { StudentInsurance, InsuranceStatus } from '../types';
 
@@ -240,6 +241,230 @@ export default function StudentInsuranceManager() {
   const [dateReceived, setDateReceived] = useState('');
   const [claimStatus, setClaimStatus] = useState<InsuranceStatus>('Approved');
   const [officeRemarks, setOfficeRemarks] = useState('');
+
+  // Telegram Integration States
+  const [telegramBotToken, setTelegramBotToken] = useState(() => localStorage.getItem('wis_telegram_bot_token') || '');
+  const [telegramChatId, setTelegramChatId] = useState(() => localStorage.getItem('wis_telegram_chat_id') || '');
+  const [telegramSendStatus, setTelegramSendStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [telegramSendError, setTelegramSendError] = useState('');
+  const [showTelegramPanel, setShowTelegramPanel] = useState(false);
+  const [showTelegramSettings, setShowTelegramSettings] = useState(false);
+  const [showTelegramPreview, setShowTelegramPreview] = useState(true);
+
+  const handleSaveTelegramConfig = (token: string, chatId: string) => {
+    setTelegramBotToken(token);
+    setTelegramChatId(chatId);
+    localStorage.setItem('wis_telegram_bot_token', token);
+    localStorage.setItem('wis_telegram_chat_id', chatId);
+  };
+
+  const buildStudentTelegramText = (item: StudentInsurance) => {
+    let text = `📋 <b>របាយការណ៍ធានារ៉ាប់រងសិស្ស - សាលាវេស្ទើនអន្តរជាតិ</b>\n`;
+    text += `🆔 <b>លេខប័ណ្ណធានា៖</b> <code>${item.id}</code>\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n\n`;
+    text += `👤 <b>ព័ត៌មានសិស្ស៖</b>\n`;
+    text += `• ឈ្មោះសិស្ស៖ <b>${item.studentName}</b>\n`;
+    text += `• អត្តសញ្ញាណសិស្ស (ID)៖ <b>${item.studentId}</b>\n`;
+    text += `• ភេទ/ថ្នាក់៖ <b>${item.gender} / ${item.gradeClass}</b>\n`;
+    text += `• ឆ្នាំសិក្សា៖ <b>${item.academicYear}</b>\n\n`;
+    
+    text += `🛡️ <b>ព័ត៌មានធានារ៉ាប់រង៖</b>\n`;
+    text += `• លេខកិច្ចសន្យា៖ <code>${item.policyNumber}</code>\n`;
+    text += `• ក្រុមហ៊ុនធានា៖ <b>${item.provider}</b>\n`;
+    text += `• ប្រភេទធានា៖ <b>${item.coverageType}</b>\n`;
+    text += `• ថ្ងៃផុតកំណត់៖ <b>${item.expiryDate}</b>\n`;
+    text += `• តម្លៃបុព្វលាភ (Premium)៖ <b>$${item.premiumAmount} USD</b>\n\n`;
+
+    text += `👨‍👩‍👦 <b>អាណាព្យាបាល៖</b>\n`;
+    text += `• អាណាព្យាបាល៖ <b>${item.guardianName} (${item.guardianRelationship})</b>\n`;
+    text += `• ទូរស័ព្ទ៖ <code>${item.guardianPhone}</code>\n\n`;
+
+    text += `🏢 <b>ស្ថានភាពការិយាល័យ៖</b>\n`;
+    const statusKm = item.claimStatus === 'Approved' ? 'បានយល់ព្រម' : item.claimStatus === 'Pending' ? 'កំពុងត្រួតពិនិត្យ' : item.claimStatus === 'Rejected' ? 'បដិសេធ' : 'គ្មាន';
+    text += `• ស្ថានភាព៖ <b>${statusKm}</b>\n`;
+    if (item.officeRemarks) {
+      text += `• មតិចំណាំ៖ <i>${item.officeRemarks}</i>\n`;
+    }
+    text += `\n✍️ <i>របាយការណ៍បញ្ជូនដោយស្វ័យប្រវត្តិតាមរយៈ WIS Insurance System</i>`;
+    return text;
+  };
+
+  const buildStudentTelegramTextPlain = (item: StudentInsurance) => {
+    let text = `📋 របាយការណ៍ធានារ៉ាប់រងសិស្ស - សាលាវេស្ទើនអន្តរជាតិ\n`;
+    text += `🆔 លេខប័ណ្ណធានា៖ ${item.id}\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n\n`;
+    text += `👤 ព័ត៌មានសិស្ស៖\n`;
+    text += `• ឈ្មោះសិស្ស៖ ${item.studentName}\n`;
+    text += `• អត្តសញ្ញាណសិស្ស (ID)៖ ${item.studentId}\n`;
+    text += `• ភេទ/ថ្នាក់៖ ${item.gender} / ${item.gradeClass}\n`;
+    text += `• ឆ្នាំសិក្សា៖ ${item.academicYear}\n\n`;
+    
+    text += `🛡️ ព័ត៌មានធានារ៉ាប់រង៖\n`;
+    text += `• លេខកិច្ចសន្យា៖ ${item.policyNumber}\n`;
+    text += `• ក្រុមហ៊ុនធានា៖ ${item.provider}\n`;
+    text += `• ប្រភេទគ្របដណ្តប់៖ ${item.coverageType}\n`;
+    text += `• ថ្ងៃផុតកំណត់៖ ${item.expiryDate}\n`;
+    text += `• តម្លៃបុព្វលាភ៖ $${item.premiumAmount} USD\n\n`;
+
+    text += `👨‍👩‍👦 អាណាព្យាបាល៖\n`;
+    text += `• អាណាព្យាបាល៖ ${item.guardianName} (${item.guardianRelationship})\n`;
+    text += `• ទូរស័ព្ទ៖ ${item.guardianPhone}\n\n`;
+
+    text += `🏢 ស្ថានភាពការិយាល័យ៖\n`;
+    const statusKm = item.claimStatus === 'Approved' ? 'បានយល់ព្រម' : item.claimStatus === 'Pending' ? 'កំពុងត្រួតពិនិត្យ' : item.claimStatus === 'Rejected' ? 'បដិសេធ' : 'គ្មាន';
+    text += `• ស្ថានភាព៖ ${statusKm}\n`;
+    text += `\n✍️ របាយការណ៍បញ្ជូនដោយស្វ័យប្រវត្តិតាមរយៈ WIS Insurance System`;
+    return text;
+  };
+
+  const buildSummaryTelegramText = (list: StudentInsurance[]) => {
+    const total = list.length;
+    const approved = list.filter(i => i.claimStatus === 'Approved').length;
+    const pending = list.filter(i => i.claimStatus === 'Pending').length;
+    const rejected = list.filter(i => i.claimStatus === 'Rejected').length;
+    const totalPremiums = list.reduce((sum, item) => sum + (Number(item.premiumAmount) || 0), 0);
+
+    let text = `🛡️ <b>របាយការណ៍សង្ខេបធានារ៉ាប់រងសិស្ស - សាលាវេស្ទើនអន្តរជាតិ</b>\n`;
+    text += `📅 <b>កាលបរិច្ឆេទរបាយការណ៍៖</b> ${new Date().toLocaleDateString('km-KH') || new Date().toISOString().slice(0, 10)}\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n\n`;
+    text += `📊 <b>ស្ថិតិសរុប៖</b>\n`;
+    text += `• សិស្សចុះឈ្មោះធានារ៉ាប់រងសរុប៖ <b>${total} នាក់</b>\n`;
+    text += `• បានយល់ព្រម (Active)៖ <b>${approved} នាក់</b>\n`;
+    text += `• កំពុងរង់ចាំ (Pending)៖ <b>${pending} នាក់</b>\n`;
+    text += `• បានបដិសេធ (Rejected)៖ <b>${rejected} នាក់</b>\n`;
+    text += `• ទឹកប្រាក់បុព្វលាភសរុប៖ <b>$${totalPremiums} USD</b>\n\n`;
+
+    text += `📋 <b>បញ្ជីឈ្មោះសិស្ស និងក្រុមហ៊ុនធានារ៉ាប់រង៖</b>\n`;
+    list.slice(0, 15).forEach((item, index) => {
+      const statusEmoji = item.claimStatus === 'Approved' ? '🟢' : item.claimStatus === 'Pending' ? '🟡' : '🔴';
+      text += `${index + 1}. <b>${item.studentName}</b> [ID: ${item.studentId}] (${item.gradeClass}) - ${item.provider} ${statusEmoji}\n`;
+    });
+    
+    if (list.length > 15) {
+      text += `• និងសិស្សផ្សេងទៀតចំនួន <b>${list.length - 15}</b> នាក់ទៀត...\n`;
+    }
+
+    text += `\n✍️ <i>របាយការណ៍សង្ខេបផ្ញើចេញពីប្រព័ន្ធគ្រប់គ្រង WIS Management System</i>`;
+    return text;
+  };
+
+  const buildSummaryTelegramTextPlain = (list: StudentInsurance[]) => {
+    const total = list.length;
+    const approved = list.filter(i => i.claimStatus === 'Approved').length;
+    const pending = list.filter(i => i.claimStatus === 'Pending').length;
+    const rejected = list.filter(i => i.claimStatus === 'Rejected').length;
+    const totalPremiums = list.reduce((sum, item) => sum + (Number(item.premiumAmount) || 0), 0);
+
+    let text = `🛡️ របាយការណ៍សង្ខេបធានារ៉ាប់រងសិស្ស - សាលាវេស្ទើនអន្តរជាតិ\n`;
+    text += `📅 កាលបរិច្ឆេទរបាយការណ៍៖ ${new Date().toLocaleDateString('km-KH') || new Date().toISOString().slice(0, 10)}\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n\n`;
+    text += `📊 ស្ថិតិសរុប៖\n`;
+    text += `• សិស្សចុះឈ្មោះធានារ៉ាប់រងសរុប៖ ${total} នាក់\n`;
+    text += `• បានយល់ព្រម (Active)៖ ${approved} នាក់\n`;
+    text += `• កំពុងរង់ចាំ (Pending)៖ ${pending} នាក់\n`;
+    text += `• បានបដិសេធ (Rejected)៖ ${rejected} នាក់\n`;
+    text += `• ទឹកប្រាក់បុព្វលាភសរុប៖ $${totalPremiums} USD\n\n`;
+
+    text += `📋 បញ្ជីឈ្មោះសិស្ស និងក្រុមហ៊ុនធានារ៉ាប់រង៖\n`;
+    list.slice(0, 15).forEach((item, index) => {
+      const statusEmoji = item.claimStatus === 'Approved' ? '🟢' : item.claimStatus === 'Pending' ? '🟡' : '🔴';
+      text += `${index + 1}. ${item.studentName} [ID: ${item.studentId}] (${item.gradeClass}) - ${item.provider} ${statusEmoji}\n`;
+    });
+    
+    if (list.length > 15) {
+      text += `• និងសិស្សផ្សេងទៀតចំនួន ${list.length - 15} នាក់ទៀត...\n`;
+    }
+
+    text += `\n✍️ របាយការណ៍សង្ខេបផ្ញើចេញពីប្រព័ន្ធគ្រប់គ្រង WIS Management System`;
+    return text;
+  };
+
+  const sendSummaryToTelegram = async () => {
+    if (!telegramBotToken.trim() || !telegramChatId.trim()) {
+      setTelegramSendStatus('error');
+      setTelegramSendError('សូមបញ្ចូល Telegram Bot Token និង Chat ID ជាមុនសិន!');
+      setShowTelegramSettings(true);
+      return;
+    }
+
+    setTelegramSendStatus('sending');
+    setTelegramSendError('');
+
+    try {
+      const url = `https://api.telegram.org/bot${telegramBotToken.trim()}/sendMessage`;
+      const htmlText = buildSummaryTelegramText(insurances);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: telegramChatId.trim(),
+          text: htmlText,
+          parse_mode: 'HTML',
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.ok) {
+        setTelegramSendStatus('success');
+        showToastMsg('បានបញ្ជូនរបាយការណ៍សង្ខេបទៅ Telegram ដោយជោគជ័យ!', 'success');
+        setTimeout(() => {
+          setTelegramSendStatus('idle');
+        }, 5000);
+      } else {
+        setTelegramSendStatus('error');
+        setTelegramSendError(data.description || 'ការផ្ញើសារបានបរាជ័យ។ សូមពិនិត្យមើលព័ត៌មានដែលបានបំពេញរួចព្យាយាមម្តងទៀត!');
+      }
+    } catch (err: any) {
+      setTelegramSendStatus('error');
+      setTelegramSendError(err.message || 'មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Telegram បានទេ!');
+    }
+  };
+
+  const sendSingleRecordToTelegram = async (item: StudentInsurance) => {
+    if (!telegramBotToken.trim() || !telegramChatId.trim()) {
+      setTelegramSendStatus('error');
+      setTelegramSendError('សូមបញ្ចូល Telegram Bot Token និង Chat ID ជាមុនសិន!');
+      setShowTelegramPanel(true);
+      setShowTelegramSettings(true);
+      return;
+    }
+
+    setTelegramSendStatus('sending');
+    setTelegramSendError('');
+
+    try {
+      const url = `https://api.telegram.org/bot${telegramBotToken.trim()}/sendMessage`;
+      const htmlText = buildStudentTelegramText(item);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: telegramChatId.trim(),
+          text: htmlText,
+          parse_mode: 'HTML',
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.ok) {
+        setTelegramSendStatus('success');
+        showToastMsg(`បានបញ្ជូនទិន្នន័យរបស់ ${item.studentName} ទៅ Telegram ដោយជោគជ័យ!`, 'success');
+        setTimeout(() => {
+          setTelegramSendStatus('idle');
+        }, 3000);
+      } else {
+        setTelegramSendStatus('error');
+        setTelegramSendError(data.description || 'ការផ្ញើសារបានបរាជ័យ។');
+      }
+    } catch (err: any) {
+      setTelegramSendStatus('error');
+      setTelegramSendError(err.message || 'មិនអាចភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Telegram បានទេ!');
+    }
+  };
 
   // Initial Data Load from LocalStorage
   useEffect(() => {
@@ -569,6 +794,17 @@ export default function StudentInsuranceManager() {
               <PlusCircle className="w-4 h-4" />
               <span>បញ្ចូលធានារ៉ាប់រងថ្មី (Add Insurance)</span>
             </button>
+            <button
+              onClick={() => setShowTelegramPanel(!showTelegramPanel)}
+              className={`inline-flex items-center gap-1.5 font-extrabold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer border ${
+                showTelegramPanel 
+                  ? 'bg-sky-600 text-white border-sky-600' 
+                  : 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100'
+              }`}
+            >
+              <Send className="w-4 h-4" />
+              <span>បញ្ជូនទៅ Telegram (Telegram Bot)</span>
+            </button>
           </div>
         </div>
       </div>
@@ -585,6 +821,200 @@ export default function StudentInsuranceManager() {
           </span>
         </div>
       </div>
+
+      {/* Telegram Control Panel */}
+      {showTelegramPanel && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div className="flex items-start gap-4">
+              <div className="bg-sky-50 text-sky-600 p-3 rounded-2xl border border-sky-100 shrink-0">
+                <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-.97.53-1.35.52-.42-.01-1.23-.24-1.83-.44-.74-.24-1.33-.37-1.28-.79.03-.22.33-.45.91-.69 3.56-1.55 5.93-2.57 7.12-3.06 3.39-1.4 4.09-1.64 4.55-1.65.1 0 .33.03.48.15.12.1.15.24.17.34 0 .07.01.21 0 .28z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 tracking-wide uppercase">
+                  ប្រព័ន្ធបញ្ជូនរបាយការណ៍ធានារ៉ាប់រងទៅ Telegram
+                </h3>
+                <p className="text-xs font-bold text-slate-500 mt-0.5">
+                  Telegram Report Center — បញ្ជូនរបាយការណ៍សង្ខេបពីការចុះឈ្មោះធានារ៉ាប់រងសិស្សទាំងស្ថាប័នទៅកាន់គ្រុបការងារ
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowTelegramPreview(!showTelegramPreview)}
+              className="text-xs font-extrabold text-sky-700 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 px-4 py-2 rounded-xl border border-sky-200 flex items-center gap-1.5 transition self-start sm:self-center cursor-pointer"
+            >
+              <MessageSquare className="w-4 h-4" />
+              {showTelegramPreview ? 'លាក់គំរូអត្ថបទ' : 'បង្ហាញគំរូអត្ថបទ (Preview)'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Control Column */}
+            <div className="lg:col-span-6 space-y-6">
+              
+              {/* Option 1: Direct Link */}
+              <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    ផ្ញើផ្ទាល់ (No Bot Configuration)
+                  </span>
+                  <h4 className="text-sm font-black text-slate-800">
+                    ផ្ញើដោយផ្ទាល់តាមរយៈតំណភ្ជាប់ Telegram (Share Link)
+                  </h4>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    ចុចប៊ូតុងខាងក្រោមដើម្បីបង្កើតតំណភ្ជាប់ (Share Link) រួចដំណើរការផ្ញើចូលទៅកាន់គ្រុប ឬឆានែលការងាររបស់អ្នកដោយសេរី ដោយមិនបាច់កំណត់ Bot ឡើយ។
+                  </p>
+                </div>
+                
+                <a
+                  href={`https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(buildSummaryTelegramTextPlain(insurances))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs px-5 py-3 rounded-xl border border-sky-500 shadow-md transition-all scale-100 active:scale-95 cursor-pointer"
+                >
+                  <Share2 className="w-4 h-4" /> Sharing Link (.t.me)
+                </a>
+              </div>
+
+              {/* Advanced Option: Bot Setup */}
+              <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] bg-indigo-100 text-indigo-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      ប្រព័ន្ធស្វ័យប្រវត្ត (Bot Agent)
+                    </span>
+                    <h4 className="text-sm font-black text-slate-800">
+                      ផ្ញើដោយស្វ័យប្រវត្តិតាមរយៈ Telegram Bot API
+                    </h4>
+                  </div>
+                  <button
+                    onClick={() => setShowTelegramSettings(!showTelegramSettings)}
+                    className="text-xs font-black text-slate-600 hover:text-indigo-600 bg-white hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl transition flex items-center gap-1 shrink-0 cursor-pointer"
+                  >
+                    <Settings2 className="w-3.5 h-3.5" />
+                    {showTelegramSettings ? 'លាក់ការកំណត់' : 'កំណត់អត្តសញ្ញាណ'}
+                  </button>
+                </div>
+
+                {/* Configuration Fields */}
+                {(showTelegramSettings || (!telegramBotToken || !telegramChatId)) && (
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-4 space-y-4 text-xs animate-fade-in">
+                    <div className="space-y-1 bg-indigo-50/50 border border-indigo-100/60 p-3 rounded-lg">
+                      <p className="font-extrabold text-indigo-950 flex items-center gap-1.5">
+                        <Key className="w-4 h-4 text-indigo-600" /> ជំនួយណែនាំ៖
+                      </p>
+                      <ol className="list-decimal pl-4 mt-1 space-y-1.5 font-medium text-slate-600 text-[11px] leading-relaxed">
+                        <li>ផ្ញើរសារទៅកាន់ <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:underline">@BotFather</a> ដើម្បីទទួលបាន <b>Bot Token</b></li>
+                        <li>បង្កើត Telegram Group / Channel រួចបន្ថែម Bot នេះចូល</li>
+                        <li>ស្វែងរក Chat ID (ដូចជាប្រើប្រាស់ <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:underline">@userinfobot</a>)</li>
+                      </ol>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-black text-slate-700 mb-1">Telegram Bot Token</label>
+                        <input
+                          type="text"
+                          placeholder="ឧ. 123456:ABC-DEF..."
+                          value={telegramBotToken}
+                          onChange={(e) => handleSaveTelegramConfig(e.target.value, telegramChatId)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-black text-slate-700 mb-1">Telegram Chat ID</label>
+                        <input
+                          type="text"
+                          placeholder="ឧ. -100123456789"
+                          value={telegramChatId}
+                          onChange={(e) => handleSaveTelegramConfig(telegramBotToken, e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Send action and status */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-extrabold text-slate-400">ស្ថានភាព៖ </span>
+                    {telegramSendStatus === 'idle' && (
+                      <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">រួចរាល់សម្រាប់ការផ្ញើ</span>
+                    )}
+                    {telegramSendStatus === 'sending' && (
+                      <span className="text-[11px] font-bold text-indigo-600 animate-pulse flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping" />
+                        កំពុងបញ្ជូនទៅ Telegram...
+                      </span>
+                    )}
+                    {telegramSendStatus === 'success' && (
+                      <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                        <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        បញ្ជូនរបាយការណ៍ជោគជ័យ!
+                      </span>
+                    )}
+                    {telegramSendStatus === 'error' && (
+                      <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
+                        បរាជ័យ៖ {telegramSendError.slice(0, 40)}...
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={sendSummaryToTelegram}
+                    disabled={telegramSendStatus === 'sending'}
+                    className="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold text-xs px-6 py-3 rounded-xl border border-indigo-500 shadow-md transition-all scale-100 active:scale-95 cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    {telegramSendStatus === 'sending' ? 'កំពុងផ្ញើ...' : 'ផ្ញើរបាយការណ៍សង្ខេបភ្លាមៗ (Bot)'}
+                  </button>
+                </div>
+
+                {telegramSendStatus === 'error' && telegramSendError && (
+                  <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 text-rose-700 text-[11px] font-semibold flex items-start gap-2.5 animate-fade-in">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
+                    <div>
+                      <span className="block font-extrabold text-rose-800">កំហុសឆ្គងពីប្រព័ន្ធ Telegram ៖</span>
+                      {telegramSendError}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Preview Column */}
+            {showTelegramPreview && (
+              <div className="lg:col-span-6 flex flex-col h-full bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden min-h-[350px]">
+                <div className="bg-slate-850 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-sky-500 text-white font-black flex items-center justify-center text-xs shadow-inner">
+                      WIS
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-black text-white leading-tight">Telegram Insurance Channel</h5>
+                      <span className="text-[9px] text-emerald-400 font-bold">bot is online</span>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-extrabold pr-1">
+                    SUMMARY PREVIEW
+                  </div>
+                </div>
+
+                <div className="p-4 flex-1 overflow-auto bg-slate-950 flex flex-col justify-end">
+                  <div className="bg-slate-800/90 border border-slate-700/50 rounded-2xl rounded-tr-none text-slate-100 text-[11px] font-medium leading-relaxed p-4 ml-6 self-end max-w-md shadow-xl whitespace-pre-wrap font-sans">
+                    {buildSummaryTelegramTextPlain(insurances)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Statistics board widgets */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -852,6 +1282,14 @@ export default function StudentInsuranceManager() {
                           </button>
 
                           <button
+                            onClick={() => sendSingleRecordToTelegram(item)}
+                            title="បញ្ជូនទៅ Telegram (Send to Telegram Bot)"
+                            className="p-1 px-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-100 transition text-[11.5px] font-bold cursor-pointer inline-flex items-center"
+                          >
+                            <Send className="w-3.5 h-3.5 text-sky-600" />
+                          </button>
+
+                          <button
                             onClick={() => openEditModal(item)}
                             className="p-1 px-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 transition text-[11px] font-bold cursor-pointer inline-flex items-center gap-0.5"
                           >
@@ -1107,6 +1545,13 @@ export default function StudentInsuranceManager() {
 
             {/* Modal footer buttons */}
             <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 shrink-0">
+              <button
+                onClick={() => viewingPolicy && sendSingleRecordToTelegram(viewingPolicy)}
+                className="px-5 py-2 bg-sky-550 hover:bg-sky-600 text-white transition border border-sky-600 rounded-xl text-xs font-black cursor-pointer inline-flex items-center gap-1.5 shadow-sm overflow-hidden"
+              >
+                <Send className="w-4 h-4" />
+                <span>ផ្ញើទៅ Telegram (Send Telegram)</span>
+              </button>
               <button
                 onClick={() => {
                   window.print();
