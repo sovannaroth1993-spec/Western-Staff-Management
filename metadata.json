@@ -1,0 +1,6 @@
+{
+  "name": "Western Staff Management",
+  "description": "ប្រព័ន្ធគ្រប់គ្រង និងស្រង់វត្តមានបុគ្គលិក សាលាវេស្ទើនអន្តរជាតិ (Western International School Staff Attendance & Tasks Tracker)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
