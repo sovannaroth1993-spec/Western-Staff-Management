@@ -7,9 +7,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, Search, PlusCircle, Edit, Trash2, X, Check, AlertTriangle, 
   User, HeartPulse, FileText, Phone, Landmark, Signpost, HelpCircle, Download, Upload, Eye,
-  Send, Share2, Key, MessageSquare, AlertCircle, Settings2, Info
+  Send, Key, MessageSquare, AlertCircle, Settings2, Info
 } from 'lucide-react';
 import { StudentInsurance, InsuranceStatus } from '../types';
+import { StudentInsuranceViewModal } from './StudentInsuranceViewModal';
+import { StudentInsuranceFormModal } from './StudentInsuranceFormModal';
 
 const DEFAULT_INSURANCES: StudentInsurance[] = [
   {
@@ -194,6 +196,7 @@ export default function StudentInsuranceManager() {
 
   // States for Student Insurance Fields
   const [id, setId] = useState('');
+  const [campusBranch, setCampusBranch] = useState('Western Phnom Penh (WPP)');
   const [studentName, setStudentName] = useState('');
   const [studentId, setStudentId] = useState('');
   const [gender, setGender] = useState<'ប្រុស' | 'ស្រី' | 'Male' | 'Female'>('ប្រុស');
@@ -226,12 +229,29 @@ export default function StudentInsuranceManager() {
   const [medicalConditions, setMedicalConditions] = useState('');
   const [currentMedications, setCurrentMedications] = useState('');
 
+  // Accident, Claim Details
   const [claimDate, setClaimDate] = useState('');
-  const [claimDescription, setClaimDescription] = useState('');
+  const [claimTime, setClaimTime] = useState('');
+  const [claimTimeAmPm, setClaimTimeAmPm] = useState<'am' | 'pm'>('am');
   const [claimPlace, setClaimPlace] = useState('');
-  const [claimHospital, setClaimHospital] = useState('');
+  const [claimDescription, setClaimDescription] = useState('');
+  const [injuryCircumstances, setInjuryCircumstances] = useState('');
+  
+  // Amounts
+  const [claimAmountRiel, setClaimAmountRiel] = useState('');
   const [claimExpenseAmount, setClaimExpenseAmount] = useState(0);
   const [claimDocuments, setClaimDocuments] = useState('');
+
+  // History claim
+  const [previouslyClaimed, setPreviouslyClaimed] = useState<'Yes' | 'No'>('No');
+  const [previouslyClaimedDetails, setPreviouslyClaimedDetails] = useState('');
+
+  // Supporting Documents checklists
+  const [docStudentInsuranceCard, setDocStudentInsuranceCard] = useState(false);
+  const [docPoliceReport, setDocPoliceReport] = useState(false);
+  const [docDeathCertificate, setDocDeathCertificate] = useState(false);
+  const [docMedicalReport, setDocMedicalReport] = useState(false);
+  const [docMedicalInvoice, setDocMedicalInvoice] = useState(false);
 
   const [studentSigned, setStudentSigned] = useState(true);
   const [studentSignatureName, setStudentSignatureName] = useState('');
@@ -241,8 +261,31 @@ export default function StudentInsuranceManager() {
   const [schoolRepresentativeName, setSchoolRepresentativeName] = useState('');
   const [declarationDate, setDeclarationDate] = useState('');
 
+  // Claimant Signature
+  const [claimantSignatureName, setClaimantSignatureName] = useState('');
+  const [claimantSignatureDate, setClaimantSignatureDate] = useState('');
+
+  // Office route tracking
+  const [dateSubmittedToCentral, setDateSubmittedToCentral] = useState('');
+  const [dateReceivedByCentral, setDateReceivedByCentral] = useState('');
+
+  const [sentByName, setSentByName] = useState('');
+  const [sentByPosition, setSentByPosition] = useState('');
+  const [sentBySigned, setSentBySigned] = useState(false);
+
   const [receivedBy, setReceivedBy] = useState('');
+  const [receivedByPosition, setReceivedByPosition] = useState('');
+  const [receivedBySigned, setReceivedBySigned] = useState(false);
   const [dateReceived, setDateReceived] = useState('');
+
+  const [approved1Name, setApproved1Name] = useState('');
+  const [approved1Position, setApproved1Position] = useState('');
+  const [approved1Signed, setApproved1Signed] = useState(false);
+
+  const [approved2Name, setApproved2Name] = useState('');
+  const [approved2Position, setApproved2Position] = useState('');
+  const [approved2Signed, setApproved2Signed] = useState(false);
+
   const [claimStatus, setClaimStatus] = useState<InsuranceStatus>('Approved');
   const [officeRemarks, setOfficeRemarks] = useState('');
 
@@ -511,6 +554,7 @@ export default function StudentInsuranceManager() {
     const formatted = String(nextSeqNum).padStart(3, '0');
     
     setId(`WIS-INS-${formatted}`);
+    setCampusBranch('Western Phnom Penh (WPP)');
     setStudentName('');
     setStudentId('');
     setGender('ប្រុស');
@@ -547,11 +591,23 @@ export default function StudentInsuranceManager() {
     setCurrentMedications('');
     
     setClaimDate('');
-    setClaimDescription('');
+    setClaimTime('');
+    setClaimTimeAmPm('am');
     setClaimPlace('');
-    setClaimHospital('');
+    setClaimDescription('');
+    setInjuryCircumstances('');
+    setClaimAmountRiel('');
     setClaimExpenseAmount(0);
     setClaimDocuments('');
+    
+    setPreviouslyClaimed('No');
+    setPreviouslyClaimedDetails('');
+    
+    setDocStudentInsuranceCard(false);
+    setDocPoliceReport(false);
+    setDocDeathCertificate(false);
+    setDocMedicalReport(false);
+    setDocMedicalInvoice(false);
     
     setStudentSigned(true);
     setStudentSignatureName('');
@@ -561,8 +617,28 @@ export default function StudentInsuranceManager() {
     setSchoolRepresentativeName('ហេង សំបូរ (នាយកសាលា)');
     setDeclarationDate(new Date().toISOString().split('T')[0]);
     
+    setClaimantSignatureName('');
+    setClaimantSignatureDate(new Date().toISOString().split('T')[0]);
+    
+    setDateSubmittedToCentral('');
+    setDateReceivedByCentral('');
+    setSentByName('');
+    setSentByPosition('');
+    setSentBySigned(false);
+    
     setReceivedBy('លី សូដា (រដ្ឋបាល)');
+    setReceivedByPosition('ប្រធានផ្នែករដ្ឋបាល');
+    setReceivedBySigned(false);
     setDateReceived(new Date().toISOString().split('T')[0]);
+    
+    setApproved1Name('ហេង សំបូរ (នាយកសាលា)');
+    setApproved1Position('នាយកសាលា');
+    setApproved1Signed(false);
+    
+    setApproved2Name('ជា វណ្ណា (ប្រធានប្រតិបត្តិ)');
+    setApproved2Position('ប្រធានប្រតិបត្តិការ');
+    setApproved2Signed(false);
+    
     setClaimStatus('Approved');
     setOfficeRemarks('សំណុំឯកសារត្រូវបានរួមបញ្ចូលស្វ័យប្រវត្តិ។');
     
@@ -574,6 +650,7 @@ export default function StudentInsuranceManager() {
     setViewingPolicy(null);
     
     setId(item.id);
+    setCampusBranch(item.campusBranch || 'Western Phnom Penh (WPP)');
     setStudentName(item.studentName);
     setStudentId(item.studentId);
     setGender(item.gender);
@@ -607,11 +684,23 @@ export default function StudentInsuranceManager() {
     setCurrentMedications(item.currentMedications);
     
     setClaimDate(item.claimDate || '');
-    setClaimDescription(item.claimDescription || '');
+    setClaimTime(item.claimTime || '');
+    setClaimTimeAmPm(item.claimTimeAmPm || 'am');
     setClaimPlace(item.claimPlace || '');
-    setClaimHospital(item.claimHospital || '');
+    setClaimDescription(item.claimDescription || '');
+    setInjuryCircumstances(item.injuryCircumstances || '');
+    setClaimAmountRiel(item.claimAmountRiel || '');
     setClaimExpenseAmount(item.claimExpenseAmount || 0);
     setClaimDocuments(item.claimDocuments || '');
+    
+    setPreviouslyClaimed(item.previouslyClaimed || 'No');
+    setPreviouslyClaimedDetails(item.previouslyClaimedDetails || '');
+    
+    setDocStudentInsuranceCard(!!item.docStudentInsuranceCard);
+    setDocPoliceReport(!!item.docPoliceReport);
+    setDocDeathCertificate(!!item.docDeathCertificate);
+    setDocMedicalReport(!!item.docMedicalReport);
+    setDocMedicalInvoice(!!item.docMedicalInvoice);
     
     setStudentSigned(item.studentSigned);
     setStudentSignatureName(item.studentSignatureName || '');
@@ -621,8 +710,28 @@ export default function StudentInsuranceManager() {
     setSchoolRepresentativeName(item.schoolRepresentativeName || '');
     setDeclarationDate(item.declarationDate);
     
+    setClaimantSignatureName(item.claimantSignatureName || '');
+    setClaimantSignatureDate(item.claimantSignatureDate || '');
+    
+    setDateSubmittedToCentral(item.dateSubmittedToCentral || '');
+    setDateReceivedByCentral(item.dateReceivedByCentral || '');
+    setSentByName(item.sentByName || '');
+    setSentByPosition(item.sentByPosition || '');
+    setSentBySigned(!!item.sentBySigned);
+    
     setReceivedBy(item.receivedBy);
+    setReceivedByPosition(item.receivedByPosition || 'ប្រធានផ្នែករដ្ឋបាល');
+    setReceivedBySigned(!!item.receivedBySigned);
     setDateReceived(item.dateReceived);
+    
+    setApproved1Name(item.approved1Name || 'ហេង សំបូរ (នាយកសាលា)');
+    setApproved1Position(item.approved1Position || 'នាយកសាលា');
+    setApproved1Signed(!!item.approved1Signed);
+    
+    setApproved2Name(item.approved2Name || 'ជា វណ្ណា (ប្រធានប្រតិបត្តិ)');
+    setApproved2Position(item.approved2Position || 'ប្រធានប្រតិបត្តិការ');
+    setApproved2Signed(!!item.approved2Signed);
+    
     setClaimStatus(item.claimStatus);
     setOfficeRemarks(item.officeRemarks || '');
     
@@ -644,6 +753,7 @@ export default function StudentInsuranceManager() {
 
     const payload: StudentInsurance = {
       id,
+      campusBranch,
       studentName,
       studentId: studentId.toUpperCase().trim(),
       gender,
@@ -677,11 +787,23 @@ export default function StudentInsuranceManager() {
       currentMedications: currentMedications || 'គ្មាន (None)',
       
       claimDate,
-      claimDescription,
+      claimTime,
+      claimTimeAmPm,
       claimPlace,
-      claimHospital,
+      claimDescription,
+      injuryCircumstances,
+      claimAmountRiel,
       claimExpenseAmount,
       claimDocuments,
+      
+      previouslyClaimed,
+      previouslyClaimedDetails,
+      
+      docStudentInsuranceCard,
+      docPoliceReport,
+      docDeathCertificate,
+      docMedicalReport,
+      docMedicalInvoice,
       
       studentSigned,
       studentSignatureName: studentSignatureName || studentName.split(' ')[0],
@@ -691,8 +813,28 @@ export default function StudentInsuranceManager() {
       schoolRepresentativeName,
       declarationDate,
       
+      claimantSignatureName,
+      claimantSignatureDate,
+      
+      dateSubmittedToCentral,
+      dateReceivedByCentral,
+      sentByName,
+      sentByPosition,
+      sentBySigned,
+      
       receivedBy,
+      receivedByPosition,
+      receivedBySigned,
       dateReceived,
+      
+      approved1Name,
+      approved1Position,
+      approved1Signed,
+      
+      approved2Name,
+      approved2Position,
+      approved2Signed,
+      
       claimStatus,
       officeRemarks
     };
@@ -864,30 +1006,6 @@ export default function StudentInsuranceManager() {
             {/* Control Column */}
             <div className="lg:col-span-6 space-y-6">
               
-              {/* Option 1: Direct Link */}
-              <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    ផ្ញើផ្ទាល់ (No Bot Configuration)
-                  </span>
-                  <h4 className="text-sm font-black text-slate-800">
-                    ផ្ញើដោយផ្ទាល់តាមរយៈតំណភ្ជាប់ Telegram (Share Link)
-                  </h4>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                    ចុចប៊ូតុងខាងក្រោមដើម្បីបង្កើតតំណភ្ជាប់ (Share Link) រួចដំណើរការផ្ញើចូលទៅកាន់គ្រុប ឬឆានែលការងាររបស់អ្នកដោយសេរី ដោយមិនបាច់កំណត់ Bot ឡើយ។
-                  </p>
-                </div>
-                
-                <a
-                  href={`https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(buildSummaryTelegramTextPlain(insurances))}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs px-5 py-3 rounded-xl border border-sky-500 shadow-md transition-all scale-100 active:scale-95 cursor-pointer"
-                >
-                  <Share2 className="w-4 h-4" /> Sharing Link (.t.me)
-                </a>
-              </div>
-
               {/* Advanced Option: Bot Setup */}
               <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-4">
                 <div className="flex items-center justify-between gap-2">
@@ -1330,858 +1448,35 @@ export default function StudentInsuranceManager() {
         </div>
       </div>
 
-      {/* View Only Full Form sheet modal (Displays 8 formatted elements nicely) */}
-      {viewingPolicy && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            
-            {/* Header */}
-            <div className="bg-indigo-950 text-white p-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2 text-indigo-400">
-                <ShieldCheck className="w-5.5 h-5.5 text-amber-500 fill-amber-500/10" />
-                <div>
-                  <h3 className="font-moul text-sm md:text-base text-white tracking-normal leading-relaxed">
-                    ទម្រង់ធានារ៉ាប់រងសិស្សផ្លូវការ (Official Form)
-                  </h3>
-                  <p className="text-[11px] text-indigo-300 font-bold mt-0.5">លេខប័ណ្ណ៖ {viewingPolicy.id} • {viewingPolicy.studentName}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setViewingPolicy(null)}
-                className="text-slate-400 hover:text-white transition cursor-pointer p-1 rounded-full hover:bg-white/10"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <StudentInsuranceViewModal
+        isOpen={!!viewingPolicy}
+        onClose={() => setViewingPolicy(null)}
+        viewingPolicy={viewingPolicy}
+      />
 
-            {/* Scrollable Form Content divided in requested sections */}
-            <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-xs text-slate-700">
-              
-              {/* Profile card topper */}
-              <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200/60 flex flex-col sm:flex-row items-center gap-5">
-                <div className="w-20 h-20 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-700 shadow-inner text-2xl font-black font-mono shrink-0 select-none">
-                  {viewingPolicy.studentName.charAt(0)}
-                </div>
-                <div className="text-center sm:text-left space-y-0.5">
-                  <h4 className="text-base font-extrabold text-slate-800 font-moul leading-normal">{viewingPolicy.studentName}</h4>
-                  <p className="text-slate-500 font-extrabold">Student ID: <span className="text-indigo-800 font-black">{viewingPolicy.studentId}</span></p>
-                  <p className="text-[11px] text-slate-400">ថ្នាក់រៀន៖ {viewingPolicy.gradeClass} • ឆ្នាំសិក្សា៖ {viewingPolicy.academicYear}</p>
-                </div>
-                
-                {/* Office stamp indicator */}
-                <div className="sm:ml-auto select-none border-4 border-dashed border-emerald-500/30 text-emerald-600/80 rounded-2xl p-2 px-4 flex flex-col items-center justify-center -rotate-3 text-center">
-                  <span className="text-[10px] font-black tracking-widest uppercase">OFFICIAL APPROVED</span>
-                  <span className="text-sm font-moul tracking-normal shrink-0">ការិយាល័យសាលា</span>
-                </div>
-              </div>
-
-              {/* Grid 1 & 2: Student & Parent info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
-                {/* 1. Student Information */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-200/60">
-                  <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5">
-                    <User className="w-4 h-4 text-indigo-700" />
-                    <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">១. ព័ត៌មានសិស្ស (Student Information)</span>
-                  </div>
-                  <div className="space-y-1.5 text-[11.5px]">
-                    <p><span className="text-slate-400 font-bold">ឈ្មោះពេញ៖</span> <strong className="text-slate-800">{viewingPolicy.studentName}</strong></p>
-                    <p><span className="text-slate-400 font-bold">លេខសម្គាល់សិស្ស៖</span> <strong className="text-slate-800 font-mono">{viewingPolicy.studentId}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ភេទ៖</span> <strong className="text-slate-800">{viewingPolicy.gender}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ថ្ងៃខែឆ្នាំកំណើត៖</span> <strong className="text-slate-800 font-mono">{viewingPolicy.dob}</strong></p>
-                    <p><span className="text-slate-400 font-bold">សញ្ជាតិ៖</span> <strong className="text-slate-800">{viewingPolicy.nationality}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ថ្នាក់រៀន៖</span> <strong className="text-slate-800">{viewingPolicy.gradeClass}</strong></p>
-                  </div>
-                </div>
-
-                {/* 2. Parent/Guardian Information */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-200/60">
-                  <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5">
-                    <Phone className="w-4 h-4 text-indigo-700" />
-                    <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">២. ព័ត៌មានអាណាព្យាបាល (Parent Info)</span>
-                  </div>
-                  <div className="space-y-1.5 text-[11.5px]">
-                    <p><span className="text-slate-400 font-bold">អាណាព្យាបាល៖</span> <strong className="text-slate-800">{viewingPolicy.guardianName}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ត្រូវជា៖</span> <strong className="text-indigo-800">{viewingPolicy.guardianRelationship}</strong></p>
-                    <p><span className="text-slate-400 font-bold">លេខទូរស័ព្ទ៖</span> <strong className="text-slate-800 font-mono">{viewingPolicy.guardianPhone}</strong></p>
-                    <p><span className="text-slate-400 font-bold">មុខរបរ៖</span> <strong className="text-slate-800">{viewingPolicy.guardianOccupation}</strong></p>
-                    <p><span className="text-slate-400 font-bold">អាសយដ្ឋាន៖</span> <span className="text-slate-600 font-medium">{viewingPolicy.guardianAddress}</span></p>
-                  </div>
-                </div>
-
-                {/* 3. Insurance Information */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/30 to-slate-50 border border-indigo-100">
-                  <div className="flex items-center gap-1.5 border-b border-indigo-100 pb-1.5">
-                    <Landmark className="w-4 h-4 text-indigo-700" />
-                    <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">៣. ព័ត៌មានធានារ៉ាប់រង (Insurance Info)</span>
-                  </div>
-                  <div className="space-y-1.5 text-[11.5px]">
-                    <p><span className="text-slate-400 font-bold">លេខប័ណ្ណធានា៖</span> <strong className="text-indigo-950 font-mono">{viewingPolicy.policyNumber}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ក្រុមហ៊ុនធានា៖</span> <strong className="text-emerald-700 font-extrabold">{viewingPolicy.provider}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ប្រភេទការធានា៖</span> <strong className="text-slate-700">{viewingPolicy.coverageType}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ថ្ងៃចាប់ផ្តើម៖</span> <span className="text-slate-600 font-mono">{viewingPolicy.effectiveDate}</span></p>
-                    <p><span className="text-slate-400 font-bold">ថ្ងៃផុតកំណត់៖</span> <span className="text-rose-600 font-mono font-bold">{viewingPolicy.expiryDate}</span></p>
-                    <p><span className="text-slate-400 font-bold">តម្លៃបុព្វលាភ៖</span> <strong className="text-emerald-700 font-mono font-black">${viewingPolicy.premiumAmount} USD</strong></p>
-                  </div>
-                </div>
-
-                {/* 4. Emergency Contact */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-200/60">
-                  <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5">
-                    <Phone className="w-4 h-4 text-emerald-700" />
-                    <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">៤. អ្នកទំនាក់ទំនងបន្ទាន់ (Emergency)</span>
-                  </div>
-                  <div className="space-y-1.5 text-[11.5px]">
-                    <p><span className="text-slate-400 font-bold">ឈ្មោះទាក់ទង៖</span> <strong className="text-slate-800">{viewingPolicy.emergencyName}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ត្រូវជា៖</span> <strong className="text-slate-700">{viewingPolicy.emergencyRelationship}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ទូរស័ព្ទ៖</span> <strong className="text-slate-800 font-mono">{viewingPolicy.emergencyPhone}</strong></p>
-                    {viewingPolicy.emergencyAltPhone && (
-                      <p><span className="text-slate-400 font-bold">លេខជំនួស៖</span> <strong className="text-slate-800 font-mono">{viewingPolicy.emergencyAltPhone}</strong></p>
-                    )}
-                  </div>
-                </div>
-
-                {/* 5. Medical Information */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-slate-50/50 border border-slate-200/60">
-                  <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5">
-                    <HeartPulse className="w-4 h-4 text-rose-600" />
-                    <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">៥. ព័ត៌មានសុខភាព (Medical Information)</span>
-                  </div>
-                  <div className="space-y-1.5 text-[11.5px]">
-                    <p><span className="text-slate-400 font-bold">ក្រុមឈាម (Blood):</span> <strong className="text-rose-600 font-black">{viewingPolicy.bloodType}</strong></p>
-                    <p><span className="text-slate-400 font-bold">ប្រតិកម្មអាឡែកស៊ី៖</span> <span className="text-slate-700 font-bold">{viewingPolicy.allergies || 'គ្មាន (None)'}</span></p>
-                    <p><span className="text-slate-400 font-bold">ជំងឺប្រចាំកាយ៖</span> <span className="text-slate-700 font-bold">{viewingPolicy.medicalConditions || 'គ្មាន (None)'}</span></p>
-                    <p><span className="text-slate-400 font-bold">ថ្នាំកំពុងប្រើ៖</span> <span className="text-slate-750 font-bold">{viewingPolicy.currentMedications || 'គ្មាន (None)'}</span></p>
-                  </div>
-                </div>
-
-                {/* 6. Claim Information */}
-                <div className="space-y-2.5 p-4 rounded-2xl bg-amber-50/25 border border-amber-200/80">
-                  <div className="flex items-center gap-1.5 border-b border-amber-200 pb-1.5">
-                    <FileText className="w-4 h-4 text-amber-700" />
-                    <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">៦. ព័ត៌មានស្នើសុំសំណង (Claims Info)</span>
-                  </div>
-                  {viewingPolicy.claimDate ? (
-                    <div className="space-y-1.5 text-[11.5px]">
-                      <p><span className="text-slate-400 font-bold">កាលបរិច្ឆេទកើតហេតុ៖</span> <strong className="text-slate-800 font-mono">{viewingPolicy.claimDate}</strong></p>
-                      <p><span className="text-slate-400 font-bold">ទីកន្លែងកើតហេតុ៖</span> <strong className="text-slate-700">{viewingPolicy.claimPlace}</strong></p>
-                      <p><span className="text-slate-400 font-bold">មន្ទីរពេទ្យព្យាបាល៖</span> <strong className="text-slate-705">{viewingPolicy.claimHospital}</strong></p>
-                      <p><span className="text-slate-400 font-bold">ចំណាយសរុប៖</span> <strong className="text-amber-800 font-mono">${viewingPolicy.claimExpenseAmount} USD</strong></p>
-                      <p><span className="text-slate-400 font-bold">ហេតុការណ៍៖</span> <span className="text-slate-600 block bg-white p-2 border border-slate-150 rounded-lg">{viewingPolicy.claimDescription}</span></p>
-                      {viewingPolicy.claimDocuments && (
-                        <p><span className="text-slate-400 font-bold">ឯកសារភ្ជាប់៖</span> <span className="text-indigo-600 font-mono font-bold">{viewingPolicy.claimDocuments}</span></p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="py-6 text-center text-slate-400 font-bold">
-                      <p>មិនទាន់មានការស្នើសុំសំណងនៅឡើយ (No Claims Recorded)</p>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-              {/* 7. Declaration & Signatures */}
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
-                <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2">
-                  <FileText className="w-4.5 h-4.5 text-slate-700" />
-                  <span className="font-extrabold text-[12.5px] text-slate-800 font-moul tracking-normal">៧. ការបញ្ជាក់ និងហត្ថលេខា (Declaration & Signature)</span>
-                </div>
-                
-                <p className="text-[11px] text-slate-500 leading-relaxed font-bold">
-                  យើងខ្ញុំជាសាមីខ្លួន និងអាណាព្យាបាលសិស្ស សូមបញ្ជាក់ថាព័ត៌មានខាងលើនេះពិតជាត្រឹមត្រូវពិតប្រាកដមែន ហើយយល់ព្រមតាមការកំណត់របស់ក្រុមហ៊ុនធានារ៉ាប់រង។
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center pt-3 select-none">
-                  <div className="border border-slate-200/60 p-3 rounded-xl bg-white space-y-2">
-                    <p className="text-slate-400 font-bold">សាមីសិស្ស (Student)</p>
-                    <div className="h-10 flex items-center justify-center font-mono italic text-[13px] text-indigo-700 font-black">
-                      {viewingPolicy.studentSigned ? `[ Signed / ${viewingPolicy.studentSignatureName} ]` : 'មិនទាន់ចុះហត្ថលេខា'}
-                    </div>
-                    <div className="h-px bg-slate-100" />
-                    <p className="text-slate-700 font-extrabold font-mono mt-1 text-[11px]">{viewingPolicy.studentSignatureName}</p>
-                  </div>
-
-                  <div className="border border-slate-200/60 p-3 rounded-xl bg-white space-y-2">
-                    <p className="text-slate-400 font-bold">អាណាព្យាបាល (Parent / Guardian)</p>
-                    <div className="h-10 flex items-center justify-center font-mono italic text-[13px] text-indigo-700 font-black">
-                      {viewingPolicy.parentSigned ? `[ Signed / ${viewingPolicy.parentSignatureName} ]` : 'មិនទាន់ចុះហត្ថលេខា'}
-                    </div>
-                    <div className="h-px bg-slate-100" />
-                    <p className="text-slate-700 font-extrabold font-mono mt-1 text-[11px]">{viewingPolicy.parentSignatureName}</p>
-                  </div>
-
-                  <div className="border border-slate-200/60 p-3 rounded-xl bg-white space-y-2">
-                    <p className="text-slate-400 font-bold">តំណាងសាលា (School Rep)</p>
-                    <div className="h-10 flex items-center justify-center font-mono italic text-[13px] text-emerald-700 font-black">
-                      {viewingPolicy.schoolRepresentativeSigned ? `[ Signed / Authorized ]` : 'មិនទាន់ចុះហត្ថលេខា'}
-                    </div>
-                    <div className="h-px bg-slate-100" />
-                    <p className="text-slate-700 font-extrabold font-mono mt-1 text-[11px]">{viewingPolicy.schoolRepresentativeName}</p>
-                  </div>
-                </div>
-
-                <div className="text-right text-slate-400 font-mono text-[10.5px]">
-                  កាលបរិច្ឆេទចុះហត្ថលេខា៖ <strong>{viewingPolicy.declarationDate}</strong>
-                </div>
-              </div>
-
-              {/* 8. Office Use Only */}
-              <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 space-y-3">
-                <div className="flex items-center justify-between border-b border-indigo-150 pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Landmark className="w-4 h-4 text-indigo-900" />
-                    <span className="font-extrabold text-[12.5px] text-indigo-950 font-moul tracking-normal">៨. សម្រាប់ការិយាល័យសាលា (Office Use Only)</span>
-                  </div>
-                  <span className="text-[10px] bg-slate-900 text-amber-400 px-3 py-1 font-black rounded-lg">
-                    STATUS: {viewingPolicy.claimStatus.toUpperCase()}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11.5px] text-indigo-950">
-                  <p><span className="text-indigo-700 font-bold">ទទួលពាក្យដោយ៖</span> <strong className="font-mono">{viewingPolicy.receivedBy}</strong></p>
-                  <p><span className="text-indigo-700 font-bold">ថ្ងៃទីទទួលបាន៖</span> <strong className="font-mono">{viewingPolicy.dateReceived}</strong></p>
-                  <div className="sm:col-span-2">
-                    <p className="text-indigo-700 font-bold mb-1">ចំណាំចំណាររដ្ឋបាល (Office Remarks & Policy validation):</p>
-                    <div className="bg-white/80 p-3 rounded-xl border border-indigo-100 font-semibold leading-relaxed text-slate-800">
-                      {viewingPolicy.officeRemarks || 'គ្មានព័ត៌មានបន្ថែមពីការិយាល័យ។'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Modal footer buttons */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3 shrink-0">
-              <button
-                onClick={() => viewingPolicy && sendSingleRecordToTelegram(viewingPolicy)}
-                className="px-5 py-2 bg-sky-550 hover:bg-sky-600 text-white transition border border-sky-600 rounded-xl text-xs font-black cursor-pointer inline-flex items-center gap-1.5 shadow-sm overflow-hidden"
-              >
-                <Send className="w-4 h-4" />
-                <span>ផ្ញើទៅ Telegram (Send Telegram)</span>
-              </button>
-              <button
-                onClick={() => {
-                  window.print();
-                }}
-                className="px-5 py-2 hover:bg-slate-100 transition border rounded-xl text-slate-600 text-xs font-black cursor-pointer inline-flex items-center gap-1"
-              >
-                <Download className="w-4 h-4" />
-                <span>បោះពុម្ពទម្រង់ធានារ៉ាប់រង (Print Form)</span>
-              </button>
-              <button
-                onClick={() => setViewingPolicy(null)}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 transition text-white rounded-xl text-xs font-black cursor-pointer"
-              >
-                យល់ព្រម (Done)
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* Form editing modal popup mapping all requested 8 fields */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs flex items-center justify-center p-4 z-40">
-          <div className="bg-white border text-left border-slate-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
-            
-            {/* Header */}
-            <div className="bg-slate-950 text-white p-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2 text-indigo-400">
-                <ShieldCheck className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-moul text-sm md:text-base text-white tracking-normal leading-relaxed">
-                  {editingPolicy ? `កែប្រែព័ត៌មាន៖ ${id}` : 'បន្ថែមព័ត៌មានធានារ៉ាប់រងសិស្សថ្មី (New Insurance Record)'}
-                </h3>
-              </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Scrollable form */}
-            <form onSubmit={handleFormSubmit} className="p-6 md:p-8 overflow-y-auto space-y-6 text-xs font-semibold">
-              
-              {/* 1. Student Information */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <User className="w-4 h-4 text-indigo-700" />
-                  <span>១. ព័ត៌មានសិស្ស (Student Information)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-500 mb-1">កូដចុះឈ្មោះ (Register ID)</label>
-                    <input
-                      type="text"
-                      disabled
-                      value={id}
-                      className="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-slate-500 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ឈ្មោះពេញសិស្ស (Full Name) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. សុក សាន"
-                      value={studentName}
-                      onChange={(e) => setStudentName(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">លេខសម្គាល់សិស្ស (Student ID) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. WIS-STU-1025"
-                      value={studentId}
-                      onChange={(e) => setStudentId(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ភេទ (Gender) *</label>
-                    <select
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value as any)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-hidden"
-                    >
-                      <option value="ប្រុស">ប្រុស (Male)</option>
-                      <option value="ស្រី">ស្រី (Female)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ថ្ងៃខែឆ្នាំកំណើត (DOB) *</label>
-                    <input
-                      type="date"
-                      required
-                      value={dob}
-                      onChange={(e) => setDob(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ថ្នាក់បង្រៀន (Grade/Class) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. Grade 8A"
-                      value={gradeClass}
-                      onChange={(e) => setGradeClass(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ឆ្នាំសិក្សា (Academic Year) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. 2025-2026"
-                      value={academicYear}
-                      onChange={(e) => setAcademicYear(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">សញ្ជាតិ (Nationality) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. ខ្មែរ (Khmer)"
-                      value={nationality}
-                      onChange={(e) => setNationality(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Parent/Guardian Information */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <Phone className="w-4 h-4 text-indigo-750" />
-                  <span>២. ព័ត៌មានអាណាព្យាបាល (Parent/Guardian Information)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-500 mb-1">ឈ្មោះពេញអាណាព្យាបាល *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. សុកជា"
-                      value={guardianName}
-                      onChange={(e) => setGuardianName(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ត្រូវជាសិស្ស (Relationship) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. ឪពុក, ម្តាយ, ជីដូន"
-                      value={guardianRelationship}
-                      onChange={(e) => setGuardianRelationship(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">លេខទូរស័ព្ទអាណាព្យាបាល *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. 012 345 678"
-                      value={guardianPhone}
-                      onChange={(e) => setGuardianPhone(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">មុខរបរអាណាព្យាបាល *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. អាជីវករ, វិស្វករ"
-                      value={guardianOccupation}
-                      onChange={(e) => setGuardianOccupation(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-slate-500 mb-1">អាសយដ្ឋានបច្ចុប្បន្ន *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. ផ្ទះលេខ ២៤ ផ្លូវលេខ ៣៧១..."
-                      value={guardianAddress}
-                      onChange={(e) => setGuardianAddress(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 3. Insurance Register Information */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <Landmark className="w-4 h-4 text-indigo-750" />
-                  <span>៣. ព័ត៌មានធានារ៉ាប់រង (Insurance Information)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-500 mb-1">លេខប័ណ្ណធានារ៉ាប់រង *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. WIS-FORTE-2026-9042"
-                      value={policyNumber}
-                      onChange={(e) => setPolicyNumber(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono font-bold focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ក្រុមហ៊ុនធានារ៉ាប់រង *</label>
-                    <select
-                      value={provider}
-                      onChange={(e) => setProvider(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-bold focus:outline-hidden"
-                    >
-                      <option value="Forte Insurance">Forte Insurance</option>
-                      <option value="AIA Cambodia">AIA Cambodia</option>
-                      <option value="Prudential Cambodia">Prudential Cambodia</option>
-                      <option value="Camlife Insurance">Camlife Insurance</option>
-                      <option value="Other">ក្រុមហ៊ុនផ្សេងទៀត</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">តម្លៃបង់ធានា ($ USD) *</label>
-                    <input
-                      type="number"
-                      required
-                      placeholder="ឧ. 85"
-                      value={premiumAmount}
-                      onChange={(e) => setPremiumAmount(Number(e.target.value))}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-3">
-                    <label className="block text-slate-500 mb-1">ប្រភេទការធានា (Coverage Type) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. គ្រោះថ្នាក់បុគ្គល និងការព្យាបាលជំងឺ (Personal Accident & Medical)"
-                      value={coverageType}
-                      onChange={(e) => setCoverageType(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ថ្ងៃចាប់ផ្តើម (Effective Date) *</label>
-                    <input
-                      type="date"
-                      required
-                      value={effectiveDate}
-                      onChange={(e) => setEffectiveDate(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ថ្ងៃផុតកំណត់ (Expiry Date) *</label>
-                    <input
-                      type="date"
-                      required
-                      value={expiryDate}
-                      onChange={(e) => setExpiryDate(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. Emergency Contact */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <Phone className="w-4 h-4 text-indigo-750" />
-                  <span>៤. អ្នកទំនាក់ទំនងបន្ទាន់ (Emergency Contact)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-slate-500 mb-1">ឈ្មោះអ្នកទាក់ទងបន្ទាន់ *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. សុកជា"
-                      value={emergencyName}
-                      onChange={(e) => setEmergencyName(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ត្រូវជា (Relationship) *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. ឪពុក, ម្តាយ"
-                      value={emergencyRelationship}
-                      onChange={(e) => setEmergencyRelationship(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">លេខទូរស័ព្ទ *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="ឧ. 012 345 678"
-                      value={emergencyPhone}
-                      onChange={(e) => setEmergencyPhone(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-slate-500 mb-1">លេខទូរស័ព្ទជំនួសល្បឿនលឿន</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. 098 765 432"
-                      value={emergencyAltPhone}
-                      onChange={(e) => setEmergencyAltPhone(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. Medical Information */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <HeartPulse className="w-4 h-4 text-rose-600" />
-                  <span>៥. ព័ត៌មានសុខភាព (Medical Information)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-500 mb-1">ក្រុមឈាម (Blood Type) *</label>
-                    <select
-                      value={bloodType}
-                      onChange={(e) => setBloodType(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-bold"
-                    >
-                      <option value="O">O</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="AB">AB</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ប្រតិកម្មអាឡែកស៊ី (Allergies)</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. អាលែកស៊ីត្រីសមុទ្រ..."
-                      value={allergies}
-                      onChange={(e) => setAllergies(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ជំងឺប្រចាំកាយ (Existing Conditions)</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. គ្មាន (None)"
-                      value={medicalConditions}
-                      onChange={(e) => setMedicalConditions(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ថ្នាំកំពុងប្រើប្រចាំថ្ងៃ (Current Medication)</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. គ្មាន (None)"
-                      value={currentMedications}
-                      onChange={(e) => setCurrentMedications(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 6. Claim Information */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <FileText className="w-4 h-4 text-indigo-755" />
-                  <span>៦. ព័ត៌មានស្នើសុំសំណង (Claim Information - បំពេញពេលកើតហេតុ)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-slate-500 mb-1">ថ្ងៃកើតហេតុ (Date of Incident)</label>
-                    <input
-                      type="date"
-                      value={claimDate}
-                      onChange={(e) => setClaimDate(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ទីកន្លែងកើតហេតុ (Place of Incident)</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. ទីធ្លារត់លេងសាលា"
-                      value={claimPlace}
-                      onChange={(e) => setClaimPlace(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ឈ្មោះមន្ទីរពេទ្យចូលសម្រាកព្យាបាល</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. មន្ទីរពេទ្យព្រះកុសុមៈ"
-                      value={claimHospital}
-                      onChange={(e) => setClaimHospital(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">ចំណាយថ្លៃព្យាបាល ($ USD)</label>
-                    <input
-                      type="number"
-                      placeholder="ឧ. 125"
-                      value={claimExpenseAmount}
-                      onChange={(e) => setClaimExpenseAmount(Number(e.target.value))}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <label className="block text-slate-500 mb-1">ភ្ជាប់ឯកសារពិគ្រោះ/វេជ្ជបញ្ជា (Supporting Doc files info)</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. medical_receipt.pdf, clinic_report.jpg"
-                      value={claimDocuments}
-                      onChange={(e) => setClaimDocuments(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-indigo-700 font-mono"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-3">
-                    <label className="block text-slate-500 mb-1">ពិពណ៌នាហេតុការណ៍លម្អិត (Incident Description)</label>
-                    <textarea
-                      rows={2}
-                      placeholder="ពន្យល់ពីដំណើរដើមទងនៃគ្រោះថ្នាក់..."
-                      value={claimDescription}
-                      onChange={(e) => setClaimDescription(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 7. Declaration & Signatures */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-slate-900 font-moul tracking-normal border-b border-slate-250 pb-2 flex items-center gap-1 text-indigo-950">
-                  <FileText className="w-4.5 h-4.5 text-indigo-750" />
-                  <span>៧. ការបញ្ជាក់ និងហត្ថលេខា (Declaration & Signatures)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="stSigned"
-                      checked={studentSigned}
-                      onChange={(e) => setStudentSigned(e.target.checked)}
-                      className="w-4.5 h-4.5 text-indigo-600 border-slate-300 rounded"
-                    />
-                    <label htmlFor="stSigned" className="text-slate-700 font-bold">សាមីខ្លួនយល់ព្រម</label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="ptSigned"
-                      checked={parentSigned}
-                      onChange={(e) => setParentSigned(e.target.checked)}
-                      className="w-4.5 h-4.5 text-indigo-600 border-slate-300 rounded"
-                    />
-                    <label htmlFor="ptSigned" className="text-slate-700 font-bold">អាណាព្យាបាលយល់ព្រម</label>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="schSigned"
-                      checked={schoolRepresentativeSigned}
-                      onChange={(e) => setSchoolRepresentativeSigned(e.target.checked)}
-                      className="w-4.5 h-4.5 text-indigo-600 border-slate-300 rounded"
-                    />
-                    <label htmlFor="schSigned" className="text-slate-700 font-bold">តំណាងសាលាយល់ព្រម</label>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-500 mb-1">កាលបរិច្ឆេទចុះហត្ថលេខា</label>
-                    <input
-                      type="date"
-                      value={declarationDate}
-                      onChange={(e) => setDeclarationDate(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-2 py-1.5 text-slate-850 font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 8. Office Use Only */}
-              <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-150 space-y-4">
-                <h4 className="font-extrabold text-[12px] text-indigo-950 font-moul tracking-normal border-b border-indigo-200 pb-2 flex items-center gap-1">
-                  <Landmark className="w-4 h-4 text-indigo-900" />
-                  <span>៨. សម្រាប់ការិយាល័យសាលា (Office Use Only)</span>
-                </h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-indigo-900 mb-1">មន្ត្រីទទួលឯកសារ (Received By) *</label>
-                    <input
-                      type="text"
-                      required
-                      value={receivedBy}
-                      onChange={(e) => setReceivedBy(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-indigo-900 mb-1">ថ្ងៃទីទទួលបាន (Date Received) *</label>
-                    <input
-                      type="date"
-                      required
-                      value={dateReceived}
-                      onChange={(e) => setDateReceived(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-indigo-900 mb-1">ស្ថានភាពស្នើសុំសំណង (Status) *</label>
-                    <select
-                      value={claimStatus}
-                      onChange={(e) => setClaimStatus(e.target.value as InsuranceStatus)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-bold"
-                    >
-                      <option value="Approved">យល់ព្រមស្គាល់ (Approved)</option>
-                      <option value="Pending">កំពុងត្រួតពិនិត្យ (Pending)</option>
-                      <option value="Rejected">បដិសេធចោល (Rejected)</option>
-                      <option value="None">គ្មានសំណើ (None)</option>
-                    </select>
-                  </div>
-
-                  <div className="sm:col-span-3">
-                    <label className="block text-indigo-900 mb-1">ចំណារចំណាំមន្ត្រីរដ្ឋបាល (Office Remarks / Notes)</label>
-                    <textarea
-                      rows={2}
-                      placeholder="បញ្ចូលចំណាំលម្អិត..."
-                      value={officeRemarks}
-                      onChange={(e) => setOfficeRemarks(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-850"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-250 text-slate-500 hover:bg-slate-50 font-bold cursor-pointer"
-                >
-                  បោះបង់ (Cancel)
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-indigo-700 hover:bg-indigo-850 text-white rounded-xl font-bold cursor-pointer select-none"
-                >
-                  រក្សាទុក Auto-Submit
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
-      )}
+      <StudentInsuranceFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        editingPolicy={editingPolicy}
+        showToastMsg={showToastMsg}
+        onSave={(payload) => {
+          if (editingPolicy) {
+            const updated = insurances.map(ins => ins.id === editingPolicy.id ? payload : ins);
+            saveAndSyncInsurances(updated);
+            showToastMsg(`ព័ត៌មានធានារ៉ាប់រងសិស្ស ${payload.studentName} ត្រូវបានកែប្រែស្វ័យប្រវត្ត (Auto-Saved)`, 'success');
+          } else {
+            const exists = insurances.some(ins => ins.id === payload.id);
+            if (exists) {
+              showToastMsg(`កូដសម្គាល់ធានារ៉ាប់រង "${payload.id}" នេះមានរួចរាល់ហើយក្នុងប្រព័ន្ធ។`, 'danger');
+              return;
+            }
+            const updated = [payload, ...insurances];
+            saveAndSyncInsurances(updated);
+            showToastMsg(`បានបង្កើតទម្រង់ធានារ៉ាប់រងសិស្សថ្មី [${payload.id}] រួចរាល់!`, 'success');
+          }
+          setIsModalOpen(false);
+        }}
+      />
 
       {/* Embedded Floating Toast notification container */}
       {toast && (

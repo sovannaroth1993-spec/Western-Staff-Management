@@ -9,7 +9,8 @@ import { exportAttendanceToExcel } from '../utils/excelHelper';
 import { exportAttendanceToPdf } from '../utils/pdfHelper';
 import { 
   Users, Calendar, CheckSquare, ShieldAlert, FileSpreadsheet, 
-  FileText, ArrowRight, UserCheck, AlertCircle, Save, HelpCircle, X
+  FileText, ArrowRight, UserCheck, AlertCircle, Save, HelpCircle, X,
+  Search, BarChart3, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -31,6 +32,87 @@ export default function AttendanceTracker({
   
   const [activeDept, setActiveDept] = useState<Department>('Security');
   const [localRecords, setLocalRecords] = useState<Record<string, { status: AttendanceStatus; notes: string }>>({});
+
+  // Monthly Summary View states
+  const [summarySearch, setSummarySearch] = useState('');
+  const [summaryDept, setSummaryDept] = useState<string>('All');
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+
+  // Helper to resolve Khmer name of selected month and year
+  const currentMonthYear = selectedDate ? selectedDate.substring(0, 7) : '';
+
+  const getKhmerMonthYear = (dateStr: string) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length < 2) return '';
+    const year = parts[0];
+    const month = parts[1];
+    const khmerMonths: Record<string, string> = {
+      '01': 'មករា (January)',
+      '02': 'កុម្ភៈ (February)',
+      '03': 'មីនា (March)',
+      '04': 'មេសា (April)',
+      '05': 'ឧសភា (May)',
+      '06': 'មិថុនា (June)',
+      '07': 'កក្កដា (July)',
+      '08': 'សីហា (August)',
+      '09': 'កញ្ញា (September)',
+      '10': 'តុលា (October)',
+      '11': 'វិច្ឆិកា (November)',
+      '12': 'ធ្នូ (December)',
+    };
+    return `${khmerMonths[month] || month} ${year}`;
+  };
+
+  // Get monthly stats for a specific staff member
+  const getMonthlyStatsForStaff = (staffId: string, monthYear: string) => {
+    const monthRecords = attendanceRecords.filter(
+      r => r.staffId === staffId && r.date.startsWith(monthYear)
+    );
+    
+    const presentCount = monthRecords.filter(r => r.status === 'Present').length;
+    const excusedCount = monthRecords.filter(r => r.status === 'Excused').length;
+    const absentCount = monthRecords.filter(r => r.status === 'Absent').length;
+    const totalChecked = monthRecords.length;
+    const attendanceRate = totalChecked > 0 ? Math.round((presentCount / totalChecked) * 100) : 100;
+    
+    return {
+      present: presentCount,
+      excused: excusedCount,
+      absent: absentCount,
+      total: totalChecked,
+      rate: attendanceRate
+    };
+  };
+
+  // Filter staff members for the summary view
+  const summaryFilteredStaff = staffList.filter(staff => {
+    const matchesDept = summaryDept === 'All' || staff.department === summaryDept;
+    const matchesSearch = 
+      staff.name.toLowerCase().includes(summarySearch.toLowerCase()) ||
+      staff.staffId.toLowerCase().includes(summarySearch.toLowerCase());
+    return matchesDept && matchesSearch;
+  });
+
+  // Calculate aggregation stats for selected month & filters
+  const summaryAggregate = {
+    totalPresent: 0,
+    totalExcused: 0,
+    totalAbsent: 0,
+    totalChecked: 0
+  };
+
+  summaryFilteredStaff.forEach(staff => {
+    const stats = getMonthlyStatsForStaff(staff.staffId, currentMonthYear);
+    summaryAggregate.totalPresent += stats.present;
+    summaryAggregate.totalExcused += stats.excused;
+    summaryAggregate.totalAbsent += stats.absent;
+    summaryAggregate.totalChecked += stats.total;
+  });
+
+  const overallAttendanceRate = summaryAggregate.totalChecked > 0 
+    ? Math.round((summaryAggregate.totalPresent / summaryAggregate.totalChecked) * 100) 
+    : 100;
 
   
   // Floating status toast state
@@ -204,7 +286,7 @@ export default function AttendanceTracker({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-xl p-6">
+    <div id="attendance-tracker-container" className="bg-white rounded-2xl border border-slate-100 shadow-xl p-6">
       
       {/* Upper Tracker Title & Meta controls */}
       <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between border-b border-slate-100 pb-5 gap-4">
@@ -403,7 +485,186 @@ export default function AttendanceTracker({
             })}
           </div>
 
-          {/* Action and Save panel */}
+          {/* 📊 Monthly Attendance Summary Card for Selected Month */}
+          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 mt-6 transition-all duration-300">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+                  <BarChart3 className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 font-sans tracking-tight">
+                    របាយការណ៍សង្ខេបវត្តមានប្រចាំខែ (Monthly Attendance Summary)
+                  </h3>
+                  <p className="text-[10.5px] font-bold text-indigo-600 mt-0.5">
+                    គណនាសម្រាប់ខែ៖ <span className="underline">{getKhmerMonthYear(selectedDate)}</span>
+                  </p>
+                </div>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                className="p-1 px-2.5 rounded-lg border border-slate-250 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <span>{isSummaryExpanded ? 'លាក់ (Hide)' : 'បង្ហាញ (Show)'}</span>
+                {isSummaryExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+
+            <AnimatePresence initial={false}>
+              {isSummaryExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-4 overflow-hidden"
+                >
+                  {/* Summary Filter and Search Controls */}
+                  <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+                    
+                    {/* Search member */}
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="ស្វែងរកឈ្មោះ ឬលេខកូដសម្គាល់បុគ្គលិក..."
+                        value={summarySearch}
+                        onChange={(e) => setSummarySearch(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Department summary filter */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-500 whitespace-nowrap">ផ្នែកការងារ៖</span>
+                      <select
+                        value={summaryDept}
+                        onChange={(e) => setSummaryDept(e.target.value)}
+                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none cursor-pointer min-w-[140px]"
+                      >
+                        <option value="All">បង្ហាញទាំងអស់ (All)</option>
+                        {ALL_DEPARTMENTS.map(dept => (
+                          <option key={dept} value={dept}>{DEPARTMENT_NAMES_KM[dept]}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Aggregate Summary Widget Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 bg-white p-3.5 border border-slate-200/80 rounded-xl">
+                    <div className="p-2 border-r border-slate-100 flex flex-col justify-center">
+                      <span className="text-[10px] font-bold text-slate-400">វត្តមានសរុប (Selected Staff Present)</span>
+                      <span className="text-lg font-black text-emerald-600 mt-1">{summaryAggregate.totalPresent} ថ្ងៃ</span>
+                    </div>
+                    <div className="p-2 border-r border-slate-100 flex flex-col justify-center">
+                      <span className="text-[10px] font-bold text-slate-400">ច្បាប់សរុប (Selected Staff Excused)</span>
+                      <span className="text-lg font-black text-amber-500 mt-1">{summaryAggregate.totalExcused} ថ្ងៃ</span>
+                    </div>
+                    <div className="p-2 border-r border-slate-100 flex flex-col justify-center">
+                      <span className="text-[10px] font-bold text-slate-400">អវត្តមានសរុប (Selected Staff Absent)</span>
+                      <span className="text-lg font-black text-rose-600 mt-1">{summaryAggregate.totalAbsent} ថ្ងៃ</span>
+                    </div>
+                    <div className="p-2 flex flex-col justify-center">
+                      <span className="text-[10px] font-bold text-slate-450 text-indigo-500">អត្រាមធ្យម (Avg Attendance Rate)</span>
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className={`text-xl font-black ${overallAttendanceRate >= 90 ? 'text-emerald-600' : overallAttendanceRate >= 80 ? 'text-amber-500' : 'text-rose-600'}`}>
+                          {overallAttendanceRate}%
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-bold">ប្រចាំខែ</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Staff List Statistics Container */}
+                  {summaryFilteredStaff.length === 0 ? (
+                    <div className="text-center py-8 bg-white border border-slate-150 rounded-xl">
+                      <p className="text-xs text-slate-400 font-bold">រកមិនឃើញទិន្នន័យបុគ្គលិកត្រូវគ្នានឹងការស្វែងរកឡើយ</p>
+                    </div>
+                  ) : (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white max-h-[350px] overflow-y-auto shadow-inner-sm">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-slate-100 text-slate-600 border-b border-slate-200">
+                            <th className="py-2.5 px-3 font-black text-[11px] text-center w-12">ល.រ</th>
+                            <th className="py-2.5 px-3 font-black text-[11px]">បុគ្គលិក (Staff Member)</th>
+                            <th className="py-2.5 px-3 font-black text-[11px]">ផ្នែកការងារ (Dept)</th>
+                            <th className="py-2.5 px-3 font-black text-[11px] text-center w-20 text-emerald-700">វត្តមាន (P)</th>
+                            <th className="py-2.5 px-3 font-black text-[11px] text-center w-20 text-amber-600">ច្បាប់ (E)</th>
+                            <th className="py-2.5 px-3 font-black text-[11px] text-center w-20 text-rose-600">អវត្តមាន (A)</th>
+                            <th className="py-2.5 px-4 font-black text-[11px] w-48">អត្រាវត្តមាន (Rate %)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-150">
+                          {summaryFilteredStaff.map((staff, index) => {
+                            const stats = getMonthlyStatsForStaff(staff.staffId, currentMonthYear);
+                            
+                            // Highlighting color based on performance
+                            let progressBg = 'bg-emerald-500';
+                            let textStatusColor = 'text-emerald-700';
+                            if (stats.rate < 80) {
+                              progressBg = 'bg-rose-500';
+                              textStatusColor = 'text-rose-600';
+                            } else if (stats.rate < 90) {
+                              progressBg = 'bg-amber-400';
+                              textStatusColor = 'text-amber-605';
+                            }
+
+                            return (
+                              <tr key={staff.staffId} className="hover:bg-slate-50/70 transition">
+                                <td className="py-2 px-3 text-center text-slate-400 font-bold">{index + 1}</td>
+                                <td className="py-2 px-3">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-8 rounded bg-slate-50 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                                      {staff.photo ? (
+                                        <img src={staff.photo} alt={staff.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      ) : (
+                                        <span className="text-[9px] font-black text-slate-400 uppercase">{staff.name.split(' ').pop()?.substring(0,1)}</span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="font-extrabold text-slate-800 leading-tight">{staff.name}</p>
+                                      <p className="text-[10px] text-slate-400 font-mono mt-0.5">{staff.staffId}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-2 px-3 text-slate-500 font-bold text-[10.5px]">
+                                  {DEPARTMENT_NAMES_KM[staff.department]}
+                                </td>
+                                <td className="py-2 px-3 text-center text-sm font-black text-emerald-600 bg-emerald-50/30">
+                                  {stats.present}
+                                </td>
+                                <td className="py-2 px-3 text-center text-sm font-black text-amber-500 bg-amber-50/20">
+                                  {stats.excused}
+                                </td>
+                                <td className="py-2 px-3 text-center text-sm font-black text-rose-600 bg-rose-50/20">
+                                  {stats.absent}
+                                </td>
+                                <td className="py-2 px-4">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="flex-1 h-2 bg-slate-100 border border-slate-200/50 rounded-full overflow-hidden">
+                                      <div 
+                                        className={`h-full ${progressBg} rounded-full transition-all duration-500`}
+                                        style={{ width: `${stats.rate}%` }}
+                                      />
+                                    </div>
+                                    <span className={`font-mono text-[11px] font-black w-8 text-right ${textStatusColor}`}>
+                                      {stats.rate}%
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-t border-slate-100 pt-5 gap-4">
             
             {/* Export specific sheet buttons */}

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Staff, AttendanceRecord, DEPARTMENT_NAMES_KM, Department, ElectricityRecord, WaterRecord, ALL_DEPARTMENTS } from '../types';
 import { 
-  Send, Share2, Key, CheckCircle, MessageSquare, AlertCircle, Eye, EyeOff, LayoutDashboard, Settings2, Info
+  Send, Key, CheckCircle, MessageSquare, AlertCircle, Eye, EyeOff, LayoutDashboard, Settings2, Info
 } from 'lucide-react';
 
 interface TelegramReporterProps {
@@ -276,30 +276,6 @@ export default function TelegramReporter({
         {/* Left Hand: Controls & Settings */}
         <div className="lg:col-span-6 space-y-6">
           
-          {/* Quick Option: Direct Web Link */}
-          <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                ផ្ញើផ្ទាល់ (No Bot Request)
-              </span>
-              <h4 className="text-sm font-black text-slate-800">
-                ផ្ញើដោយផ្ទាល់តាមរយៈតំណភ្ជាប់ Telegram (Share Link)
-              </h4>
-              <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                ចុចប៊ូតុងខាងក្រោមដើម្បីបង្កើតតំណភ្ជាប់ (Share Link) រួចដំណើរការផ្ញើចូលទៅកាន់គ្រុប ឬឆានែលការងាររបស់អ្នកដោយសេរី ដោយមិនចាំបាច់ឆ្លងកាត់ការកំណត់ Bot API ឡើយ។
-              </p>
-            </div>
-            
-            <a
-              href={`https://t.me/share/url?url=${encodeURIComponent(window.location.origin)}&text=${encodeURIComponent(reportTextPlain)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs px-5 py-3 rounded-xl border border-sky-500 shadow-md transition-all scale-100 active:scale-95 cursor-pointer"
-            >
-              <Share2 className="w-4 h-4" /> Sharing Link (.t.me)
-            </a>
-          </div>
-
           {/* Advanced Option: Bot Setup */}
           <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-4">
             <div className="flex items-center justify-between gap-2">

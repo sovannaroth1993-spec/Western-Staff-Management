@@ -137,28 +137,29 @@ export type InsuranceStatus = 'Pending' | 'Approved' | 'Rejected' | 'None';
 
 export interface StudentInsurance {
   id: string; // Unique policy key/ID e.g. WIS-INS-001
+  campusBranch?: string; // ឈ្មោះសាខា Campus/Branch
   
-  // 1. Student Information (ព័ត៌មានសិស្ស)
-  studentName: string;
+  // 1. Student Information (ព័ត៌មានសិស្ស) / Insured's details
+  studentName: string; // ឈ្មោះសិស្ស / Name of insured
   studentId: string;
   gender: 'ប្រុស' | 'ស្រី' | 'Male' | 'Female';
-  dob: string;
-  gradeClass: string;
+  dob: string; // ថ្ងៃខែឆ្នាំកំណើតសិស្ស / Date of Birth (Student)
+  gradeClass: string; // ថ្នាក់ទី / Grade
   academicYear: string;
   nationality: string;
   photo?: string; // base64 or link or initials
 
   // 2. Parent/Guardian Information (ព័ត៌មានអាណាព្យាបាល)
-  guardianName: string;
+  guardianName: string; // ឈ្មោះអាណាព្យាបាល / Parent's Name
   guardianRelationship: string;
-  guardianPhone: string;
-  guardianAddress: string;
-  guardianOccupation: string;
+  guardianPhone: string; // លេខទូរស័ព្ទអាណាព្យាបាល / Parent's number
+  guardianAddress: string; // អាស័យដ្ឋាន / Address
+  guardianOccupation: string; // មុខរបរ / Occupation (Guardian)
 
-  // 3. Insurance Information (ព័ត៌មានធានារ៉ាប់រង)
+  // 3. Insurance Information (ព័ត៌មានធានារ៉ាប់រង) - optional or kept as background info
   policyNumber: string;
   provider: string; // e.g. Forte, AIA, Prudential, Camlife
-  coverageType: string; // e.g. គ្រោះថ្នាក់បុគ្គល (Personal Accident), ព្យាបាលជំងឺ (Medical Cover)
+  coverageType: string;
   effectiveDate: string;
   expiryDate: string;
   premiumAmount: number; // Cost in USD
@@ -175,26 +176,68 @@ export interface StudentInsurance {
   medicalConditions: string;
   currentMedications: string;
 
-  // 6. Claim Information (ព័ត៌មានស្នើសុំសំណង)
-  claimDate?: string;
-  claimDescription?: string;
-  claimPlace?: string;
-  claimHospital?: string;
-  claimExpenseAmount?: number;
-  claimDocuments?: string; // descriptive text or attached files info
+  // 6. Claim Information & Accident Details (ព័ត៌មានលំអិតនៃគ្រោះថ្នាក់)
+  claimDate?: string; // កាលបរិច្ឆេទ Date
+  claimTime?: string; // ពេលវេលា Time
+  claimTimeAmPm?: 'am' | 'pm'; // am/pm
+  claimPlace?: string; // ទីកន្លែងគ្រោះថ្នាក់ Where the accident occurred
+  claimHospital?: string; // មន្ទីរពេទ្យសម្រាកព្យាបាល Hospital used
+  claimDescription?: string; // គ្រោះថ្នាក់កើតឡើងយ៉ាងដូចម្តេច How the accident occurred
+  injuryCircumstances?: string; // ព័ត៌មានលម្អិតហេតុការណ៍ដែលនាំអោយមានរបួស Give detail of circumstances in which injury was sustained
+  
+  // Claim Amount
+  claimAmountRiel?: string; // ចំនួនទឹកប្រាក់ជាលុយខ្មែរ (Khmer, Riel)
+  claimExpenseAmount?: number; // ចំនួនទឹកប្រាក់ជាលុយដុល្លារអាមេរិក (US Dollar, $)
+  claimDocuments?: string;
 
-  // 7. Declaration & Signature (ការបញ្ជាក់ និងហត្ថលេខា)
+  // Prior claim history
+  previouslyClaimed?: 'Yes' | 'No'; // តើធ្លាប់ធ្វើការទាមទារសំណងបែបនេះទេ? Have you previously claimed?
+  previouslyClaimedDetails?: string; // បើធ្លាប់សូមផ្តល់ព័ត៌មានលម្អិត If yes, please give details
+
+  // 7. Supporting documents checklist
+  docStudentInsuranceCard?: boolean; // 1. Student Insurance Card
+  docPoliceReport?: boolean; // 2. Police report of accident (Seriously Traffic Accident)
+  docDeathCertificate?: boolean; // 3. Death certificate by Officer of Government (For death benefit claim)
+  docMedicalReport?: boolean; // 4. Medical report on Student's illness by Legal Doctor (to certify disablement)
+  docMedicalInvoice?: boolean; // 5. Medical certificate and original invoice (for claiming medical expense reimbursement)
+
+  // 8. Declaration & Claimant Signature
   studentSigned: boolean;
   studentSignatureName?: string;
   parentSigned: boolean;
   parentSignatureName?: string;
   schoolRepresentativeSigned: boolean;
   schoolRepresentativeName?: string;
-  declarationDate: string;
+  declarationDate: string; // Date of Claimant signature
 
-  // 8. Office Use Only (សម្រាប់ការិយាល័យ)
-  receivedBy: string;
-  dateReceived: string;
+  claimantSignatureName?: string; // ហត្ថលេខាអ្នកទាមទារសំណង Name
+  claimantSignatureDate?: string; // កាលបរិច្ឆេទ Date
+
+  // 9. Central Office / Administration Routing & Approvals
+  dateSubmittedToCentral?: string; // ថ្ងៃខែឆ្នាំបញ្ជូនមកការិយាល័យរដ្ឋបាលកណ្តាល
+  dateReceivedByCentral?: string; // ថ្ងៃខែឆ្នាំបានទទួលដោយការិយាល័យរដ្ឋបាលកណ្តាល
+  
+  // Sent by (បញ្ជូនដោយ)
+  sentByName?: string;
+  sentByPosition?: string;
+  sentBySigned?: boolean;
+
+  // Received by (ទទួលដោយ)
+  receivedBy: string; // ឈ្មោះ (keep name receivedBy compatibility)
+  receivedByPosition?: string;
+  receivedBySigned?: boolean;
+  dateReceived: string; // compatibility
+
+  // Approved by 1 (អនុម័តដោយ)
+  approved1Name?: string;
+  approved1Position?: string;
+  approved1Signed?: boolean;
+
+  // Approved by 2 (អនុម័តដោយ)
+  approved2Name?: string;
+  approved2Position?: string;
+  approved2Signed?: boolean;
+
   claimStatus: InsuranceStatus;
   officeRemarks?: string;
 }

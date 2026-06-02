@@ -185,7 +185,7 @@ export default function App() {
     <div className="min-h-screen bg-emerald-50/60 text-slate-800 flex flex-col lg:flex-row font-sans selection:bg-amber-100 selection:text-slate-900">
       
       {/* Left Navigation Sidebar (System Menu) - Relocated to viewport left corner */}
-      <aside className="w-full lg:w-[290px] shrink-0 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 p-4 lg:p-6 lg:sticky lg:top-0 lg:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-content shadow-sm">
+      <aside className="w-full lg:w-[290px] shrink-0 bg-slate-100 border-b lg:border-b-0 lg:border-r border-slate-200 p-4 lg:p-6 lg:sticky lg:top-0 lg:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-content shadow-sm">
         <div className="px-3 py-1.5 border-b border-slate-200/70 flex items-center justify-between">
           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
             បញ្ជីគ្រប់គ្រងសាលា (System Menu)
