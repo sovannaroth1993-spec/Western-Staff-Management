@@ -17,12 +17,13 @@ import StudentInsuranceManager from './components/StudentInsuranceManager';
 import FireExtinguisherInspectionManager from './components/FireExtinguisherInspectionManager';
 import AirConditionerInspectionManager from './components/AirConditionerInspectionManager';
 import AdminDocumentationManager from './components/AdminDocumentationManager';
+import OtherAssetsManager from './components/OtherAssetsManager';
 
 import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord } from './types';
 import { DEFAULT_STAFF } from './data/defaultStaff';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen, School, Layers
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -113,7 +114,7 @@ const DEFAULT_ELECTRICITY: ElectricityRecord[] = [
 
 export default function App() {
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'staff' | 'attendance' | 'telegram'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'staff' | 'attendance' | 'telegram'>('dashboard');
 
   // Key Global states representing the workspace data - Hydrated immediately from pre-populated localStorage
   const [staffList, setStaffList] = useState<Staff[]>(() => {
@@ -256,6 +257,19 @@ export default function App() {
               >
                 <HardDrive className="w-4.5 h-4.5 text-emerald-500 fill-emerald-500/15" />
                 <span className="flex-1">បញ្ជីទ្រព្យសម្បត្តិ (Fixed Asset)</span>
+              </button>
+
+              {/* Tab 1.85: Other Classroom & Specialty Room Material & Assets */}
+              <button
+                onClick={() => setActiveTab('otherassets')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
+                  activeTab === 'otherassets'
+                    ? 'bg-slate-900 text-indigo-400 shadow-md shadow-slate-900/10'
+                    : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100/70'
+                }`}
+              >
+                <School className="w-4.5 h-4.5 text-indigo-500 fill-indigo-500/15" />
+                <span className="flex-1">សម្ភារៈបន្ទប់រៀន និងជំនាញ (Other Assets)</span>
               </button>
 
               {/* Tab 1.9: Student Insurance */}
@@ -407,6 +421,10 @@ export default function App() {
 
               {activeTab === 'fixedassets' && (
                 <FixedAssetManager />
+              )}
+
+              {activeTab === 'otherassets' && (
+                <OtherAssetsManager />
               )}
 
               {activeTab === 'insurance' && (

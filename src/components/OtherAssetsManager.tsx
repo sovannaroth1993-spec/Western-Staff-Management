@@ -1,0 +1,1111 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from 'react';
+import { 
+  Home, Monitor, Music, Shield, Dumbbell, Sofa, Search, PlusCircle, Edit2, Trash2, 
+  X, Check, AlertTriangle, Download, Info, FileText, BarChart3, Settings, RefreshCw, 
+  Camera, Layers, School, ShoppingBag, Eye, Printer, Upload, CheckSquare, Sparkles, Send
+} from 'lucide-react';
+
+export type RoomCategory = 'Classroom' | 'ComputerRoom' | 'PianoRoom' | 'DanceRoom' | 'HomeEco';
+
+export const ROOM_CATEGORIES_KM: Record<RoomCategory, string> = {
+  Classroom: 'នៅក្នុងបន្ទប់រៀន (Classroom)',
+  ComputerRoom: 'បន្ទប់កុំព្យូទ័រ (Computer Room)',
+  PianoRoom: 'បន្ទប់ព្យាណូ (Piano Room)',
+  DanceRoom: 'បន្ទប់រាំ (Dance Room)',
+  HomeEco: 'Home-Eco Room'
+};
+
+export const ROOM_CATEGORIES_EMOJI: Record<RoomCategory, string> = {
+  Classroom: '🏫',
+  ComputerRoom: '💻',
+  PianoRoom: '🎹',
+  DanceRoom: '💃',
+  HomeEco: '🍳'
+};
+
+export type AssetCondition = 'Operational' | 'Maintenance' | 'Broken';
+
+export const CONDITION_STATUS_KM: Record<AssetCondition, { label: string; color: string; bg: string }> = {
+  Operational: { label: 'អាចប្រើប្រាស់បានធម្មតា (Operational)', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', bg: 'bg-emerald-500' },
+  Maintenance: { label: 'កំពុងជួសជុល/ថែទាំ (Maintenance)', color: 'text-amber-700 bg-amber-50 border-amber-200', bg: 'bg-amber-500' },
+  Broken: { label: 'ខូច/មិនអាចប្រើបាន (Broken)', color: 'text-rose-700 bg-rose-50 border-rose-200', bg: 'bg-rose-500' }
+};
+
+export interface OtherAsset {
+  id: string; // e.g., WIS-OTH-001
+  name: string; // Name of material/equipment
+  roomCategory: RoomCategory;
+  specificRoom: string; // specific room name/number (e.g., "Room 204", "IT Lab B")
+  brand: string; // Brand (e.g., Yamaha, Singer, Dell)
+  model: string; // Model info / Specification
+  quantity: number; // Qty of items
+  unit: string; // Unit (e.g., "គ្រឿង", "ឈុត", "ផ្ទាំង")
+  assignedStaff: string; // Staff in charge
+  condition: AssetCondition;
+  purchaseDate: string; // YYYY-MM-DD
+  costUsd: number; // Price in USD
+  serialNumber?: string; // Serial / code
+  notes?: string;
+}
+
+const DEFAULT_OTHER_ASSETS: OtherAsset[] = [
+  {
+    id: 'WIS-OTH-001',
+    name: 'ព្យាណូ Yamaha Upright Piano',
+    roomCategory: 'PianoRoom',
+    specificRoom: 'បន្ទប់ព្យាណូ ជាន់ទី២ (Piano Lab 1)',
+    brand: 'Yamaha',
+    model: 'U1 PE 121cm',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'CHAN Samoul',
+    condition: 'Operational',
+    purchaseDate: '2024-11-20',
+    costUsd: 4800,
+    serialNumber: 'Y-6482103',
+    notes: 'ព្យាណូអាជីពសម្រាប់គ្រូបង្រៀន និងសិស្សអនុវត្តផ្ទាល់'
+  },
+  {
+    id: 'WIS-OTH-002',
+    name: 'តុ និងកៅអីសិស្សឈើមាំទ្វេដង',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់រៀន Room 204 (ជាន់ទី២)',
+    brand: 'Local Craft',
+    model: 'WIS-WDSK-24',
+    quantity: 15,
+    unit: 'ឈុត',
+    assignedStaff: 'Nouth Sreypov',
+    condition: 'Operational',
+    purchaseDate: '2024-08-10',
+    costUsd: 120,
+    serialNumber: 'N/A',
+    notes: 'ឈុតតុរៀនដែកស្វិតស្រោបឈើកៅស៊ូធន់មិនងាយរឹល'
+  },
+  {
+    id: 'WIS-OTH-003',
+    name: 'ម៉ាស៊ីនដេរអគ្គិសនី Singer Heavy Duty',
+    roomCategory: 'HomeEco',
+    specificRoom: 'បន្ទប់ Home-Eco (ជាន់ទី១)',
+    brand: 'Singer',
+    model: 'Heavy Duty 4452',
+    quantity: 5,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Khorn Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2025-01-15',
+    costUsd: 320,
+    serialNumber: 'SGR-884210',
+    notes: 'សម្រាប់ម៉ោងការងារផ្ទះ (Home Economics class) រៀនកាត់ដេរ'
+  },
+  {
+    id: 'WIS-OTH-004',
+    name: 'កញ្ចក់រាំពន្លឺជញ្ជាំងកញ្ចក់ធំធន់ខ្ពស់',
+    roomCategory: 'DanceRoom',
+    specificRoom: 'បន្ទប់រាំអាគារតន្ត្រី ជាន់ទី៣',
+    brand: 'ClearGlass',
+    model: 'CG-Mirror-2m-5m',
+    quantity: 1,
+    unit: 'ផ្ទាំង',
+    assignedStaff: 'Sok Vichea',
+    condition: 'Operational',
+    purchaseDate: '2024-09-05',
+    costUsd: 720,
+    serialNumber: 'N/A',
+    notes: 'កញ្ចក់ឆ្លុះពេញតួខ្លួនសម្រាប់សិស្សរៀនក្បាច់រាំ និងរបាំប្រពៃណី'
+  },
+  {
+    id: 'WIS-OTH-005',
+    name: 'កុំព្យូទ័រ All-in-One PC HP ProOne',
+    roomCategory: 'ComputerRoom',
+    specificRoom: 'បន្ទប់កុំព្យូទ័រ IT Lab-A',
+    brand: 'HP',
+    model: 'ProOne 440 G9 AIO',
+    quantity: 24,
+    unit: 'គ្រឿង',
+    assignedStaff: 'LOUNG Veasna',
+    condition: 'Operational',
+    purchaseDate: '2024-10-02',
+    costUsd: 680,
+    serialNumber: 'CNG2480LQ2',
+    notes: 'កុំព្យូទ័រសម្រាប់ម៉ោងពិសោធន៍បច្ចេកវិទ្យាព័ត៌មាន (IT Class)'
+  },
+  {
+    id: 'WIS-OTH-006',
+    name: 'ឧបករណ៍បំពងសំឡេងរបាំ Marshall Bluetooth',
+    roomCategory: 'DanceRoom',
+    specificRoom: 'បន្ទប់រាំអាគារតន្ត្រី ជាន់ទី៣',
+    brand: 'Marshall',
+    model: 'Woburn III Metallic',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Sok Vichea',
+    condition: 'Maintenance',
+    purchaseDate: '2025-02-10',
+    costUsd: 499,
+    serialNumber: 'MSH-99210B',
+    notes: 'ឧបករណ៍ដើរមិនសូវលឺសំលេង និងសឹកប៊ូតុងកុងតាក់ កំពុងបញ្ជូនទៅហាងបចេ្ចកទេសឆែក'
+  },
+  {
+    id: 'WIS-OTH-007',
+    name: 'ឡដុតនំអគ្គិសនីជំនាញ Electrolux Combo',
+    roomCategory: 'HomeEco',
+    specificRoom: 'បន្ទប់ Home-Eco (ជាន់ទី១)',
+    brand: 'Electrolux',
+    model: 'EOT40DBD 40 Liters',
+    quantity: 4,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Khorn Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2024-09-12',
+    costUsd: 145,
+    serialNumber: 'ELX-20240901',
+    notes: 'សម្រាប់ម៉ោងការងារផ្ទះ រៀនធ្វើនំ និងវិទ្យាសាស្ត្រអាហារ'
+  },
+  {
+    id: 'WIS-OTH-008',
+    name: 'កាសរៀនភាសាស្តាប់ និងនិយាយ Philips',
+    roomCategory: 'ComputerRoom',
+    specificRoom: 'បន្ទប់កុំព្យូទ័រ IT Lab-B',
+    brand: 'Philips',
+    model: 'SHM1900 Over-Ear',
+    quantity: 35,
+    unit: 'គ្រឿង',
+    assignedStaff: 'LOUNG Veasna',
+    condition: 'Broken',
+    purchaseDate: '2024-05-18',
+    costUsd: 22,
+    serialNumber: 'N/A',
+    notes: 'សិស្សទាញខ្លាំងដាច់ខ្សែខាងឆ្វេង សរុបរលាត់ និងស្ពឹកខ្សែកាស ៦ គ្រឿង'
+  },
+  {
+    id: 'WIS-OTH-009',
+    name: 'ក្តារខៀនម៉ាញេទិកទំនើបសរសេរហ្វឺត',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់រៀន Room 102 (ជាន់ទី១)',
+    brand: 'SmartBoard',
+    model: 'SB-120x240cm',
+    quantity: 2,
+    unit: 'ផ្ទាំង',
+    assignedStaff: 'Chan Thida',
+    condition: 'Operational',
+    purchaseDate: '2024-08-15',
+    costUsd: 85,
+    serialNumber: 'N/A',
+    notes: 'ក្តារខៀនម៉ាញេទិកងាយស្រួលជូតសម្អាត គិតកម្រិតស្តង់ដារអនាម័យ'
+  }
+];
+
+export default function OtherAssetsManager() {
+  const [assets, setAssets] = useState<OtherAsset[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<RoomCategory | 'All'>('All');
+  const [filterCondition, setFilterCondition] = useState<AssetCondition | 'All'>('All');
+  
+  // Modals and Toasts
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<OtherAsset | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'danger' | 'info' } | null>(null);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkCsvText, setBulkCsvText] = useState('');
+
+  // Form fields
+  const [formId, setFormId] = useState('');
+  const [formName, setFormName] = useState('');
+  const [formRoomCategory, setFormRoomCategory] = useState<RoomCategory>('Classroom');
+  const [formSpecificRoom, setFormSpecificRoom] = useState('');
+  const [formBrand, setFormBrand] = useState('');
+  const [formModel, setFormModel] = useState('');
+  const [formQuantity, setFormQuantity] = useState(1);
+  const [formUnit, setFormUnit] = useState('គ្រឿង');
+  const [formAssignedStaff, setFormAssignedStaff] = useState('');
+  const [formCondition, setFormCondition] = useState<AssetCondition>('Operational');
+  const [formPurchaseDate, setFormPurchaseDate] = useState('');
+  const [formCostUsd, setFormCostUsd] = useState(0);
+  const [formSerialNumber, setFormSerialNumber] = useState('');
+  const [formNotes, setFormNotes] = useState('');
+
+  // Local storage synchronization
+  useEffect(() => {
+    const saved = localStorage.getItem('wis_other_assets');
+    if (saved) {
+      try {
+        setAssets(JSON.parse(saved));
+      } catch (e) {
+        setAssets(DEFAULT_OTHER_ASSETS);
+      }
+    } else {
+      setAssets(DEFAULT_OTHER_ASSETS);
+      localStorage.setItem('wis_other_assets', JSON.stringify(DEFAULT_OTHER_ASSETS));
+    }
+  }, []);
+
+  const saveToLocalStorage = (newAssets: OtherAsset[]) => {
+    setAssets(newAssets);
+    localStorage.setItem('wis_other_assets', JSON.stringify(newAssets));
+  };
+
+  const triggerToast = (message: string, type: 'success' | 'danger' | 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingAsset(null);
+    const nextIdNum = assets.length > 0 
+      ? Math.max(...assets.map(a => {
+          const match = a.id.match(/WIS-OTH-(\d+)/);
+          return match ? parseInt(match[1]) : 0;
+        })) + 1 
+      : 1;
+    const formattedId = `WIS-OTH-${String(nextIdNum).padStart(3, '0')}`;
+    
+    setFormId(formattedId);
+    setFormName('');
+    setFormRoomCategory('Classroom');
+    setFormSpecificRoom('');
+    setFormBrand('');
+    setFormModel('');
+    setFormQuantity(1);
+    setFormUnit('គ្រឿង');
+    setFormAssignedStaff('');
+    setFormCondition('Operational');
+    setFormPurchaseDate(new Date().toISOString().split('T')[0]);
+    setFormCostUsd(0);
+    setFormSerialNumber('');
+    setFormNotes('');
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (asset: OtherAsset) => {
+    setEditingAsset(asset);
+    setFormId(asset.id);
+    setFormName(asset.name);
+    setFormRoomCategory(asset.roomCategory);
+    setFormSpecificRoom(asset.specificRoom);
+    setFormBrand(asset.brand || '');
+    setFormModel(asset.model || '');
+    setFormQuantity(asset.quantity || 1);
+    setFormUnit(asset.unit || 'គ្រឿង');
+    setFormAssignedStaff(asset.assignedStaff || '');
+    setFormCondition(asset.condition || 'Operational');
+    setFormPurchaseDate(asset.purchaseDate || '');
+    setFormCostUsd(asset.costUsd || 0);
+    setFormSerialNumber(asset.serialNumber || '');
+    setFormNotes(asset.notes || '');
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteAsset = (id: string) => {
+    if (window.confirm('តើអ្នកពិតជាចង់លុបសម្ភារៈនេះចេញពីបញ្ជីមែនទេ? (Are you sure you want to delete this?)')) {
+      const updated = assets.filter(a => a.id !== id);
+      saveToLocalStorage(updated);
+      triggerToast('លុបសម្ភារៈជោគជ័យ!', 'success');
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName.trim() || !formSpecificRoom.trim()) {
+      triggerToast('សូមបំពេញព័ត៌មានចាំបាច់ឲ្យបានគ្រប់គ្រាន់!', 'danger');
+      return;
+    }
+
+    const payload: OtherAsset = {
+      id: formId,
+      name: formName.trim(),
+      roomCategory: formRoomCategory,
+      specificRoom: formSpecificRoom.trim(),
+      brand: formBrand.trim(),
+      model: formModel.trim(),
+      quantity: Number(formQuantity),
+      unit: formUnit.trim() || 'គ្រឿង',
+      assignedStaff: formAssignedStaff.trim(),
+      condition: formCondition,
+      purchaseDate: formPurchaseDate,
+      costUsd: Number(formCostUsd),
+      serialNumber: formSerialNumber.trim() || 'N/A',
+      notes: formNotes.trim()
+    };
+
+    let updatedList: OtherAsset[] = [];
+    if (editingAsset) {
+      // Update
+      updatedList = assets.map(a => a.id === formId ? payload : a);
+      triggerToast('ធ្វើបច្ចុប្បន្នភាពសម្ភារៈទទួលបានជោគជ័យ!', 'success');
+    } else {
+      // Create new
+      if (assets.some(a => a.id === formId)) {
+        triggerToast(`លខកូដសម្ភារៈ ${formId} មានរួចរាល់ហើយ!`, 'danger');
+        return;
+      }
+      updatedList = [payload, ...assets];
+      triggerToast('បន្ថែមសម្ភារៈថ្មីដោយជោគជ័យ!', 'success');
+    }
+
+    saveToLocalStorage(updatedList);
+    setIsModalOpen(false);
+  };
+
+  // CSV Export
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Asset Name', 'Room Category', 'Specific Room', 'Brand', 'Model', 'Quantity', 'Unit', 'Assigned Staff', 'Condition', 'Purchase Date', 'Cost (USD)', 'Serial Number', 'Notes'];
+    const rows = assets.map(a => [
+      a.id,
+      a.name,
+      a.roomCategory,
+      a.specificRoom,
+      a.brand,
+      a.model,
+      a.quantity.toString(),
+      a.unit,
+      a.assignedStaff,
+      a.condition,
+      a.purchaseDate,
+      a.costUsd.toString(),
+      a.serialNumber || 'N/A',
+      a.notes || ''
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(','), ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(','))].join('\n');
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `WIS_Other_Room_Assets_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerToast('នាំទិន្នន័យចេញជា (CSV) ជោគជ័យ!', 'success');
+  };
+
+  const handleBulkImport = () => {
+    if (!bulkCsvText.trim()) {
+      triggerToast('សូមបញ្ចូលទិន្នន័យ CSV ជាមុនសិន!', 'danger');
+      return;
+    }
+
+    try {
+      const lines = bulkCsvText.split('\n');
+      const newAssets: OtherAsset[] = [];
+      let parsedCount = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || i === 0 && line.toLowerCase().includes('id,asset')) continue; // Skip header
+
+        // Simple CSV splitting (considering quoted values)
+        const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+        const cleanFields = matches.map(f => f.replace(/^"|"$/g, '').trim());
+
+        if (cleanFields.length >= 7) {
+          const id = cleanFields[0] || `WIS-OTH-IMP-${Math.floor(Math.random() * 10000)}`;
+          const name = cleanFields[1] || 'Unknown Material';
+          const roomCategoryRaw = cleanFields[2] as RoomCategory;
+          const roomCategory = ['Classroom', 'ComputerRoom', 'PianoRoom', 'DanceRoom', 'HomeEco'].includes(roomCategoryRaw) 
+            ? roomCategoryRaw 
+            : 'Classroom';
+          const specificRoom = cleanFields[3] || 'General Room';
+          const brand = cleanFields[4] || '';
+          const model = cleanFields[5] || '';
+          const quantity = parseInt(cleanFields[6]) || 1;
+          const unit = cleanFields[7] || 'គ្រឿង';
+          const assignedStaff = cleanFields[8] || '';
+          const conditionRaw = cleanFields[9] as AssetCondition;
+          const condition = ['Operational', 'Maintenance', 'Broken'].includes(conditionRaw) ? conditionRaw : 'Operational';
+          const purchaseDate = cleanFields[10] || new Date().toISOString().split('T')[0];
+          const costUsd = parseFloat(cleanFields[11]) || 0;
+          const serialNumber = cleanFields[12] || 'N/A';
+          const notes = cleanFields[13] || '';
+
+          newAssets.push({
+            id,
+            name,
+            roomCategory,
+            specificRoom,
+            brand,
+            model,
+            quantity,
+            unit,
+            assignedStaff,
+            condition,
+            purchaseDate,
+            costUsd,
+            serialNumber,
+            notes
+          });
+          parsedCount++;
+        }
+      }
+
+      if (parsedCount > 0) {
+        // Merge with existing avoiding complete duplication
+        const existingIds = new Set(assets.map(a => a.id));
+        const merged = [...assets];
+        newAssets.forEach(item => {
+          if (!existingIds.has(item.id)) {
+            merged.push(item);
+          }
+        });
+        saveToLocalStorage(merged);
+        setShowBulkModal(false);
+        setBulkCsvText('');
+        triggerToast(`នាំចូលសម្ភារៈជោគជ័យចំនួន ${parsedCount} មុខ!`, 'success');
+      } else {
+        triggerToast('ពុំមានទិន្នន័យសមស្របដែលត្រូវបានអានទេ!', 'danger');
+      }
+    } catch (err) {
+      triggerToast('ទម្រង់ទិន្នន័យមិនត្រឹមត្រូវ សូមពិនិត្យខ្សែផ្ទេរ CSV ម្តងទៀត!', 'danger');
+    }
+  };
+
+  // Filter calculation
+  const filteredAssets = assets.filter(item => {
+    const matchesSearch = 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.specificRoom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.serialNumber && item.serialNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.assignedStaff && item.assignedStaff.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesCategory = filterCategory === 'All' || item.roomCategory === filterCategory;
+    const matchesCondition = filterCondition === 'All' || item.condition === filterCondition;
+
+    return matchesSearch && matchesCategory && matchesCondition;
+  });
+
+  // KPI count statistics
+  const statTotalQty = assets.reduce((sum, item) => sum + item.quantity, 0);
+  const statTotalCost = assets.reduce((sum, item) => sum + (item.costUsd * item.quantity), 0);
+  const statOperational = assets.filter(a => a.condition === 'Operational').reduce((sum, item) => sum + item.quantity, 0);
+  const statMaintenance = assets.filter(a => a.condition === 'Maintenance').reduce((sum, item) => sum + item.quantity, 0);
+  const statBroken = assets.filter(a => a.condition === 'Broken').reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <div className="space-y-6 font-content" id="other-assets-manager">
+      
+      {/* Toast Alert Popup */}
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4.5 py-3 rounded-2xl shadow-xl transition-all border text-xs font-bold animate-bounce ${
+          toast.type === 'success' 
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-250' 
+            : 'bg-rose-50 text-rose-800 border-rose-250'
+        }`}>
+          {toast.type === 'success' ? <Check className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-rose-600" />}
+          <span>{toast.message}</span>
+        </div>
+      )}
+
+      {/* Main Title Banner */}
+      <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl px-6 py-5.5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <School className="w-6 h-6 text-indigo-400" />
+            <h2 className="text-lg sm:text-xl font-black font-moul tracking-wide">គ្រប់គ្រងសម្ភារៈក្នុងបន្ទប់រៀន និងបន្ទប់ជំនាញ</h2>
+          </div>
+          <p className="text-slate-350 text-xs sm:text-[13px] font-medium leading-relaxed mt-1">
+            សៀវភៅបញ្ជីគ្រប់គ្រងគ្រឿងសង្ហារឹម សម្ភារៈជំនាញ កុំព្យូទ័រ ព្យាណូ គ្រឿងរាំ និងគ្រឿងផ្ទះបាយ (Home-Eco)
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          <button
+            onClick={handleOpenAddModal}
+            className="px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-555 text-white rounded-xl text-xs sm:text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-950/20"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>បន្ថែមសម្ភារៈថ្មី (Add Material)</span>
+          </button>
+          <button
+            onClick={() => setShowBulkModal(true)}
+            className="px-4.5 py-2.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-xl text-xs sm:text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border border-indigo-500/30"
+          >
+            <Upload className="w-4 h-4" />
+            <span>នាំចូលច្រើន (Bulk Import)</span>
+          </button>
+          <button
+            onClick={handleExportCSV}
+            className="px-4.5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs sm:text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border border-white/15"
+          >
+            <Download className="w-4 h-4" />
+            <span>ទាញយក CSV</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Dashboard KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
+        {/* Card 1: Total Assets */}
+        <div className="bg-white border border-slate-200/85 p-4 rounded-2xl flex items-center gap-3.5 shadow-2xs">
+          <div className="w-11 h-11 bg-slate-100 rounded-xl flex items-center justify-center shrink-0">
+            <Layers className="w-5 h-5 text-slate-700" />
+          </div>
+          <div>
+            <h5 className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">សម្ភារៈសរុប</h5>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg sm:text-xl font-black font-mono text-slate-800">{assets.length}</span>
+              <span className="text-[9.5px] text-slate-400 font-bold">មុខ</span>
+            </div>
+            <p className="text-[9.5px] text-slate-500 font-semibold mt-0.5">បរិមាណ៖ <span className="font-mono font-black">{statTotalQty}</span> គ្រឿង/កំប្លេ</p>
+          </div>
+        </div>
+
+        {/* Card 2: Cost summary */}
+        <div className="bg-white border border-slate-200/85 p-4 rounded-2xl flex items-center gap-3.5 shadow-2xs">
+          <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+            <ShoppingBag className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <h5 className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">តម្លៃវិនិយោគសរុប</h5>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[11px] font-black text-emerald-600">$</span>
+              <span className="text-lg sm:text-xl font-black font-mono text-emerald-600">{statTotalCost.toLocaleString('en-US')}</span>
+            </div>
+            <p className="text-[9.5px] text-slate-505 text-emerald-600 font-extrabold mt-0.5">គិតថ្លៃដើមទិញសរុប</p>
+          </div>
+        </div>
+
+        {/* Card 3: Operational */}
+        <div className="bg-white border border-slate-200/85 p-4 rounded-2xl flex items-center gap-3.5 shadow-2xs">
+          <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+            <span className="text-lg">✅</span>
+          </div>
+          <div>
+            <h5 className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider text-emerald-700">មានភាពល្អប្រសើរ</h5>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg sm:text-xl font-black font-mono text-emerald-700">{statOperational}</span>
+              <span className="text-[9.5px] text-slate-400 font-bold">គ្រឿង</span>
+            </div>
+            <p className="text-[9.5px] text-slate-400 font-semibold mt-0.5">រួចរាល់សម្រាប់ប្រើប្រាស់</p>
+          </div>
+        </div>
+
+        {/* Card 4: In maintenance */}
+        <div className="bg-white border border-slate-200/85 p-4 rounded-2xl flex items-center gap-3.5 shadow-2xs">
+          <div className="w-11 h-11 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+            <span className="text-lg">🛠️</span>
+          </div>
+          <div>
+            <h5 className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider text-amber-700">កំពុងថែទាំជួសជុល</h5>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg sm:text-xl font-black font-mono text-amber-700">{statMaintenance}</span>
+              <span className="text-[9.5px] text-slate-400 font-bold">គ្រឿង</span>
+            </div>
+            <p className="text-[9.5px] text-slate-400 font-semibold mt-0.5">សេវាកាត់ដេរ ឬឡដុត</p>
+          </div>
+        </div>
+
+        {/* Card 5: Broken */}
+        <div className="bg-white border border-slate-200/85 p-4 rounded-2xl flex items-center gap-3.5 shadow-2xs">
+          <div className="w-11 h-11 bg-rose-50 rounded-xl flex items-center justify-center shrink-0">
+            <span className="text-lg">❌</span>
+          </div>
+          <div>
+            <h5 className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider text-rose-700">ខូច/ស្រុតគុណភាព</h5>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg sm:text-xl font-black font-mono text-rose-700">{statBroken}</span>
+              <span className="text-[9.5px] text-slate-400 font-bold">គ្រឿង</span>
+            </div>
+            <p className="text-[9.5px] text-slate-400 font-semibold mt-0.5">ត្រូវការផ្លាស់ប្តូរថ្មី</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Interactive Quick Rooms Select Bar */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4.5 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <span className="text-xs font-black text-slate-550 mr-1.5">បន្ទប់ជំនាញ៖</span>
+          <button
+            onClick={() => setFilterCategory('All')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+              filterCategory === 'All'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+            }`}
+          >
+            🏡 ទាំងអស់ ({assets.length})
+          </button>
+          
+          {(Object.keys(ROOM_CATEGORIES_KM) as RoomCategory[]).map(cat => {
+            const count = assets.filter(a => a.roomCategory === cat).length;
+            return (
+              <button
+                key={cat}
+                onClick={() => setFilterCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1 cursor-pointer ${
+                  filterCategory === cat
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-50 hover:bg-slate-150 border border-slate-150 text-slate-700'
+                }`}
+              >
+                <span>{ROOM_CATEGORIES_EMOJI[cat]}</span>
+                <span>{ROOM_CATEGORIES_KM[cat].split(' (')[0]}</span>
+                <span className="font-mono ml-0.5 opacity-75">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Searching input and Status filters */}
+        <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto shrink-0">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="ស្វែងរកសម្ភារៈ ទីតាំង ឬអ្នកគ្រប់គ្រង..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full sm:w-[240px] pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={filterCondition}
+            onChange={(e) => setFilterCondition(e.target.value as AssetCondition | 'All')}
+            className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="All">⚙️ ស្ថានភាព៖ ទាំងអស់</option>
+            <option value="Operational">🟢 ល្អ عادي/ប្រើប្រាស់បាន</option>
+            <option value="Maintenance">🟡 កំពុងជួសជុល</option>
+            <option value="Broken">🔴 ខូចខាត</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Main Grid List of Rooms Assets */}
+      {filteredAssets.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center">
+          <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+            <Layers className="w-7 h-7" />
+          </div>
+          <h4 className="text-sm font-bold text-slate-800">រកមិនឃើញទិន្នន័យសម្ភារៈឡើយ</h4>
+          <p className="text-xs text-slate-400 font-semibold max-w-md mx-auto mt-1 leading-relaxed">
+            ពុំមានសម្ភារៈណាដែលត្រូវគ្នាជាមួយតម្រងស្វែងរករបស់អ្នក ឬមិនទាន់មានទិន្នន័យឡើយ។ សូមសាកល្បងសម្អាតតម្រង ឬបន្ថែមសម្ភារៈថ្មី។
+          </p>
+          <div className="mt-4 flex justify-center gap-2">
+            <button 
+              onClick={() => { setSearchQuery(''); setFilterCategory('All'); setFilterCondition('All'); }}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black px-4 py-2 rounded-xl transition cursor-pointer"
+            >
+              សម្អាតតម្រងទាំងអស់
+            </button>
+            <button 
+              onClick={handleOpenAddModal}
+              className="bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-black px-4 py-2 rounded-xl transition cursor-pointer shadow-sm"
+            >
+              បន្ថែមវិធានការដំបូង
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredAssets.map(asset => {
+            const statusConfig = CONDITION_STATUS_KM[asset.condition] || { label: 'Unknown', color: 'text-slate-750 bg-slate-100 border-slate-200', bg: 'bg-slate-400' };
+            const emoji = ROOM_CATEGORIES_EMOJI[asset.roomCategory] || '📦';
+            const catLabel = ROOM_CATEGORIES_KM[asset.roomCategory] ? ROOM_CATEGORIES_KM[asset.roomCategory].split(' (')[0] : 'សម្ភារៈបន្ទប់រៀន';
+
+            return (
+              <div 
+                key={asset.id} 
+                className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group"
+              >
+                {/* Header portion */}
+                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-start justify-between gap-2 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-sm shrink-0">
+                      {emoji}
+                    </span>
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-indigo-600 font-mono tracking-wider">{asset.id}</span>
+                      <span className="block text-[9.5px] font-extrabold text-slate-400 mt-0.5">{catLabel}</span>
+                    </div>
+                  </div>
+
+                  <span className={`px-2 py-0.5 rounded-md text-[9px] font-extrabold border shrink-0 ${statusConfig.color}`}>
+                    {statusConfig.label.split(' (')[0]}
+                  </span>
+                </div>
+
+                {/* Body Details */}
+                <div className="p-4 flex-grow space-y-3">
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 leading-snug group-hover:text-indigo-600 transition-colors">
+                      {asset.name}
+                    </h4>
+                    {asset.serialNumber && asset.serialNumber !== 'N/A' && (
+                      <span className="text-[9.5px] font-mono text-slate-400 font-bold block mt-1">S/N: {asset.serialNumber}</span>
+                    )}
+                  </div>
+
+                  {/* Meta Grid info */}
+                  <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-2.5 text-[10px] border border-slate-150 font-semibold text-slate-600">
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">📍 ទីតាំងខ្លះៗ៖</span>
+                      <span className="font-extrabold text-slate-800 truncate block hover:text-indigo-600" title={asset.specificRoom}>
+                        {asset.specificRoom}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block mb-0.5">👤 អ្នកទទួលខុសត្រូវ៖</span>
+                      <span className="font-extrabold text-slate-850 block truncate">
+                        {asset.assignedStaff || 'គ្មាន (Not assigned)'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Brand and spec detail lists */}
+                  <div className="text-[10.5px] space-y-1 border-t border-slate-100 pt-2.5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-450 font-bold">ប្រ៊េន / ម៉ូដែល៖</span>
+                      <span className="font-extrabold text-slate-750">
+                        {asset.brand ? `${asset.brand} - ${asset.model}` : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-450 font-bold">បរិមាណដែលមាន៖</span>
+                      <span className="font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.2 rounded font-mono text-[10px]">
+                        {asset.quantity} {asset.unit}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-450 font-bold">តម្លៃក្នុងមួយឯកតា៖</span>
+                      <span className="font-black text-slate-800 font-mono">${asset.costUsd?.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-450 font-semibold">ថ្ងៃចុះបញ្ជីទិញ៖</span>
+                      <span className="font-semibold text-slate-600 font-mono text-[9px]">{asset.purchaseDate || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  {asset.notes && (
+                    <div className="bg-slate-50 border-l-2 border-indigo-300 rounded p-2 text-[10px] text-slate-500 font-medium leading-relaxed italic">
+                      📝 {asset.notes}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Controls */}
+                <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
+                  <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                    <span className="text-[9px] font-bold text-slate-400">សរុបតម្លៃ៖</span>
+                    <span className="font-black text-slate-700 font-mono">${(asset.costUsd * asset.quantity).toLocaleString()}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenEditModal(asset)}
+                      className="p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 rounded-lg transition shrink-0 cursor-pointer"
+                      title="កែសម្រួលព័ត៌មាន (Edit)"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAsset(asset.id)}
+                      className="p-1.5 bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 rounded-lg transition shrink-0 cursor-pointer"
+                      title="លុបចោល (Delete)"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Primary Add/Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-250 rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden flex flex-col my-8 animate-fade-in text-xs sm:text-xs">
+            <div className="bg-indigo-950 text-white px-5 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <School className="w-5 h-5 text-indigo-300" />
+                <h3 className="font-moul font-black text-xs sm:text-sm tracking-wide">
+                  {editingAsset ? 'កែសម្រួលទិន្នន័យសម្ភារៈ' : 'បន្ថែមសម្ភារៈបន្ទប់រៀន ឬវិជ្ជាជីវៈថ្មី'}
+                </h3>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-white/75 hover:text-white p-1 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="overflow-y-auto p-5 space-y-4 max-h-[75vh]">
+              
+              {/* Form Row 1: ID and Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">លេខកូដសម្ភារៈ *</label>
+                  <input
+                    type="text"
+                    value={formId}
+                    onChange={(e) => setFormId(e.target.value)}
+                    required
+                    disabled={!!editingAsset}
+                    className="w-full bg-slate-105 bg-slate-100 text-slate-600 border border-slate-250 rounded-xl p-2.5 font-mono font-bold focus:outline-none"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ឈ្មោះសម្ភារៈ/ឧបករណ៍ *</label>
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="ឈ្មោះឧបករណ៍ (ឧទាហរណ៍៖ ព្យាណូដោតភ្លើង, ម៉ាស៊ីនដេរ...)"
+                    required
+                    className="w-full bg-slate-5.0 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-indigo-550 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Form Row 2: Room Category and Specific Room */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">បន្ទប់ជំនាញធំ *</label>
+                  <select
+                    value={formRoomCategory}
+                    onChange={(e) => setFormRoomCategory(e.target.value as RoomCategory)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black focus:ring-1 focus:ring-indigo-500 text-slate-800"
+                  >
+                    {(Object.keys(ROOM_CATEGORIES_KM) as RoomCategory[]).map(cat => (
+                      <option key={cat} value={cat}>{ROOM_CATEGORIES_EMOJI[cat]} {ROOM_CATEGORIES_KM[cat]}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ទីតាំង និងលេខបន្ទប់ *</label>
+                  <input
+                    type="text"
+                    value={formSpecificRoom}
+                    onChange={(e) => setFormSpecificRoom(e.target.value)}
+                    placeholder="ឧ. បន្ទប់ IT Lab-B, បន្ទប់រាំជាន់ទី៣"
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Form Row 3: Brand & Model */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ម៉ាក / ប្រ៊េន</label>
+                  <input
+                    type="text"
+                    value={formBrand}
+                    onChange={(e) => setFormBrand(e.target.value)}
+                    placeholder="ឧទាហរណ៍៖ Yamaha, Singer, Sony"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ស៊េរី / ម៉ូដែល</label>
+                  <input
+                    type="text"
+                    value={formModel}
+                    onChange={(e) => setFormModel(e.target.value)}
+                    placeholder="ឧទាហរណ៍៖ Model 2024, EOT40D ..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Form Row 4: Quantity and Unit and Cost */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">បរិមាណ (Qty) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formQuantity}
+                    onChange={(e) => setFormQuantity(Number(e.target.value))}
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black text-center font-mono focus:ring-1 focus:ring-indigo-550"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ឯកតារាប់ *</label>
+                  <input
+                    type="text"
+                    value={formUnit}
+                    onChange={(e) => setFormUnit(e.target.value)}
+                    placeholder="ឧ. គ្រឿង, ឈុត, កំប្លេ"
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-center focus:outline-none focus:ring-1 focus:ring-indigo-550"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">តម្លៃក្នុងមួយឯកតា (USD) *</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-extrabold text-slate-400">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formCostUsd}
+                      onChange={(e) => setFormCostUsd(Number(e.target.value))}
+                      required
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-6.5 p-2.5 font-mono font-black text-right focus:outline-none focus:ring-1 focus:ring-indigo-505"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Row 5: Serial Number, Condition, and Purchase Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">លេខស៊េរី (Serial S/N)</label>
+                  <input
+                    type="text"
+                    value={formSerialNumber}
+                    onChange={(e) => setFormSerialNumber(e.target.value)}
+                    placeholder="N/A"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ស្ថានភាពសម្ភារៈ *</label>
+                  <select
+                    value={formCondition}
+                    onChange={(e) => setFormCondition(e.target.value as AssetCondition)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="Operational">🟢 ល្អ عادي/ប្រើបានធម្មតា</option>
+                    <option value="Maintenance">🟡 កំពុងថែទាំជួសជុល</option>
+                    <option value="Broken">🔴 ខូច/ស្រុតមិនអាចប្រើបាន</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ថ្ងៃចុះបញ្ជីទិញ *</label>
+                  <input
+                    type="date"
+                    value={formPurchaseDate}
+                    onChange={(e) => setFormPurchaseDate(e.target.value)}
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold font-mono focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Form Row 6: Assigned Staff */}
+              <div>
+                <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">បុគ្គលិកទទួលខុសត្រូវ (Custodian)</label>
+                <input
+                  type="text"
+                  value={formAssignedStaff}
+                  onChange={(e) => setFormAssignedStaff(e.target.value)}
+                  placeholder="បំពេញឈ្មោះគ្រូ ឬជំនួយការរដ្ឋបាល"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-indigo-500 text-slate-750"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">កំណត់សម្គាល់បន្ថែម</label>
+                <textarea
+                  value={formNotes}
+                  onChange={(e) => setFormNotes(e.target.value)}
+                  rows={2}
+                  placeholder="បន្ថែមការណែនាំ ឬការខូចខាតខ្លះៗបើមាន..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold text-xs text-slate-700"
+                />
+              </div>
+
+              {/* Footer Actions inside form */}
+              <div className="bg-slate-50 p-4 border-t border-slate-100 flex justify-end gap-2.5 rounded-b-2xl shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-extrabold rounded-xl border border-slate-200 transition cursor-pointer"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition shadow-md shadow-indigo-100 cursor-pointer"
+                >
+                  រក្សាទុក (Save)
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Import Modal */}
+      {showBulkModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-slate-350 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col text-xs">
+            <div className="bg-indigo-950 text-white px-5 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Upload className="w-5 h-5 text-indigo-400" />
+                <h3 className="font-moul font-normal text-xs sm:text-xs">CSV Bulk Import (សម្ភារៈបន្ទប់រៀន)</h3>
+              </div>
+              <button 
+                onClick={() => setShowBulkModal(false)}
+                className="text-white/75 hover:text-white transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div>
+                <span className="block text-slate-500 font-extrabold text-[10px] uppercase mb-1">របៀបប្រើប្រាស់៖</span>
+                <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+                  អ្នកអាចចម្លងទិន្នន័យពី Excel ឬ CSV ដែលមានជួរឈរតាមលំដាប់លំដោយខាងក្រោម ហើយបិទភ្ជាប់វា (Paste) ក្នុងប្រអប់ខាងក្រោម៖
+                </p>
+                <div className="bg-slate-100 rounded-lg p-2.5 font-mono text-[9px] text-indigo-650 font-semibold select-all select-all mt-1.5 overflow-x-auto leading-relaxed border border-slate-200">
+                  ID, Name, RoomCategory, SpecificRoom, Brand, Model, Quantity, Unit, AssignedStaff, Condition, PurchaseDate, CostUSD, SerialNumber, Notes
+                </div>
+                <p className="text-[9.5px] mt-1 text-amber-600 font-semibold italic">
+                  * Note: RoomCategory values must be exactly: <span className="font-mono">Classroom</span>, <span className="font-mono">ComputerRoom</span>, <span className="font-mono">PianoRoom</span>, <span className="font-mono">DanceRoom</span>, or <span className="font-mono">HomeEco</span>.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-slate-500 font-extrabold text-[10px] uppercase mb-1">បិទភ្ជាប់ចំណងទិន្នន័យ (CSV Raw Text) *</label>
+                <textarea
+                  rows={6}
+                  value={bulkCsvText}
+                  onChange={(e) => setBulkCsvText(e.target.value)}
+                  placeholder="WIS-OTH-010, កៅអីឈើគ្រូ, Classroom, Room 101, Local, Std-Teacher, 1, គ្រឿង, Mr. Samnang, Operational, 2024-10-01, 45, N/A, Row Note"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-[10.5px] leading-relaxed focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 shrink-0">
+                <button
+                  onClick={() => setShowBulkModal(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-200 transition"
+                >
+                  បោះបង់
+                </button>
+                <button
+                  onClick={handleBulkImport}
+                  className="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-black rounded-xl transition shadow-xs"
+                >
+                  យល់ព្រមនាំចូល (Import)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
