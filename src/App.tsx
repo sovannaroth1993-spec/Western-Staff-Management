@@ -269,7 +269,7 @@ export default function App() {
                 }`}
               >
                 <School className="w-4.5 h-4.5 text-indigo-500 fill-indigo-500/15" />
-                <span className="flex-1">សម្ភារៈបន្ទប់រៀន និងជំនាញ (Other Assets)</span>
+                <span className="flex-1">សម្ភារៈបន្ទប់រៀន</span>
               </button>
 
               {/* Tab 1.9: Student Insurance */}

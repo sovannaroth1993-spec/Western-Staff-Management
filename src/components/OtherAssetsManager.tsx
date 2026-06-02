@@ -54,8 +54,549 @@ export interface OtherAsset {
 }
 
 const DEFAULT_OTHER_ASSETS: OtherAsset[] = [
+  // NURSERY (N)
   {
-    id: 'WIS-OTH-001',
+    id: 'WIS-OTH-N01',
+    name: 'តុឈើសិស្សតូចរាងពាក់កណ្តាលរង្វង់ (Nursery Desks)',
+    roomCategory: 'Classroom',
+    specificRoom: 'ថ្នាក់មត្តេយ្យសំបុកកូនឈើ ថ្នាក់ (N)',
+    brand: 'KinderWood',
+    model: 'KW-SemiCircular-2024',
+    quantity: 20,
+    unit: 'តុ',
+    assignedStaff: 'Seng Sreypich',
+    condition: 'Operational',
+    purchaseDate: '2024-09-01',
+    costUsd: 45,
+    serialNumber: 'SGR-TAB-01/20',
+    notes: 'តុឈើជ្រុងសងខាងមូលការពារការប៉ះទង្គិចសម្រាប់កុមារតូច'
+  },
+  {
+    id: 'WIS-OTH-N02',
+    name: 'កៅអីជ័រចម្រុះពណ៌ខ្នាតតូចកុមារ (Nursery Chairs)',
+    roomCategory: 'Classroom',
+    specificRoom: 'ថ្នាក់មត្តេយ្យសំបុកកូនឈើ ថ្នាក់ (N)',
+    brand: 'Toyo Plast',
+    model: 'TY-Kids-Ergo',
+    quantity: 20,
+    unit: 'កៅអី',
+    assignedStaff: 'Seng Sreypich',
+    condition: 'Operational',
+    purchaseDate: '2024-09-01',
+    costUsd: 15,
+    serialNumber: 'SGR-CHR-01/20',
+    notes: 'កៅអីជ័រការពាររបូតគូទសិស្សតូច'
+  },
+  {
+    id: 'WIS-OTH-N03',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន All-in-One PC HP',
+    roomCategory: 'Classroom',
+    specificRoom: 'ថ្នាក់មត្តេយ្យសំបុកកូនឈើ ថ្នាក់ (N)',
+    brand: 'HP',
+    model: 'ProOne 440 G9',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Seng Sreypich',
+    condition: 'Operational',
+    purchaseDate: '2024-10-10',
+    costUsd: 650,
+    serialNumber: 'CNG3458FGG',
+    notes: 'កុំព្យូទ័រគ្រូសម្រាប់បង្ហាញចម្រៀងគំនូរជីវចល'
+  },
+
+  // Kindergarten (K)
+  {
+    id: 'WIS-OTH-K01',
+    name: 'តុឈើសិស្សតូចរាងពាក់កណ្តាលរង្វង់ (Kindergarten)',
+    roomCategory: 'Classroom',
+    specificRoom: 'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់ ថ្នាក់ (K)',
+    brand: 'KinderWood',
+    model: 'KW-SemiCircular-2024',
+    quantity: 20,
+    unit: 'តុ',
+    assignedStaff: 'Hem Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2024-09-01',
+    costUsd: 45,
+    serialNumber: 'KND-TAB-01/20',
+    notes: 'តុឈើវែងសម្រាប់ធ្វើការងារជាក្រុម'
+  },
+  {
+    id: 'WIS-OTH-K02',
+    name: 'កៅអីជ័រចម្រុះពណ៌ខ្នាតតូចកុមារ (Kindergarten)',
+    roomCategory: 'Classroom',
+    specificRoom: 'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់ ថ្នាក់ (K)',
+    brand: 'Toyo Plast',
+    model: 'TY-Kids-Ergo',
+    quantity: 20,
+    unit: 'កៅអី',
+    assignedStaff: 'Hem Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2024-09-01',
+    costUsd: 15,
+    serialNumber: 'KND-CHR-01/20',
+    notes: 'កៅអីជ័រស្រាលងាយស្រួលរៀបចំ'
+  },
+  {
+    id: 'WIS-OTH-K03',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន AIO Dell OptiPlex',
+    roomCategory: 'Classroom',
+    specificRoom: 'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់ ថ្នាក់ (K)',
+    brand: 'Dell',
+    model: 'OptiPlex 7410 AIO',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Hem Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2024-10-12',
+    costUsd: 720,
+    serialNumber: 'DLL-984210B',
+    notes: 'កុំព្យូទ័រសម្រាប់គ្រូកម្រិតមត្តេយ្យ'
+  },
+
+  // GRADE 1 (ថ្នាក់ទី១)
+  {
+    id: 'WIS-OTH-G01A',
+    name: 'តុឈើទំនើបសម្រាប់សិស្ស (Grade 1)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០១ ជាន់ទី២ (Grade 1)',
+    brand: 'SchoolFurn',
+    model: 'SF-Desk-Single',
+    quantity: 20,
+    unit: 'តុ',
+    assignedStaff: 'Long Dalin',
+    condition: 'Operational',
+    purchaseDate: '2024-09-05',
+    costUsd: 35,
+    serialNumber: 'G1-TAB-01/20',
+    notes: 'តុសិស្សទោលជើងដែកថែបក្រាស់'
+  },
+  {
+    id: 'WIS-OTH-G01B',
+    name: 'កៅអីឈើបង្អែកដែកសិស្ស (Grade 1)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០១ ជាន់ទី២ (Grade 1)',
+    brand: 'SchoolFurn',
+    model: 'SF-Chair-Metal',
+    quantity: 20,
+    unit: 'កៅអី',
+    assignedStaff: 'Long Dalin',
+    condition: 'Operational',
+    purchaseDate: '2024-09-05',
+    costUsd: 18,
+    serialNumber: 'G1-CHR-01/20',
+    notes: 'កៅអីអង្គុយស្រួល មិនឈឺខ្នង'
+  },
+  {
+    id: 'WIS-OTH-G01C',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន HP ProOne (Grade 1)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០១ ជាន់ទី២ (Grade 1)',
+    brand: 'HP',
+    model: 'ProOne 440 G9',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Long Dalin',
+    condition: 'Operational',
+    purchaseDate: '2024-10-02',
+    costUsd: 650,
+    serialNumber: 'HPZO1024',
+    notes: 'ប្រព័ន្ធគ្រប់គ្រងមេរៀន និងគំនូរបង្ហាញ'
+  },
+
+  // GRADE 2 (ថ្នាក់ទី២)
+  {
+    id: 'WIS-OTH-G02A',
+    name: 'តុឈើសិស្សវែង និងកៅអីកាងដែក (Grade 2)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០២ ជាន់ទី២ (Grade 2)',
+    brand: 'Standard Furn',
+    model: 'SF-Wood-Double',
+    quantity: 10,
+    unit: 'ឈុត',
+    assignedStaff: 'Chan Sothea',
+    condition: 'Operational',
+    purchaseDate: '2024-09-05',
+    costUsd: 120,
+    serialNumber: 'G2-SET-01/10',
+    notes: 'ឈុតតុវែង និងកៅអីវែងអង្គុយជាគូ (២ នាក់ក្នុង ១ ឈុត ស្មើ ២០ កៅអី)'
+  },
+  {
+    id: 'WIS-OTH-G02B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន Lenovo ThinkCentre',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០២ ជាន់ទី២ (Grade 2)',
+    brand: 'Lenovo',
+    model: 'ThinkCentre Neo 30a',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Chan Sothea',
+    condition: 'Operational',
+    purchaseDate: '2024-10-18',
+    costUsd: 680,
+    serialNumber: 'LNV-885412A',
+    notes: 'កុំព្យូទ័រសម្រាប់គ្រូកត់ត្រារៀនសរសេររបស់សិស្ស'
+  },
+
+  // GRADE 3 (ថ្នាក់ទី៣)
+  {
+    id: 'WIS-OTH-G03A',
+    name: 'តុ-កៅអីឈើសិស្សទោល (Grade 3 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០៣ ជាន់ទី២ (Grade 3)',
+    brand: 'EcoFurn',
+    model: 'EF-Ergo-2024',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Keo Sophea',
+    condition: 'Operational',
+    purchaseDate: '2024-09-02',
+    costUsd: 55,
+    serialNumber: 'G3-SET-01/20',
+    notes: 'ឈុតតុ Ergonomic សម្រាប់សិស្សថ្នាក់ទី៣'
+  },
+  {
+    id: 'WIS-OTH-G03B',
+    name: 'កុំព្យូទ័រយួរដៃគ្រូ Dell Vostro Laptop',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០៣ ជាន់ទី២ (Grade 3)',
+    brand: 'Dell',
+    model: 'Vostro 15 3520',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Keo Sophea',
+    condition: 'Operational',
+    purchaseDate: '2024-09-15',
+    costUsd: 580,
+    serialNumber: 'DLL-VS5482',
+    notes: 'ឡេបថបសម្រាប់គ្រូបន្តទៅបញ្ចាំងស្លាយក្នុងថ្នាក់'
+  },
+
+  // GRADE 4 (ថ្នាក់ទី៤)
+  {
+    id: 'WIS-OTH-G04A',
+    name: 'តុ-កៅអីឈើសិស្សទោល (Grade 4 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០៤ ជាន់ទី២ (Grade 4)',
+    brand: 'EcoFurn',
+    model: 'EF-Ergo-2024',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Vann Sopheak',
+    condition: 'Operational',
+    purchaseDate: '2024-09-02',
+    costUsd: 55,
+    serialNumber: 'G4-SET-01/20',
+    notes: 'តុរៀបជាជួរសម្រាប់សិស្សថ្នាក់ទី៤'
+  },
+  {
+    id: 'WIS-OTH-G04B',
+    name: 'កុំព្យូទ័រគ្រូ AIO Lenovo Corei5',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ២០៤ ជាន់ទី២ (Grade 4)',
+    brand: 'Lenovo',
+    model: 'Neo 30a 24',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Vann Sopheak',
+    condition: 'Operational',
+    purchaseDate: '2024-11-01',
+    costUsd: 690,
+    serialNumber: 'LNV-N784110A',
+    notes: 'កុំព្យូទ័រសម្រាប់គ្រូបង្ហាត់បង្រៀន'
+  },
+
+  // GRADE 5 (ថ្នាក់ទី៥)
+  {
+    id: 'WIS-OTH-G05A',
+    name: 'តុ-កៅអីសិស្សឈើមាំទ្វេដង (Grade 5 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០១ ជាន់ទី៣ (Grade 5)',
+    brand: 'Local Craft',
+    model: 'WIS-WDSK-24',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Ouk Samnang',
+    condition: 'Operational',
+    purchaseDate: '2024-08-10',
+    costUsd: 120,
+    serialNumber: 'G5-SET-01/20',
+    notes: 'ឈុតតុវែង និងកៅអីវែងអង្គុយបាន ២នាក់ ស្មើនឹង ២០ គូ សរុប ៤០ កៅអី'
+  },
+  {
+    id: 'WIS-OTH-G05B',
+    name: 'កុំព្យូទ័រ All-in-One PC HP ProOne (Grade 5)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០១ ជាន់ទី៣ (Grade 5)',
+    brand: 'HP',
+    model: 'ProOne 440 G9',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Ouk Samnang',
+    condition: 'Operational',
+    purchaseDate: '2024-10-02',
+    costUsd: 650,
+    serialNumber: 'HP501025',
+    notes: 'កុំព្យូទ័រគ្រូសម្រាប់គ្រប់គ្រងបណ្តាញមេរៀន Google Classroom'
+  },
+
+  // GRADE 6 (ថ្នាក់ទី៦)
+  {
+    id: 'WIS-OTH-G06A',
+    name: 'តុ-កៅអីសិស្សឈើមាំទ្វេដង (Grade 6 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០២ ជាន់ទី៣ (Grade 6)',
+    brand: 'Local Craft',
+    model: 'WIS-WDSK-24',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Tep Sokha',
+    condition: 'Operational',
+    purchaseDate: '2024-08-10',
+    costUsd: 120,
+    serialNumber: 'G6-SET-01/20',
+    notes: 'តុវែងអង្គុយបាន ២នាក់ ស្មើនឹង ៤០ កៅអី'
+  },
+  {
+    id: 'WIS-OTH-G06B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន AIO Neo 30a (Grade 6)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០២ ជាន់ទី៣ (Grade 6)',
+    brand: 'Lenovo',
+    model: 'ThinkCentre Neo 30A',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Tep Sokha',
+    condition: 'Operational',
+    purchaseDate: '2024-10-22',
+    costUsd: 680,
+    serialNumber: 'LNV-G6-001',
+    notes: 'សម្រាប់ម៉ោងការងារថ្នាក់រៀន និងប្រព័ន្ធកត់ត្រាសិស្សពូកែ'
+  },
+
+  // GRADE 7 (ថ្នាក់ទី៧)
+  {
+    id: 'WIS-OTH-G07A',
+    name: 'តុ-កៅអីសិស្សដែក និងឈើវែង (Grade 7 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០៣ ជាន់ទី៣ (Grade 7)',
+    brand: 'IronWood',
+    model: 'IW-Double-HD',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Nguon Sitha',
+    condition: 'Operational',
+    purchaseDate: '2024-09-01',
+    costUsd: 130,
+    serialNumber: 'G7-SET-01/20',
+    notes: 'ឈុតតុ និងកៅអីដែកស្វិតស្រោបឈើកៅស៊ូ'
+  },
+  {
+    id: 'WIS-OTH-G07B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន Dell OptiPlex (Grade 7)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០៣ ជាន់ទី៣ (Grade 7)',
+    brand: 'Dell',
+    model: 'OptiPlex 3280 AIO',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Nguon Sitha',
+    condition: 'Operational',
+    purchaseDate: '2024-09-12',
+    costUsd: 710,
+    serialNumber: 'DLL-G7-02B',
+    notes: 'កុំព្យូទ័រការងាររដ្ឋបាលគ្រូ និងគ្រប់គ្រងសិស្ស'
+  },
+
+  // GRADE 8 (ថ្នាក់ទី៨)
+  {
+    id: 'WIS-OTH-G08A',
+    name: 'តុ-កៅអីសិស្សដែក និងឈើវែង (Grade 8 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០៤ ជាន់ទី៣ (Grade 8)',
+    brand: 'IronWood',
+    model: 'IW-Double-HD',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Nouth Sreypov',
+    condition: 'Operational',
+    purchaseDate: '2024-09-01',
+    costUsd: 130,
+    serialNumber: 'G8-SET-01/20',
+    notes: 'ឈុតតុ និងកៅអីសម្រាប់សិស្សថ្នាក់ទី៨'
+  },
+  {
+    id: 'WIS-OTH-G08B',
+    name: 'កុំព្យូទ័រ All-in-One PC HP ProOne (Grade 8)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៣០៤ ជាន់ទី៣ (Grade 8)',
+    brand: 'HP',
+    model: 'ProOne 440 G9',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Nouth Sreypov',
+    condition: 'Operational',
+    purchaseDate: '2024-10-02',
+    costUsd: 650,
+    serialNumber: 'HP801026',
+    notes: 'ប្រើសម្រាប់បញ្ចាំងមេរៀនសៀវភៅអេឡិចត្រូនិច'
+  },
+
+  // GRADE 9 (ថ្នាក់ទី៩)
+  {
+    id: 'WIS-OTH-G09A',
+    name: 'តុ-កៅអីដែកសិស្សទោលកម្រិតធ្ងន់ (Grade 9 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០១ ជាន់ទី៤ (Grade 9)',
+    brand: 'SteelMax',
+    model: 'SM-Single-HD',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Srun Moni',
+    condition: 'Operational',
+    purchaseDate: '2024-08-28',
+    costUsd: 65,
+    serialNumber: 'G9-SET-01/20',
+    notes: 'តុឈើទោលស៊ុមដែកខ្នាតធំស្រួលសម្រាប់សិស្សថ្នាក់ទី៩'
+  },
+  {
+    id: 'WIS-OTH-G09B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន Lenovo AIO Corei5',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០១ ជាន់ទី៤ (Grade 9)',
+    brand: 'Lenovo',
+    model: 'Neo 30a',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Srun Moni',
+    condition: 'Operational',
+    purchaseDate: '2024-09-10',
+    costUsd: 680,
+    serialNumber: 'LNV-G912',
+    notes: 'កុំព្យូទ័រគ្រូសម្រាប់រៀបចំដំណែងពិន្ទុឆមាស'
+  },
+
+  // GRADE 10 (ថ្នាក់ទី១០)
+  {
+    id: 'WIS-OTH-G10A',
+    name: 'តុ-កៅអីដែកសិស្សទោលកម្រិតធ្ងន់ (Grade 10 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០២ ជាន់ទី៤ (Grade 10)',
+    brand: 'SteelMax',
+    model: 'SM-Single-HD',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Phan Sophorn',
+    condition: 'Operational',
+    purchaseDate: '2024-08-28',
+    costUsd: 65,
+    serialNumber: 'G10-SET-01/20',
+    notes: 'តុឈើទោលដែកស្វិតល្អ ងាយសម្រួលរបៀបរៀន'
+  },
+  {
+    id: 'WIS-OTH-G10B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន AIO Dell OptiPlex (Grade 10)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០២ ជាន់ទី៤ (Grade 10)',
+    brand: 'Dell',
+    model: 'OptiPlex 7410 AIO',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Phan Sophorn',
+    condition: 'Operational',
+    purchaseDate: '2024-11-20',
+    costUsd: 720,
+    serialNumber: 'DLL-G10-01',
+    notes: 'កុំព្យូទ័រការងារគ្រូថ្នាក់វិទ្យាសាស្ត្រ'
+  },
+
+  // GRADE 11 (ថ្នាក់ទី១១)
+  {
+    id: 'WIS-OTH-G11A',
+    name: 'តុ-កៅអីដែកសិស្សទោល (Grade 11 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០៣ ជាន់ទី៤ (Grade 11)',
+    brand: 'SteelMax',
+    model: 'SM-Single-HD',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Khorn Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2024-08-28',
+    costUsd: 65,
+    serialNumber: 'G11-SET-01/20',
+    notes: 'ឈុតតុ និងកៅអីសិស្សថ្នាក់ទី១១'
+  },
+  {
+    id: 'WIS-OTH-G11B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន HP ProOne AIO (Grade 11)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០៣ ជាន់ទី៤ (Grade 11)',
+    brand: 'HP',
+    model: 'ProOne 440 G9',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Khorn Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2024-10-02',
+    costUsd: 650,
+    serialNumber: 'HP11010A',
+    notes: 'កុំព្យូទ័ររៀបចំលំហាត់គណិតវិទ្យា និងរូបវិទ្យា'
+  },
+
+  // GRADE 12 (ថ្នាក់ទី១២)
+  {
+    id: 'WIS-OTH-G12A',
+    name: 'តុ-កៅអីដែកសិស្សទោល (Grade 12 - 20 sets)',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០៤ ជាន់ទី៤ (Grade 12)',
+    brand: 'SteelMax',
+    model: 'SM-Single-HD',
+    quantity: 20,
+    unit: 'ឈុត',
+    assignedStaff: 'Lao Chansovan',
+    condition: 'Operational',
+    purchaseDate: '2024-08-28',
+    costUsd: 65,
+    serialNumber: 'G12-SET-01/20',
+    notes: 'តុ-កៅអីសភាសិស្សថ្នាក់ទី១២ សម្រាប់ការសិក្សាត្រៀមបាក់ឌុប'
+  },
+  {
+    id: 'WIS-OTH-G12B',
+    name: 'កុំព្យូទ័រគ្រូបង្រៀន iMac 24" Apple M3',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០៤ ជាន់ទី៤ (Grade 12)',
+    brand: 'Apple',
+    model: 'iMac 24-inch M3 8GB/256GB',
+    quantity: 1,
+    unit: 'គ្រឿង',
+    assignedStaff: 'Lao Chansovan',
+    condition: 'Operational',
+    purchaseDate: '2024-09-18',
+    costUsd: 1399,
+    serialNumber: 'C02HL512Q2',
+    notes: 'កុំព្យូទ័រ iMac សម្រាប់គ្រប់គ្រង និងបង្ហាញមេរៀន'
+  },
+  {
+    id: 'WIS-OTH-G12C',
+    name: 'ក្តារខៀនម៉ាញេទិកទំនើបសរសេរហ្វឺតសាលាធំ',
+    roomCategory: 'Classroom',
+    specificRoom: 'បន្ទប់ ៤០៤ ជាន់ទី៤ (Grade 12)',
+    brand: 'GlassBoard',
+    model: 'GB-Premium-Magnetic',
+    quantity: 1,
+    unit: 'ផ្ទាំង',
+    assignedStaff: 'Lao Chansovan',
+    condition: 'Operational',
+    purchaseDate: '2024-08-15',
+    costUsd: 95,
+    serialNumber: 'N/A',
+    notes: 'ក្តារខៀនសរសេរហ្វឺតងាយស្រួលជូតសម្អាត'
+  },
+
+  // OTHER SPECIAL ROOMS
+  {
+    id: 'WIS-OTH-SPC01',
     name: 'ព្យាណូ Yamaha Upright Piano',
     roomCategory: 'PianoRoom',
     specificRoom: 'បន្ទប់ព្យាណូ ជាន់ទី២ (Piano Lab 1)',
@@ -71,55 +612,7 @@ const DEFAULT_OTHER_ASSETS: OtherAsset[] = [
     notes: 'ព្យាណូអាជីពសម្រាប់គ្រូបង្រៀន និងសិស្សអនុវត្តផ្ទាល់'
   },
   {
-    id: 'WIS-OTH-002',
-    name: 'តុ និងកៅអីសិស្សឈើមាំទ្វេដង',
-    roomCategory: 'Classroom',
-    specificRoom: 'បន្ទប់រៀន Room 204 (ជាន់ទី២)',
-    brand: 'Local Craft',
-    model: 'WIS-WDSK-24',
-    quantity: 15,
-    unit: 'ឈុត',
-    assignedStaff: 'Nouth Sreypov',
-    condition: 'Operational',
-    purchaseDate: '2024-08-10',
-    costUsd: 120,
-    serialNumber: 'N/A',
-    notes: 'ឈុតតុរៀនដែកស្វិតស្រោបឈើកៅស៊ូធន់មិនងាយរឹល'
-  },
-  {
-    id: 'WIS-OTH-003',
-    name: 'ម៉ាស៊ីនដេរអគ្គិសនី Singer Heavy Duty',
-    roomCategory: 'HomeEco',
-    specificRoom: 'បន្ទប់ Home-Eco (ជាន់ទី១)',
-    brand: 'Singer',
-    model: 'Heavy Duty 4452',
-    quantity: 5,
-    unit: 'គ្រឿង',
-    assignedStaff: 'Khorn Sreyleak',
-    condition: 'Operational',
-    purchaseDate: '2025-01-15',
-    costUsd: 320,
-    serialNumber: 'SGR-884210',
-    notes: 'សម្រាប់ម៉ោងការងារផ្ទះ (Home Economics class) រៀនកាត់ដេរ'
-  },
-  {
-    id: 'WIS-OTH-004',
-    name: 'កញ្ចក់រាំពន្លឺជញ្ជាំងកញ្ចក់ធំធន់ខ្ពស់',
-    roomCategory: 'DanceRoom',
-    specificRoom: 'បន្ទប់រាំអាគារតន្ត្រី ជាន់ទី៣',
-    brand: 'ClearGlass',
-    model: 'CG-Mirror-2m-5m',
-    quantity: 1,
-    unit: 'ផ្ទាំង',
-    assignedStaff: 'Sok Vichea',
-    condition: 'Operational',
-    purchaseDate: '2024-09-05',
-    costUsd: 720,
-    serialNumber: 'N/A',
-    notes: 'កញ្ចក់ឆ្លុះពេញតួខ្លួនសម្រាប់សិស្សរៀនក្បាច់រាំ និងរបាំប្រពៃណី'
-  },
-  {
-    id: 'WIS-OTH-005',
+    id: 'WIS-OTH-SPC02',
     name: 'កុំព្យូទ័រ All-in-One PC HP ProOne',
     roomCategory: 'ComputerRoom',
     specificRoom: 'បន្ទប់កុំព្យូទ័រ IT Lab-A',
@@ -135,23 +628,23 @@ const DEFAULT_OTHER_ASSETS: OtherAsset[] = [
     notes: 'កុំព្យូទ័រសម្រាប់ម៉ោងពិសោធន៍បច្ចេកវិទ្យាព័ត៌មាន (IT Class)'
   },
   {
-    id: 'WIS-OTH-006',
-    name: 'ឧបករណ៍បំពងសំឡេងរបាំ Marshall Bluetooth',
-    roomCategory: 'DanceRoom',
-    specificRoom: 'បន្ទប់រាំអាគារតន្ត្រី ជាន់ទី៣',
-    brand: 'Marshall',
-    model: 'Woburn III Metallic',
-    quantity: 1,
+    id: 'WIS-OTH-SPC03',
+    name: 'ម៉ាស៊ីនដេរអគ្គិសនី Singer Heavy Duty',
+    roomCategory: 'HomeEco',
+    specificRoom: 'បន្ទប់ Home-Eco (ជាន់ទី១)',
+    brand: 'Singer',
+    model: 'Heavy Duty 4452',
+    quantity: 5,
     unit: 'គ្រឿង',
-    assignedStaff: 'Sok Vichea',
-    condition: 'Maintenance',
-    purchaseDate: '2025-02-10',
-    costUsd: 499,
-    serialNumber: 'MSH-99210B',
-    notes: 'ឧបករណ៍ដើរមិនសូវលឺសំលេង និងសឹកប៊ូតុងកុងតាក់ កំពុងបញ្ជូនទៅហាងបចេ្ចកទេសឆែក'
+    assignedStaff: 'Khorn Sreyleak',
+    condition: 'Operational',
+    purchaseDate: '2025-01-15',
+    costUsd: 320,
+    serialNumber: 'SGR-884210',
+    notes: 'សម្រាប់ម៉ោងការងារផ្ទះ (Home Economics class) រៀនកាត់ដេរ'
   },
   {
-    id: 'WIS-OTH-007',
+    id: 'WIS-OTH-SPC04',
     name: 'ឡដុតនំអគ្គិសនីជំនាញ Electrolux Combo',
     roomCategory: 'HomeEco',
     specificRoom: 'បន្ទប់ Home-Eco (ជាន់ទី១)',
@@ -165,38 +658,6 @@ const DEFAULT_OTHER_ASSETS: OtherAsset[] = [
     costUsd: 145,
     serialNumber: 'ELX-20240901',
     notes: 'សម្រាប់ម៉ោងការងារផ្ទះ រៀនធ្វើនំ និងវិទ្យាសាស្ត្រអាហារ'
-  },
-  {
-    id: 'WIS-OTH-008',
-    name: 'កាសរៀនភាសាស្តាប់ និងនិយាយ Philips',
-    roomCategory: 'ComputerRoom',
-    specificRoom: 'បន្ទប់កុំព្យូទ័រ IT Lab-B',
-    brand: 'Philips',
-    model: 'SHM1900 Over-Ear',
-    quantity: 35,
-    unit: 'គ្រឿង',
-    assignedStaff: 'LOUNG Veasna',
-    condition: 'Broken',
-    purchaseDate: '2024-05-18',
-    costUsd: 22,
-    serialNumber: 'N/A',
-    notes: 'សិស្សទាញខ្លាំងដាច់ខ្សែខាងឆ្វេង សរុបរលាត់ និងស្ពឹកខ្សែកាស ៦ គ្រឿង'
-  },
-  {
-    id: 'WIS-OTH-009',
-    name: 'ក្តារខៀនម៉ាញេទិកទំនើបសរសេរហ្វឺត',
-    roomCategory: 'Classroom',
-    specificRoom: 'បន្ទប់រៀន Room 102 (ជាន់ទី១)',
-    brand: 'SmartBoard',
-    model: 'SB-120x240cm',
-    quantity: 2,
-    unit: 'ផ្ទាំង',
-    assignedStaff: 'Chan Thida',
-    condition: 'Operational',
-    purchaseDate: '2024-08-15',
-    costUsd: 85,
-    serialNumber: 'N/A',
-    notes: 'ក្តារខៀនម៉ាញេទិកងាយស្រួលជូតសម្អាត គិតកម្រិតស្តង់ដារអនាម័យ'
   }
 ];
 
@@ -229,9 +690,9 @@ export default function OtherAssetsManager() {
   const [formSerialNumber, setFormSerialNumber] = useState('');
   const [formNotes, setFormNotes] = useState('');
 
-  // Local storage synchronization
+  // Local storage synchronization (v2 key for new classroom asset list from N to G12)
   useEffect(() => {
-    const saved = localStorage.getItem('wis_other_assets');
+    const saved = localStorage.getItem('wis_other_classroom_assets');
     if (saved) {
       try {
         setAssets(JSON.parse(saved));
@@ -240,13 +701,13 @@ export default function OtherAssetsManager() {
       }
     } else {
       setAssets(DEFAULT_OTHER_ASSETS);
-      localStorage.setItem('wis_other_assets', JSON.stringify(DEFAULT_OTHER_ASSETS));
+      localStorage.setItem('wis_other_classroom_assets', JSON.stringify(DEFAULT_OTHER_ASSETS));
     }
   }, []);
 
   const saveToLocalStorage = (newAssets: OtherAsset[]) => {
     setAssets(newAssets);
-    localStorage.setItem('wis_other_assets', JSON.stringify(newAssets));
+    localStorage.setItem('wis_other_classroom_assets', JSON.stringify(newAssets));
   };
 
   const triggerToast = (message: string, type: 'success' | 'danger' | 'info') => {
@@ -384,6 +845,13 @@ export default function OtherAssetsManager() {
     triggerToast('នាំទិន្នន័យចេញជា (CSV) ជោគជ័យ!', 'success');
   };
 
+  const handleResetToDefaults = () => {
+    if (window.confirm('តើលោកអ្នកពិតជាចង់កំណត់ឡើងវិញនូវទិន្នន័យសម្ភារៈគំរូទាំងអស់មែនទេ? (ចំណាំ៖ វានឹងរៀបចំបញ្ជីថ្មីពីថ្នាក់ Nursery (N) ដល់ ថ្នាក់ទី១២ ជំនួសរាល់ទិន្នន័យចាស់ទាំងអស់!)')) {
+      saveToLocalStorage(DEFAULT_OTHER_ASSETS);
+      triggerToast('បានកំណត់ឡើងវិញនូវសម្ភារៈគំរូថ្នាក់ (Nursery ដល់ ថ្នាក់ទី១២) ជោគជ័យ!', 'success');
+    }
+  };
+
   const handleBulkImport = () => {
     if (!bulkCsvText.trim()) {
       triggerToast('សូមបញ្ចូលទិន្នន័យ CSV ជាមុនសិន!', 'danger');
@@ -506,10 +974,10 @@ export default function OtherAssetsManager() {
         <div>
           <div className="flex items-center gap-2">
             <School className="w-6 h-6 text-indigo-400" />
-            <h2 className="text-lg sm:text-xl font-black font-moul tracking-wide">គ្រប់គ្រងសម្ភារៈក្នុងបន្ទប់រៀន និងបន្ទប់ជំនាញ</h2>
+            <h2 className="text-lg sm:text-xl font-black font-moul tracking-wide">គ្រប់គ្រងសម្ភារៈបន្ទប់រៀន</h2>
           </div>
           <p className="text-slate-350 text-xs sm:text-[13px] font-medium leading-relaxed mt-1">
-            សៀវភៅបញ្ជីគ្រប់គ្រងគ្រឿងសង្ហារឹម សម្ភារៈជំនាញ កុំព្យូទ័រ ព្យាណូ គ្រឿងរាំ និងគ្រឿងផ្ទះបាយ (Home-Eco)
+            សៀវភៅបញ្ជីគ្រប់គ្រងគ្រឿងសង្ហារឹម តុ កៅអី កុំព្យូទ័រ និងសម្ភារៈបន្ទប់រៀនពីកម្រិត Nursery (N) ដល់វិទ្យាល័យថ្នាក់ទី១២
           </p>
         </div>
         <div className="flex flex-wrap gap-2.5">
@@ -519,6 +987,13 @@ export default function OtherAssetsManager() {
           >
             <PlusCircle className="w-4 h-4" />
             <span>បន្ថែមសម្ភារៈថ្មី (Add Material)</span>
+          </button>
+          <button
+            onClick={handleResetToDefaults}
+            className="px-4.5 py-2.5 bg-amber-600/90 hover:bg-amber-600 text-white rounded-xl text-xs sm:text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-950/20"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>កំណត់ឡើងវិញជាគំរូសាលា</span>
           </button>
           <button
             onClick={() => setShowBulkModal(true)}

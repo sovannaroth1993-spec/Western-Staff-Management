@@ -188,6 +188,10 @@ export default function StudentInsuranceManager() {
   const [editingPolicy, setEditingPolicy] = useState<StudentInsurance | null>(null);
   const [viewingPolicy, setViewingPolicy] = useState<StudentInsurance | null>(null);
 
+  // Delete / Reset Confirmation Modal States
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
   // States for Student Insurance Fields
   const [id, setId] = useState('');
   const [studentName, setStudentName] = useState('');
@@ -715,21 +719,26 @@ export default function StudentInsuranceManager() {
 
   // Delete insurance record
   const handleDeleteRecord = (recordId: string) => {
-    const isConfirmed = window.confirm(`តើលោកអ្នកប្រាកដជាចង់លុបចោលទិន្នន័យធានារ៉ាប់រងកូដ [${recordId}] នេះមែនទេ?\nរាល់ការផ្លាស់ប្តូរនឹងធ្វើការកត់ត្រាស្វ័យប្រវត្តិ!`);
-    if (!isConfirmed) return;
+    setDeleteTargetId(recordId);
+  };
 
-    const remaining = insurances.filter(ins => ins.id !== recordId);
+  const confirmDeleteRecord = () => {
+    if (!deleteTargetId) return;
+    const remaining = insurances.filter(ins => ins.id !== deleteTargetId);
     saveAndSyncInsurances(remaining);
-    showToastMsg(`បានលុបទម្រង់ធានារ៉ាប់រង [${recordId}] ចេញពីប្រព័ន្ធរួចរាល់!`, 'info');
+    showToastMsg(`បានលុបទម្រង់ធានារ៉ាប់រង [${deleteTargetId}] ចេញពីប្រព័ន្ធរួចរាល់!`, 'info');
+    setDeleteTargetId(null);
   };
 
   // Restore defaults
   const handleResetDefaults = () => {
-    const check = window.confirm('តើអ្នកចង់កំណត់ឡើងវិញ ទៅកាន់ទិន្នន័យគំរូធានារ៉ាប់រងដើមរបស់សាលាមែនទេ?');
-    if (!check) return;
+    setIsResetConfirmOpen(true);
+  };
 
+  const confirmResetDefaults = () => {
     saveAndSyncInsurances(DEFAULT_INSURANCES);
     showToastMsg('បានកំណត់ឡើងវិញនូវប្រព័ន្ធធានារ៉ាប់រងសិស្សគំរូរួចរាល់!', 'success');
+    setIsResetConfirmOpen(false);
   };
 
   // Stats
@@ -1149,7 +1158,7 @@ export default function StudentInsuranceManager() {
             onChange={(e) => setSelectedProvider(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-hidden"
           >
-            <option value="All">បង្ហាញទាំងអស់</option>
+            <option value="All">សាលាវេស្ទើនអន្តរជាតិ</option>
             <option value="Forte Insurance">Forte Insurance</option>
             <option value="AIA Cambodia">AIA Cambodia</option>
             <option value="Prudential Cambodia">Prudential Cambodia</option>
@@ -2180,6 +2189,77 @@ export default function StudentInsuranceManager() {
           <div className="px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-2.5 border text-xs font-black text-white bg-slate-900 border-slate-700 shadow-slate-950/20">
             <Check className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
             <div>{toast.message}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white border border-slate-250 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center text-rose-500">
+                <AlertTriangle className="w-5 h-5 animate-pulse" />
+              </div>
+              <h3 className="text-sm font-black font-moul">បញ្ជាក់ការលុបព័ត៌មាន (Confirm Delete)</h3>
+            </div>
+            
+            <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+              តើលោកអ្នកប្រាកដជាចង់លុបចោលទិន្នន័យធានារ៉ាប់រងកូដ <span className="font-mono font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100">{deleteTargetId}</span> នេះមែនទេ? រាល់ការលុបនឹងមិនអាចត្រឡប់ថយក្រោយវិញបានទេ ហើយប្រព័ន្ធនឹងកត់ត្រាស្វ័យប្រវត្ត!
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="px-4 py-2 border border-slate-250 text-slate-550 rounded-xl hover:bg-slate-50 transition text-[11.5px] font-bold cursor-pointer"
+              >
+                បោះបង់ (Cancel)
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteRecord}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition text-[11.5px] font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>បាទ/ចាស លុបចោល (Yes, Delete)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Reset Confirmation Modal */}
+      {isResetConfirmOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white border border-slate-250 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col p-6 space-y-4">
+            <div className="flex items-center gap-3 text-amber-600">
+              <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-black font-moul">ការកំណត់ឡើងវិញ (Restore Defaults)</h3>
+            </div>
+            
+            <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+              តើលោកអ្នកពិតជាចង់លុបទិន្នន័យចាស់ទាំងអស់ ហើយកែប្រែទៅទិន្នន័យគំរូធានារ៉ាប់រងដើមរបស់សាលាវិញមែនទេ?
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsResetConfirmOpen(false)}
+                className="px-4 py-2 border border-slate-250 text-slate-550 rounded-xl hover:bg-slate-50 transition text-[11.5px] font-bold cursor-pointer"
+              >
+                បោះបង់ (Cancel)
+              </button>
+              <button
+                type="button"
+                onClick={confirmResetDefaults}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition text-[11.5px] font-bold cursor-pointer"
+              >
+                យល់ព្រម (Yes, Reset)
+              </button>
+            </div>
           </div>
         </div>
       )}
