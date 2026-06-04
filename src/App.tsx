@@ -18,12 +18,13 @@ import FireExtinguisherInspectionManager from './components/FireExtinguisherInsp
 import AirConditionerInspectionManager from './components/AirConditionerInspectionManager';
 import AdminDocumentationManager from './components/AdminDocumentationManager';
 import OtherAssetsManager from './components/OtherAssetsManager';
+import CanteenAttendanceManager from './components/CanteenAttendanceManager';
 
 import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord } from './types';
 import { DEFAULT_STAFF } from './data/defaultStaff';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen, School, Layers
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen, School, Layers, Coffee
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -114,7 +115,7 @@ const DEFAULT_ELECTRICITY: ElectricityRecord[] = [
 
 export default function App() {
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'staff' | 'attendance' | 'telegram'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'canteen_attendance' | 'staff' | 'attendance' | 'telegram'>('dashboard');
 
   // Key Global states representing the workspace data - Hydrated immediately from pre-populated localStorage
   const [staffList, setStaffList] = useState<Staff[]>(() => {
@@ -324,6 +325,19 @@ export default function App() {
                 <span className="flex-1">ឯកសារគ្រប់គ្រងរដ្ឋបាល (Admin Docs)</span>
               </button>
 
+              {/* Tab 1.13: Canteen Attendance */}
+              <button
+                onClick={() => setActiveTab('canteen_attendance')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
+                  activeTab === 'canteen_attendance'
+                    ? 'bg-slate-900 text-teal-400 shadow-md shadow-slate-900/10'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
+                }`}
+              >
+                <Coffee className="w-4.5 h-4.5 text-teal-500" />
+                <span className="flex-1">វត្តមានសិស្សអាហារដ្ឋាន (Canteen)</span>
+              </button>
+
               {/* Separator */}
               <div className="h-px bg-slate-200/80 my-2" />
 
@@ -441,6 +455,10 @@ export default function App() {
 
               {activeTab === 'admindocs' && (
                 <AdminDocumentationManager />
+              )}
+
+              {activeTab === 'canteen_attendance' && (
+                <CanteenAttendanceManager />
               )}
 
               {activeTab === 'staff' && (

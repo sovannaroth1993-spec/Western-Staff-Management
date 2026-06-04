@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Department = 'Security' | 'Cleaner' | 'Librarian' | 'Nurse' | 'Customer Service' | 'Lab Assistant';
+export type Department = 'Security' | 'Cleaner' | 'Librarian' | 'Nurse' | 'Customer Service' | 'Lab Assistant' | 'Admin Head';
 
-export const ALL_DEPARTMENTS: Department[] = ['Security', 'Cleaner', 'Librarian', 'Nurse', 'Customer Service', 'Lab Assistant'];
+export const ALL_DEPARTMENTS: Department[] = ['Security', 'Cleaner', 'Librarian', 'Nurse', 'Customer Service', 'Lab Assistant', 'Admin Head'];
 
 export const DEPARTMENT_NAMES_KM: Record<Department, string> = {
   Security: 'ផ្នែកសន្តិសុខ',
@@ -13,7 +13,8 @@ export const DEPARTMENT_NAMES_KM: Record<Department, string> = {
   Librarian: 'ផ្នែកបណ្ណារ័ក្ស',
   Nurse: 'ផ្នែកគិលានុបដ្ឋាយិកា (Nurse)',
   'Customer Service': 'ផ្នែកបម្រើសេវាកម្មអតិថិជន',
-  'Lab Assistant': 'ផ្នែកជំនួយការបន្ទប់ពិសោធន៍'
+  'Lab Assistant': 'ផ្នែកជំនួយការបន្ទប់ពិសោធន៍',
+  'Admin Head': 'ប្រធានផ្នែករដ្ឋបាល'
 };
 
 export interface Staff {

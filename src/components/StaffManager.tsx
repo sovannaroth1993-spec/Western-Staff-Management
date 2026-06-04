@@ -133,7 +133,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       Librarian: 'WIS-LIB',
       Nurse: 'WIS-NUR',
       'Customer Service': 'WIS-CS',
-      'Lab Assistant': 'WIS-LAB'
+      'Lab Assistant': 'WIS-LAB',
+      'Admin Head': 'WIS-ADM'
     };
     const prefix = prefixMap[dept] || 'WIS';
     
