@@ -28,6 +28,38 @@ interface BulkRow {
   department: Department;
 }
 
+/**
+ * Helper to calculate years of work dynamically from join date compared to current date
+ */
+export const calculateYearsOfWork = (joinDateStr?: string): string => {
+  if (!joinDateStr) return 'N/A';
+  const joinDate = new Date(joinDateStr);
+  if (isNaN(joinDate.getTime())) return 'N/A';
+  
+  const today = new Date();
+  let years = today.getFullYear() - joinDate.getFullYear();
+  const monthDiff = today.getMonth() - joinDate.getMonth();
+  const dayDiff = today.getDate() - joinDate.getDate();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    years--;
+  }
+  
+  if (years < 0) return '0 ឆ្នាំ';
+  if (years === 0) {
+    let months = (today.getFullYear() - joinDate.getFullYear()) * 12 + today.getMonth() - joinDate.getMonth();
+    if (dayDiff < 0) {
+      months--;
+    }
+    if (months <= 0) {
+      return 'ថ្មីៗ (New)';
+    }
+    return `${months} ខែ`;
+  }
+  
+  return `${years} ឆ្នាំ`;
+};
+
 export default function StaffManager({ staffList, setStaffList }: StaffManagerProps) {
   // Filters & State
   const [search, setSearch] = useState('');
@@ -694,7 +726,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                 <div className="border-t border-slate-200/50 mt-3 pt-3 space-y-1.5 text-xs font-semibold text-slate-500">
                   <div className="flex justify-between">
                     <span>ភេទ៖ <span className="font-extrabold text-slate-700">{staff.gender}</span></span>
-                    <span>DOB៖ <span className="font-extrabold text-slate-700">{staff.dob}</span></span>
+                    <span>ចំនួនឆ្នាំធ្វើការ៖ <span className="font-extrabold text-indigo-600 font-sans">{calculateYearsOfWork(staff.joinDate)}</span></span>
                   </div>
                   {staff.joinDate && (
                     <div className="flex justify-between">
@@ -914,13 +946,10 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-700">ថ្ងៃខែឆ្នាំកំណើត (DOB)</label>
-                      <input 
-                        type="date"
-                        value={formDob}
-                        onChange={(e) => setFormDob(e.target.value)}
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                      />
+                      <label className="text-xs font-bold text-slate-700">ចំនួនឆ្នាំធ្វើការ (Years of Work)</label>
+                      <div className="w-full bg-slate-100 text-xs font-black p-2.5 border border-slate-200 text-indigo-600 rounded-lg mt-1 select-none font-sans min-h-[38px] flex items-center">
+                        {calculateYearsOfWork(formJoinDate)} (គណនាស្វ័យប្រវត្ត)
+                      </div>
                     </div>
                   </div>
 
@@ -1166,7 +1195,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                           <th className="py-2.5 px-3 text-center w-10">#</th>
                           <th className="py-2.5 px-3">ឈ្មោះពេញរបស់បុគ្គលិក *</th>
                           <th className="py-2.5 px-3 w-32">ភេទ (Gender)</th>
-                          <th className="py-2.5 px-3 w-40">ថ្ងៃកំណើត (DOB)</th>
+                          <th className="py-2.5 px-3 w-40 text-center">ចំនួនឆ្នាំធ្វើការ (Years)</th>
                           <th className="py-2.5 px-3 w-40">ថ្ងៃចូលធ្វើការ (Joining)</th>
                           <th className="py-2.5 px-3 w-40">លេខទូរស័ព្ទ (Phone)</th>
                           <th className="py-2.5 px-3 w-48">ផ្នែកការងារ (Department)</th>
@@ -1198,13 +1227,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                                 <option value="ស្រី">ស្រី</option>
                               </select>
                             </td>
-                            <td className="py-2 px-3">
-                              <input
-                                type="date"
-                                value={row.dob}
-                                onChange={(e) => handleBulkRowChange(index, 'dob', e.target.value)}
-                                className="w-full bg-slate-50 text-xs font-semibold p-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
-                              />
+                            <td className="py-2 px-3 text-center font-extrabold text-xs text-indigo-600 font-sans">
+                              {calculateYearsOfWork(row.joinDate)}
                             </td>
                             <td className="py-2 px-3">
                               <input
