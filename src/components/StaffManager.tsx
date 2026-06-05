@@ -9,7 +9,8 @@ import { parseStaffExcel, exportStaffToExcel } from '../utils/excelHelper';
 import { exportStaffToPdf } from '../utils/pdfHelper';
 import { 
   Plus, Edit2, Trash2, FileSpreadsheet, FileText, Upload, 
-  Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, X, Info
+  Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, X, Info,
+  Paperclip, Download, Eye, File
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -105,6 +106,13 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Attachments State
+  const [selectedStaffForAttachments, setSelectedStaffForAttachments] = useState<Staff | null>(null);
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const attachmentFileInputRef = useRef<HTMLInputElement>(null);
+  const [previewingAttachment, setPreviewingAttachment] = useState<{ id: string; name: string; type: string; dataUrl: string } | null>(null);
+  const [deleteAttachmentTarget, setDeleteAttachmentTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Helper to construct an empty bulk row
   const createEmptyBulkRow = (dept: Department): BulkRow => ({
@@ -503,6 +511,104 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     }
   };
 
+  // Attachment managers
+  const openAttachmentModal = (staff: Staff) => {
+    const activeStaff = staffList.find(s => s.id === staff.id) || staff;
+    setSelectedStaffForAttachments(activeStaff);
+    setIsAttachmentModalOpen(true);
+  };
+
+  const handleUploadAttachments = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !selectedStaffForAttachments) return;
+
+    const fileList: File[] = Array.from(files) as File[];
+    const newAttachments: { id: string; name: string; size: string; type: string; dataUrl: string }[] = [];
+
+    setIsCompressing(true);
+
+    try {
+      for (const file of fileList) {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const formattedSize = file.size > 1024 * 1024 
+          ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` 
+          : `${(file.size / 1024).toFixed(0)} KB`;
+
+        newAttachments.push({
+          id: `attach_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          name: file.name,
+          size: formattedSize,
+          type: file.type,
+          dataUrl
+        });
+      }
+
+      const updatedList = staffList.map(s => {
+        if (s.id === selectedStaffForAttachments.id) {
+          const currentAttachments = s.attachments || [];
+          return {
+            ...s,
+            attachments: [...currentAttachments, ...newAttachments]
+          };
+        }
+        return s;
+      });
+
+      setStaffList(updatedList);
+      
+      const activeStaff = updatedList.find(s => s.id === selectedStaffForAttachments.id);
+      if (activeStaff) {
+        setSelectedStaffForAttachments(activeStaff);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('មានបញ្ហាក្នុងការអានឯកសារ សូមសាកល្បងម្ដងទៀត!');
+    } finally {
+      setIsCompressing(false);
+      if (attachmentFileInputRef.current) {
+        attachmentFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDeleteAttachment = (attachmentId: string) => {
+    if (!selectedStaffForAttachments) return;
+    const attachment = (selectedStaffForAttachments.attachments || []).find(a => a.id === attachmentId);
+    if (attachment) {
+      setDeleteAttachmentTarget({ id: attachmentId, name: attachment.name });
+    }
+  };
+
+  const confirmDeleteAttachment = () => {
+    if (!deleteAttachmentTarget || !selectedStaffForAttachments) return;
+
+    const attachmentId = deleteAttachmentTarget.id;
+    const updatedList = staffList.map(s => {
+      if (s.id === selectedStaffForAttachments.id) {
+        return {
+          ...s,
+          attachments: (s.attachments || []).filter(a => a.id !== attachmentId)
+        };
+      }
+      return s;
+    });
+
+    setStaffList(updatedList);
+
+    const activeStaff = updatedList.find(s => s.id === selectedStaffForAttachments.id);
+    if (activeStaff) {
+      setSelectedStaffForAttachments(activeStaff);
+    }
+    
+    setDeleteAttachmentTarget(null);
+  };
+
   // Handle Excel upload
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -805,6 +911,18 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
               {/* Edit / Delete quick buttons */}
               <div className="flex items-center gap-2 border-t border-slate-200/50 mt-4 pt-3 justify-end">
+                <button 
+                  onClick={() => openAttachmentModal(staff)}
+                  className="p-1.5 text-slate-400 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative"
+                  title="ឯកសារភ្ជាប់ (Attachments)"
+                >
+                  <Paperclip className="w-3.5 h-3.5" />
+                  {staff.attachments && staff.attachments.length > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-teal-500 text-white font-sans text-[8px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-xs border border-white">
+                      {staff.attachments.length}
+                    </span>
+                  )}
+                </button>
                 <button 
                   onClick={() => openEditForm(staff)}
                   className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg border border-slate-200/60 transition"
@@ -1373,6 +1491,358 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         )}
       </AnimatePresence>
 
+      {/* Attachments Manager Modal */}
+      <AnimatePresence>
+        {isAttachmentModalOpen && selectedStaffForAttachments && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full overflow-hidden flex flex-col max-h-[85vh]"
+              id="attachments-modal"
+            >
+              {/* Header */}
+              <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-purple-500">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <h3 className="text-sm font-black font-moul leading-snug text-white">
+                      ឯកសារភ្ជាប់របស់បុគ្គលិក
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-bold font-sans mt-0.5">
+                      Attachments for {selectedStaffForAttachments.name} ({selectedStaffForAttachments.staffId})
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setIsAttachmentModalOpen(false);
+                    setSelectedStaffForAttachments(null);
+                  }} 
+                  className="text-slate-400 hover:text-white transition p-1 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Upload Dropzone Area */}
+              <div className="p-4 border-b border-slate-100 bg-slate-50/70">
+                <input 
+                  type="file"
+                  multiple
+                  ref={attachmentFileInputRef}
+                  onChange={handleUploadAttachments}
+                  className="hidden"
+                />
+                <div 
+                  onClick={() => attachmentFileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-slate-50 rounded-xl p-6 text-center cursor-pointer transition-all duration-250 select-none group"
+                >
+                  <Upload className="w-8 h-8 text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition mx-auto mb-2" />
+                  <span className="text-xs font-extrabold text-slate-700 block">ជ្រើសរើសឯកសារភ្ជាប់ ឬ រូបភាព (ព្រីនសន្លឹក, ឯកសារ PDF...)</span>
+                  <span className="text-[10px] font-bold text-slate-400 block mt-1">អាចផ្ទុកឯកសារបានច្រើនក្នុងពេលតែមួយ (Supports multiple files)</span>
+                </div>
+              </div>
+
+              {/* Attachments List */}
+              <div className="p-4 overflow-y-auto flex-1 space-y-3 min-h-[160px]">
+                <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">
+                  បញ្ជីឯកសារភ្ជាប់ ({selectedStaffForAttachments.attachments?.length || 0})
+                </h4>
+
+                {!selectedStaffForAttachments.attachments || selectedStaffForAttachments.attachments.length === 0 ? (
+                  <div className="text-center py-10">
+                    <Paperclip className="w-10 h-10 text-slate-300 mx-auto mb-2.5 opacity-60" />
+                    <p className="text-xs text-slate-400 font-black">មិនទាន់មានឯកសារភ្ជាប់នៅឡើយទេ</p>
+                    <p className="text-[10px] text-slate-400 mt-1">លោកអ្នកអាចចុចប្រអប់ខាងលើ ដើម្បីភ្ជាប់ឯកសារផ្សេងៗ។</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedStaffForAttachments.attachments.map((file) => {
+                      const isImage = file.type?.startsWith('image/');
+                      return (
+                        <div 
+                          key={file.id}
+                          className="flex items-center justify-between border border-slate-200/80 rounded-xl p-3 bg-white hover:border-slate-300 transition-colors gap-3"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {/* Thumbnail or Icon */}
+                            <div className="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                              {isImage ? (
+                                <img 
+                                  src={file.dataUrl} 
+                                  alt={file.name} 
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                              ) : (
+                                <File className="w-5 h-5 text-slate-400" />
+                              )}
+                            </div>
+
+                            {/* Details */}
+                            <div className="min-w-0">
+                              <span 
+                                className="text-xs font-bold text-slate-800 block truncate"
+                                title={file.name}
+                              >
+                                {file.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 block font-semibold mt-0.5 font-sans">
+                                {file.size} • {file.type ? file.type.split('/')[1]?.toUpperCase() : 'DOC'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Download Icon */}
+                            <a 
+                              href={file.dataUrl}
+                              download={file.name}
+                              className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition rounded-lg border border-slate-200 bg-white"
+                              title="ទាញយក (Download File)"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </a>
+
+                            {/* Preview / View trigger */}
+                            <button 
+                              type="button"
+                              onClick={() => setPreviewingAttachment(file)}
+                              className="p-1.5 hover:bg-slate-100 text-indigo-500 hover:text-indigo-700 transition rounded-lg border border-slate-200 bg-white"
+                              title="មើលឯកសារពេញ (View/Print File)"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Delete specific attachment */}
+                            <button 
+                              onClick={() => handleDeleteAttachment(file.id)}
+                              className="p-1.5 hover:bg-rose-50 text-rose-500 hover:text-rose-700 transition rounded-lg border border-slate-200 bg-white"
+                              title="លុបឯកសារភ្ជាប់ (Delete Archive)"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions Footer */}
+              <div className="bg-slate-50 px-4 py-3 flex justify-end border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAttachmentModalOpen(false);
+                    setSelectedStaffForAttachments(null);
+                  }}
+                  className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-black px-6 py-2.5 rounded-xl cursor-pointer shadow-sm"
+                >
+                  រួចរាល់ (Done)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+ 
+      {/* File Preview Inline Overlay Modal */}
+      <AnimatePresence>
+        {previewingAttachment && (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-55 p-3 sm:p-6 select-none print:hidden">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-4xl w-full overflow-hidden flex flex-col h-[85vh]"
+              id="attachment-preview-modal"
+            >
+              {/* Preview Header */}
+              <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-purple-500 shrink-0">
+                <div className="flex items-center gap-2 max-w-[80%]">
+                  <Eye className="w-5 h-5 text-purple-400 shrink-0" />
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-black font-moul leading-snug text-white truncate" title={previewingAttachment.name}>
+                      {previewingAttachment.name}
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-bold font-sans mt-0.5 truncate">
+                      ប្រភេទឯកសារ៖ {previewingAttachment.type || 'មិនស្គាល់ (Unknown)'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* Download Button */}
+                  <a
+                    href={previewingAttachment.dataUrl}
+                    download={previewingAttachment.name}
+                    className="p-2 bg-slate-800 hover:bg-slate-700 text-teal-400 hover:text-teal-300 transition rounded-xl border border-slate-700 flex items-center gap-1.5 text-[11px] font-bold"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">ទាញយក (Download)</span>
+                  </a>
+
+                  {/* Close Button */}
+                  <button 
+                    onClick={() => setPreviewingAttachment(null)} 
+                    className="text-slate-400 hover:text-white transition p-2 bg-slate-800 hover:bg-rose-600 rounded-xl"
+                  >
+                    <X className="w-4.5 h-4.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Main Content Pane */}
+              <div className="flex-1 bg-slate-100 p-4 overflow-auto flex flex-col items-center justify-center relative min-h-0">
+                {previewingAttachment.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(previewingAttachment.name) ? (
+                  // Image Type Viewer
+                  <div className="max-w-full max-h-full overflow-auto flex items-center justify-center p-2">
+                    <img 
+                      src={previewingAttachment.dataUrl} 
+                      alt={previewingAttachment.name} 
+                      className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-lg border border-white bg-white" 
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                ) : previewingAttachment.type === 'application/pdf' || /\.pdf$/i.test(previewingAttachment.name) ? (
+                  // PDF Document Type Viewer
+                  <div className="w-full h-full flex flex-col relative">
+                    <div className="absolute top-2 right-2 z-10 bg-slate-900/90 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-700 shadow-md">
+                      <Info className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>ឯកសារ PDF ពេញលេញ</span>
+                    </div>
+                    
+                    <object 
+                      data={previewingAttachment.dataUrl} 
+                      type="application/pdf" 
+                      className="w-full h-full rounded-xl border border-slate-200 bg-white"
+                      style={{ minHeight: '520px' }}
+                    >
+                      <iframe 
+                        src={previewingAttachment.dataUrl} 
+                        className="w-full h-full rounded-xl border border-slate-200 bg-white"
+                        style={{ minHeight: '520px' }}
+                        title={previewingAttachment.name}
+                      >
+                        <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 max-w-md mx-auto my-12">
+                          <File className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                          <h4 className="text-sm font-bold text-slate-850">មិនអាចបង្ហាញឯកសារ PDF ស្រាប់បានទេ</h4>
+                          <p className="text-xs text-slate-500 mt-2">
+                            សូមចុចប៊ូតុងទាញយកនៅខាងលើដើម្បីបើកមើលឯកសារនេះ។
+                          </p>
+                        </div>
+                      </iframe>
+                    </object>
+                  </div>
+                ) : (
+                  // Other file Fallback design
+                  <div className="bg-white p-8 rounded-2xl shadow-lg border border-slate-200 max-w-sm w-full text-center space-y-4">
+                    <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                      <File className="w-8 h-8 text-slate-500" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 truncate" title={previewingAttachment.name}>
+                        {previewingAttachment.name}
+                      </h4>
+                      <p className="text-xs text-slate-400 font-medium mt-1">
+                        ប្រភេទនិងទម្រង់ឯកសារមិនគាំទ្រការទស្សនាផ្ទាល់ឡើយ។
+                      </p>
+                    </div>
+                    <a
+                      href={previewingAttachment.dataUrl}
+                      download={previewingAttachment.name}
+                      className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 px-6 rounded-xl w-full transition shadow-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>ទាញយក និង បើកឯកសារនេះ</span>
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Preview Footer */}
+              <div className="bg-slate-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100 shrink-0">
+                <div className="text-[10px] font-bold text-slate-400 text-center sm:text-left">
+                  * ឯកសារត្រូវបានរក្សាទម្រង់ដើម និងបំប្លែងទិន្នន័យដើម្បីសុវត្ថិភាព។
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewingAttachment(null)}
+                  className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-black px-6 py-2.5 rounded-xl cursor-pointer w-full sm:w-auto text-center"
+                >
+                  បិទវិញ (Close View)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Delete Confirmation Modal for Attachments */}
+      <AnimatePresence>
+        {deleteAttachmentTarget && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-60 p-4 select-none">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden"
+              id="delete-attachment-confirm-modal"
+            >
+              {/* Header */}
+              <div className="bg-rose-600 text-white p-4 flex items-center justify-between">
+                <h3 className="text-base font-black flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-white" />
+                  បញ្ជាក់ការលុបឯកសារភ្ជាប់
+                </h3>
+                <button onClick={() => setDeleteAttachmentTarget(null)} className="text-white/80 hover:text-white transition">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-100">
+                  <Trash2 className="w-8 h-8 text-rose-600" />
+                </div>
+                <h4 className="text-base font-bold text-slate-800 mb-2">តើអ្នកពិតជាចង់លុបឯកសារភ្ជាប់នេះជាអចិន្ត្រៃយ៍មែនទេ?</h4>
+                <div className="text-sm font-medium text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 inline-block font-sans max-w-full truncate">
+                  ឈ្មោះឯកសារ៖ <span className="font-extrabold text-slate-850 break-all">{deleteAttachmentTarget.name}</span>
+                </div>
+                <p className="text-xs text-rose-500 font-semibold mt-4">
+                  *ការលុបនេះនឹងមិនអាចសង្គ្រោះមកវិញបានទេ!
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="bg-slate-50 px-6 py-4 flex justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setDeleteAttachmentTarget(null)}
+                  className="bg-white hover:bg-slate-100 text-slate-700 text-xs font-extrabold px-4 py-2.5 rounded-xl border border-slate-200 transition"
+                  id="cancel-delete-attachment-btn"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteAttachment}
+                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition shadow-md shadow-rose-100"
+                  id="confirm-delete-attachment-btn"
+                >
+                  យល់ព្រមលុប (Delete File)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+ 
     </div>
   );
 }

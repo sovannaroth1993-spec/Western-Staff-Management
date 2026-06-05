@@ -30,6 +30,7 @@ export interface Staff {
   icom?: string; // មុខងារ អាយកូម (Icom) - e.g. "មាន (Yes)" or custom label
   responsibleLocation?: string; // ទីតាំងទទួលខុសត្រូវ (Responsible Location)
   joinDate?: string; // ថ្ងៃខែឆ្នាំចូលធ្វើការ (Hire Date)
+  attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
 }
 
 export type AttendanceStatus = 'Present' | 'Excused' | 'Absent'; // មក, ច្បាប់, អវត្តមាន
