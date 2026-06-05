@@ -80,13 +80,13 @@ const DEFAULT_LINKS: OtherLink[] = [
   },
   {
     id: 'link_4',
-    title: 'គេហទំព័រផ្លូវការសាលា (Official School Portal)',
-    url: 'https://www.western.edu.kh',
-    category: 'គេហទំព័រ (Official Website)',
-    description: 'គេហទំព័រផ្លូវការរបស់សាលាវេស្ទើនអន្តរជាតិ សម្រាប់ព័ត៌មានសិក្សាធិការ និងការចុះឈ្មោះសិក្សាធិការ។',
+    title: 'គេហទំព័របង្រួមទំហំឯកសារ PDF (iLovePDF Compressor)',
+    url: 'https://www.ilovepdf.com/compress_pdf',
+    category: 'Compress PDF file',
+    description: 'ប្រព័ន្ធបង្រួមទំហំឯកសារ PDF ឥតគិតថ្លៃ ដើម្បីងាយស្រួលក្នុងការបញ្ចូលទៅក្នុងប្រព័ន្ធគ្រប់គ្រងសាលា។',
     addedBy: 'LOUNG Veasna (Admin Supervisor)',
     createdAt: '2026-05-01T03:45:00.000Z',
-    icon: 'globe'
+    icon: 'file'
   }
 ];
 
@@ -101,6 +101,7 @@ export default function OtherLinksManager() {
           let cat = item.category;
           if (cat === 'ប្រព័ន្ធគ្រប់គ្រង (Admin System)') cat = 'PR-System';
           if (cat === 'ទំនាក់ទំនង (Telegram Channels)') cat = 'Fixed Asset';
+          if (cat === 'គេហទំព័រ (Official Website)') cat = 'Compress PDF file';
           return {
             ...item,
             category: cat,
@@ -149,13 +150,13 @@ export default function OtherLinksManager() {
   };
 
   // Get categorized categories list
-  const categoriesList = ['All', 'PR-System', 'Fixed Asset', 'គេហទំព័រ (Official Website)', 'ស្តុកឯកសារ (Drives & Storage)', 'ផ្សេងៗ (Others)'];
+  const categoriesList = ['All', 'PR-System', 'Fixed Asset', 'Compress PDF file', 'ស្តុកឯកសារ (Drives & Storage)', 'ផ្សេងៗ (Others)'];
 
   // Helper to retrieve category icon
   const getCategoryIcon = (catName: string) => {
     if (catName === 'PR-System') return Settings;
     if (catName === 'Fixed Asset') return Layers;
-    if (catName === 'គេហទំព័រ (Official Website)') return Globe;
+    if (catName === 'Compress PDF file') return FileText;
     if (catName === 'ស្តុកឯកសារ (Drives & Storage)') return HardDrive;
     return Link2;
   };
@@ -541,7 +542,7 @@ export default function OtherLinksManager() {
                     >
                       <option value="PR-System">PR-System</option>
                       <option value="Fixed Asset">Fixed Asset</option>
-                      <option value="គេហទំព័រ (Official Website)">គេហទំព័រ (Official Website)</option>
+                      <option value="Compress PDF file">Compress PDF file</option>
                       <option value="ស្តុកឯកសារ (Drives & Storage)">ស្តុកឯកសារ (Drives & Storage)</option>
                       <option value="ផ្សេងៗ (Others)">ផ្សេងៗ (Others)</option>
                     </select>
