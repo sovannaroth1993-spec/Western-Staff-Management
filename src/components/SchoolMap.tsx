@@ -3,7 +3,7 @@ import {
   Map, Upload, FileText, Maximize2, Minimize2, Trash2, 
   Info, Sparkles, Download, MapPin, Layers, Compass, Check, AlertCircle, ExternalLink,
   Cloud, Search, FolderOpen, Loader2, RefreshCw, LogOut, Key, CheckCircle, Plus, FileDown,
-  ChevronRight
+  ChevronRight, FileSpreadsheet, Image
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
@@ -19,10 +19,11 @@ import {
 export interface LibraryDoc {
   id: string;
   name: string;
-  type: 'pdf' | 'image' | 'excel';
+  type: 'pdf' | 'image' | 'excel' | 'other';
   category: 'building_plan' | 'class_listings' | 'safety' | 'other';
   data: string;
   createdAt: string;
+  floorId?: string;
 }
 
 // IndexedDB storage helpers for handling large PDF/Image files (>5MB) without quota blocks
@@ -390,8 +391,12 @@ export default function SchoolMap() {
 
   // Floor specific state definitions (Support Ground Floor, 1st - 5th Floor)
   const [activeFloor, setActiveFloor] = useState<string>('ground');
-  const [activeFloorViewMode, setActiveFloorViewMode] = useState<'map' | 'excel' | 'custom'>('map');
+  const [activeFloorViewMode, setActiveFloorViewMode] = useState<'map' | 'excel' | 'custom' | 'documents'>('map');
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+
+  // Floor Documents Specific States
+  const [floorDocDragActive, setFloorDocDragActive] = useState(false);
+  const floorDocFileInputRef = useRef<HTMLInputElement>(null);
 
   // Interactive Excel grid and spreadsheets states
   const [excelSheets, setExcelSheets] = useState<string[]>([]);
@@ -738,18 +743,23 @@ export default function SchoolMap() {
   };
 
   const handleSelectDocFromLibrary = async (doc: LibraryDoc) => {
+    if (doc.type === 'other') {
+      alert('ឯកសារប្រភេទផ្សេងៗ (Other) មិនអាចប្រើប្រាស់ជាប្លង់ផែនទីផ្ទាល់ខ្លួនសម្រាប់ជាន់បានទេ! លោកអ្នកអាចប្រើប្រាស់វាជា "ឯកសារភ្ជាប់ជាន់នេះ" ជំនួសវិញ។');
+      return;
+    }
+    const mapType = doc.type as 'pdf' | 'image' | 'excel';
     setMapFileUrl(doc.data);
     setMapFileName(doc.name);
-    setMapFileType(doc.type);
+    setMapFileType(mapType);
     setActiveFloorViewMode('custom');
 
-    await saveMapToIndexedDB(doc.name, doc.type, doc.data);
-    await saveFloorMapToIndexedDB(activeFloor, doc.name, doc.type, doc.data);
+    await saveMapToIndexedDB(doc.name, mapType, doc.data);
+    await saveFloorMapToIndexedDB(activeFloor, doc.name, mapType, doc.data);
     try {
       localStorage.setItem('wis_school_map_name', doc.name);
-      localStorage.setItem('wis_school_map_type', doc.type);
+      localStorage.setItem('wis_school_map_type', mapType);
       localStorage.setItem(`wis_school_map_${activeFloor}_name`, doc.name);
-      localStorage.setItem(`wis_school_map_${activeFloor}_type`, doc.type);
+      localStorage.setItem(`wis_school_map_${activeFloor}_type`, mapType);
     } catch (err) {
       console.warn(err);
     }
@@ -804,6 +814,84 @@ export default function SchoolMap() {
       localStorage.removeItem(`wis_school_map_${activeFloor}_name`);
       localStorage.removeItem(`wis_school_map_${activeFloor}_type`);
     }
+  };
+
+  const getFloorNameKh = (floorId: string) => {
+    const floorNamesKh: { [key: string]: string } = {
+      ground: 'ជាន់ផ្ទាល់ដី',
+      '1st': 'ជាន់ទី១',
+      '2nd': 'ជាន់ទី២',
+      '3rd': 'ជាន់ទី៣',
+      '4th': 'ជាន់ទី៤',
+      '5th': 'ជាន់ទី៥'
+    };
+    return floorNamesKh[floorId] || floorId;
+  };
+
+  const handleFloorDocDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setFloorDocDragActive(true);
+    } else if (e.type === "dragleave") {
+      setFloorDocDragActive(false);
+    }
+  };
+
+  const handleFloorDocDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFloorDocDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFloorFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFloorDocChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      processFloorFile(e.target.files[0]);
+    }
+  };
+
+  const processFloorFile = (file: File) => {
+    if (!file) return;
+
+    const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+    const isImg = file.type.startsWith('image/');
+    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || file.type === 'application/vnd.ms-excel';
+
+    let fileType: 'pdf' | 'image' | 'excel' | 'other' = 'other';
+    if (isPdf) fileType = 'pdf';
+    else if (isImg) fileType = 'image';
+    else if (isExcel) fileType = 'excel';
+
+    if (file.size > 20 * 1024 * 1024) {
+      alert('ទំហំឯកសារធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំតូចជាង 20MB។');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const result = e.target?.result as string;
+      if (result) {
+        const newDoc: LibraryDoc = {
+          id: `floor_doc_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+          name: file.name,
+          type: fileType,
+          category: 'other',
+          data: result,
+          createdAt: new Date().toISOString(),
+          floorId: activeFloor
+        };
+
+        const updated = await saveDocToLibraryDB(newDoc);
+        setLibraryDocs(updated);
+        alert(`បានរក្សាទុកឯកសារ "${file.name}" សម្រាប់ ${getFloorNameKh(activeFloor)} ដោយជោគជ័យ!`);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   // Interactive mock campus zones info
@@ -886,6 +974,7 @@ export default function SchoolMap() {
                   <Layers className={`w-4 h-4 ${!isViewingLibrary ? 'text-sky-600' : ''}`} />
                   <span>ផ្ទាំងបង្ហាញប្លង់សិក្សា (Active Viewer)</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setIsViewingLibrary(true)}
@@ -1011,10 +1100,30 @@ export default function SchoolMap() {
                       <Upload className="w-3.5 h-3.5" />
                       <span>📂 ប្លង់ស្កែន PDF/Excel (Custom Scans)</span>
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFloorViewMode('documents')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                        activeFloorViewMode === 'documents'
+                          ? 'bg-slate-900 text-white shadow-xs'
+                          : 'text-slate-550 hover:text-slate-800'
+                      }`}
+                    >
+                      <FolderOpen className="w-3.5 h-3.5" />
+                      <span>📁 ឯកសារភ្ជាប់ជាន់នេះ (Docs Attached)</span>
+                      {(() => {
+                        const count = libraryDocs.filter(d => d.floorId === activeFloor).length;
+                        return count > 0 ? (
+                          <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold ml-1">
+                            {count}
+                          </span>
+                        ) : null;
+                      })()}
+                    </button>
                   </div>
 
                   <span className="text-[10px] text-slate-400 font-extrabold uppercase">
-                    ជម្រើសបង្ហាញ៖ <strong className="text-slate-700 font-black">{activeFloorViewMode === 'map' ? 'ប្លង់កៅអី' : activeFloorViewMode === 'excel' ? 'តារាង Excel' : 'ឯកសារផ្ទាល់ខ្លួន'}</strong>
+                    ជម្រើសបង្ហាញ៖ <strong className="text-slate-700 font-black">{activeFloorViewMode === 'map' ? 'ប្លង់កៅអី' : activeFloorViewMode === 'excel' ? 'តារាង Excel' : activeFloorViewMode === 'custom' ? 'ឯកសារផ្ទាល់ខ្លួន' : 'ឯកសារភ្ជាប់ជាន់នេះ'}</strong>
                   </span>
                 </div>
 
@@ -1497,6 +1606,192 @@ export default function SchoolMap() {
                       </div>
                     </div>
                   )
+                )}
+
+                {activeFloorViewMode === 'documents' && (
+                  <div className="space-y-5 animate-fade-in">
+                    {/* Floor documents introduction bar */}
+                    <div className="bg-gradient-to-r from-teal-50 to-emerald-50/50 border border-teal-100/60 p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+                      <div className="flex items-start gap-2.5 text-slate-800">
+                        <FolderOpen className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-extrabold text-[13px] text-slate-800">ការគ្រប់គ្រងឯកសារភ្ជាប់ជាន់ ឬបន្ទប់សិក្សា (Floor Document Library)</p>
+                          <p className="text-slate-500 font-semibold text-[11px] mt-0.5">
+                            លោកអ្នកអាចចងភ្ជាប់ឯកសារផ្សេងៗដូចជា៖ បញ្ជីឈ្មោះសិស្ស របាយការណ៍គ្រូ ប្លង់សង្គ្រោះ ឬកិច្ចសន្យា ទៅនឹង <strong className="text-teal-700 font-black">{getFloorNameKh(activeFloor)}</strong> នេះបានយ៉ាងងាយស្រួល។
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Drag-and-Drop Floor Document Uploader Zone */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="md:col-span-1">
+                        <div
+                          onDragEnter={handleFloorDocDrag}
+                          onDragOver={handleFloorDocDrag}
+                          onDragLeave={handleFloorDocDrag}
+                          onDrop={handleFloorDocDrop}
+                          onClick={() => floorDocFileInputRef.current?.click()}
+                          className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[220px] ${
+                            floorDocDragActive
+                              ? 'border-teal-500 bg-teal-50/30'
+                              : 'border-slate-200 hover:border-slate-350 bg-slate-50/40 hover:bg-slate-50'
+                          }`}
+                        >
+                          <input
+                            ref={floorDocFileInputRef}
+                            type="file"
+                            className="hidden"
+                            onChange={handleFloorDocChange}
+                            accept=".pdf, .xlsx, .xls, .docx, .doc, .ppt, .pptx, image/*"
+                          />
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
+                            floorDocDragActive ? 'bg-teal-100 text-teal-600 animate-bounce' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            <Upload className="w-6 h-6" />
+                          </div>
+                          <h4 className="text-xs font-black text-slate-700">
+                            បង្ហោះឯកសារសម្រាប់ {getFloorNameKh(activeFloor)}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 font-bold mt-1 max-w-[180px] mx-auto">
+                            អូសឯកសារទម្លាក់ចូលទីនេះ ឬចុចដើម្បីជ្រើសរើស (ទំហំអតិបរមា 20MB)
+                          </p>
+                          <button
+                            type="button"
+                            className="mt-4 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-black px-3.5 py-1.5 rounded-xl transition shadow-xs cursor-pointer"
+                          >
+                            ជ្រើសរើសឯកសារ (Choose File)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Display files in bento list */}
+                      <div className="md:col-span-2 space-y-3">
+                        <div className="flex items-center justify-between px-1">
+                          <span className="text-[11px] text-slate-400 font-extrabold uppercase">
+                            ឯកសារភ្ជាប់សរុប៖ <strong className="text-slate-700 font-black">{libraryDocs.filter(d => d.floorId === activeFloor).length} ឯកសារ</strong>
+                          </span>
+                        </div>
+
+                        {libraryDocs.filter(d => d.floorId === activeFloor).length === 0 ? (
+                          <div className="border border-slate-200 rounded-2xl p-8 bg-slate-50/30 flex flex-col items-center justify-center text-center h-[220px]">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-150 text-slate-400 flex items-center justify-center mb-3">
+                              <FolderOpen className="w-5 h-5 text-slate-400" />
+                            </div>
+                            <h4 className="text-xs font-black text-slate-600">មិនទាន់មានឯកសារភ្ជាប់នៅឡើយទេ</h4>
+                            <p className="text-[10px] text-slate-400 font-medium max-w-xs mt-1">
+                              សូមបង្ហោះឯកសារដំបូងរបស់លោកអ្នកសម្រាប់ {getFloorNameKh(activeFloor)} នេះដោយប្រើប្រាស់ឧបករណ៏បង្ហោះខាងឆ្វេង។
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-1">
+                            {libraryDocs.filter(d => d.floorId === activeFloor).map((doc) => {
+                              // helper for document download
+                              const handleDownloadDoc = () => {
+                                const link = document.createElement('a');
+                                link.href = doc.data;
+                                link.download = doc.name;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              };
+
+                              // helper for doc delete
+                              const handleDeleteFloorDoc = async () => {
+                                if (confirm(`តើលោកអ្នកពិតជាចង់លុបឯកសារ "${doc.name}" នេះចេញពី {getFloorNameKh(activeFloor)} មែនទេ?`)) {
+                                  const updated = await deleteDocFromLibraryDB(doc.id);
+                                  setLibraryDocs(updated);
+                                }
+                              };
+
+                              // determine style/icon based on type
+                              let docIcon = <FileText className="w-5 h-5 text-slate-500" />;
+                              let docColor = 'bg-slate-50 border-slate-200';
+                              if (doc.type === 'pdf') {
+                                docIcon = <FileText className="w-5 h-5 text-rose-500" />;
+                                docColor = 'bg-rose-50/40 border-rose-100/60 hover:bg-rose-50';
+                              } else if (doc.type === 'excel') {
+                                docIcon = <FileSpreadsheet className="w-5 h-5 text-emerald-500" />;
+                                docColor = 'bg-emerald-50/30 border-emerald-100/60 hover:bg-emerald-50';
+                              } else if (doc.type === 'image') {
+                                docIcon = <Image className="w-5 h-5 text-sky-500" />;
+                                docColor = 'bg-sky-50/30 border-sky-100/60 hover:bg-sky-50';
+                              }
+
+                              const dateFormatted = new Date(doc.createdAt).toLocaleDateString('kh-KH', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              });
+
+                              const sizeKb = Math.round((doc.data.length * 3) / 4 / 1024);
+                              const sizeFormatted = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+
+                              return (
+                                <div
+                                  key={doc.id}
+                                  className={`p-3 rounded-xl border flex flex-col justify-between gap-3 text-xs transition duration-200 shadow-3xs ${docColor}`}
+                                >
+                                  <div className="flex items-start gap-2.5">
+                                    <div className="p-2 bg-white rounded-lg border border-slate-150/60 shrink-0">
+                                      {docIcon}
+                                    </div>
+                                    <div className="space-y-0.5 min-w-0 flex-1">
+                                      <p className="font-extrabold text-[12px] text-slate-800 truncate" title={doc.name}>
+                                        {doc.name}
+                                      </p>
+                                      <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5">
+                                        <span>{dateFormatted}</span>
+                                        <span className="text-slate-300">•</span>
+                                        <span>{sizeFormatted}</span>
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-between border-t border-slate-100 mt-1 pt-2">
+                                    {doc.type === 'pdf' || doc.type === 'image' ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const blob = base64ToBlob(doc.data);
+                                          const url = URL.createObjectURL(blob);
+                                          window.open(url, '_blank');
+                                        }}
+                                        className="inline-flex items-center gap-1 text-sky-600 hover:text-sky-700 font-extrabold text-[10px] cursor-pointer"
+                                      >
+                                        <ExternalLink className="w-3 h-3" /> បើកមើល (View)
+                                      </button>
+                                    ) : (
+                                      <span className="text-[10px] text-slate-400 font-bold">ឯកសារការិយាល័យ</span>
+                                    )}
+
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={handleDownloadDoc}
+                                        title="ទាញយករក្សាទុក"
+                                        className="p-1 text-slate-500 hover:text-indigo-600 bg-white hover:bg-indigo-50 border border-slate-200/60 rounded-md transition cursor-pointer"
+                                      >
+                                        <Download className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={handleDeleteFloorDoc}
+                                        title="លុបឯកសារ"
+                                        className="p-1 text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200/60 rounded-md transition cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (

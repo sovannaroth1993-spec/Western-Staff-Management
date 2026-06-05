@@ -15,7 +15,6 @@ import SchoolMap from './components/SchoolMap';
 import FixedAssetManager from './components/FixedAssetManager';
 import StudentInsuranceManager from './components/StudentInsuranceManager';
 import FireExtinguisherInspectionManager from './components/FireExtinguisherInspectionManager';
-import AirConditionerInspectionManager from './components/AirConditionerInspectionManager';
 import AdminDocumentationManager from './components/AdminDocumentationManager';
 import OtherAssetsManager from './components/OtherAssetsManager';
 import CanteenAttendanceManager from './components/CanteenAttendanceManager';
@@ -116,7 +115,7 @@ const DEFAULT_ELECTRICITY: ElectricityRecord[] = [
 
 export default function App() {
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'canteen_attendance' | 'otherlinks' | 'staff' | 'attendance' | 'telegram'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'admindocs' | 'canteen_attendance' | 'otherlinks' | 'staff' | 'attendance' | 'telegram'>('dashboard');
 
   // Key Global states representing the workspace data - Hydrated immediately from pre-populated localStorage
   const [staffList, setStaffList] = useState<Staff[]>(() => {
@@ -300,19 +299,6 @@ export default function App() {
                 <span className="flex-1">បំពង់ពន្លត់អគ្គិភ័យ (Fire Extinguishers)</span>
               </button>
 
-              {/* Tab 1.11: Air Conditioner Inspection & Maintenance */}
-              <button
-                onClick={() => setActiveTab('acinspection')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
-                  activeTab === 'acinspection'
-                    ? 'bg-slate-900 text-cyan-400 shadow-md shadow-slate-900/10'
-                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
-                }`}
-              >
-                <Wind className="w-4.5 h-4.5 text-cyan-500 animate-pulse" />
-                <span className="flex-1">ត្រួតពិនិត្យម៉ាស៊ីនត្រជាក់ និងការជួសជុល</span>
-              </button>
-
               {/* Tab 1.12: Admin Documentation */}
               <button
                 onClick={() => setActiveTab('admindocs')}
@@ -461,10 +447,6 @@ export default function App() {
 
               {activeTab === 'fireextinguisher' && (
                 <FireExtinguisherInspectionManager />
-              )}
-
-              {activeTab === 'acinspection' && (
-                <AirConditionerInspectionManager />
               )}
 
               {activeTab === 'admindocs' && (
