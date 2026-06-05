@@ -19,12 +19,13 @@ import AirConditionerInspectionManager from './components/AirConditionerInspecti
 import AdminDocumentationManager from './components/AdminDocumentationManager';
 import OtherAssetsManager from './components/OtherAssetsManager';
 import CanteenAttendanceManager from './components/CanteenAttendanceManager';
+import OtherLinksManager from './components/OtherLinksManager';
 
 import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord } from './types';
 import { DEFAULT_STAFF } from './data/defaultStaff';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen, School, Layers, Coffee
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen, School, Layers, Coffee, Link2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -115,7 +116,7 @@ const DEFAULT_ELECTRICITY: ElectricityRecord[] = [
 
 export default function App() {
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'canteen_attendance' | 'staff' | 'attendance' | 'telegram'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'acinspection' | 'admindocs' | 'canteen_attendance' | 'otherlinks' | 'staff' | 'attendance' | 'telegram'>('dashboard');
 
   // Key Global states representing the workspace data - Hydrated immediately from pre-populated localStorage
   const [staffList, setStaffList] = useState<Staff[]>(() => {
@@ -338,6 +339,19 @@ export default function App() {
                 <span className="flex-1">វត្តមានសិស្សអាហារដ្ឋាន (Canteen)</span>
               </button>
 
+              {/* Tab 1.14: Other Web Links (Other) */}
+              <button
+                onClick={() => setActiveTab('otherlinks')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-xs sm:text-sm font-black tracking-wide transition-colors ${
+                  activeTab === 'otherlinks'
+                    ? 'bg-slate-900 text-indigo-400 shadow-md shadow-slate-900/10'
+                    : 'text-slate-700 hover:text-slate-955 hover:bg-slate-100/70'
+                }`}
+              >
+                <Link2 className="w-4.5 h-4.5 text-indigo-500" />
+                <span className="flex-1">តំណភ្ជាប់ផ្សេងៗ (Other Web Links)</span>
+              </button>
+
               {/* Separator */}
               <div className="h-px bg-slate-200/80 my-2" />
 
@@ -459,6 +473,10 @@ export default function App() {
 
               {activeTab === 'canteen_attendance' && (
                 <CanteenAttendanceManager />
+              )}
+
+              {activeTab === 'otherlinks' && (
+                <OtherLinksManager />
               )}
 
               {activeTab === 'staff' && (

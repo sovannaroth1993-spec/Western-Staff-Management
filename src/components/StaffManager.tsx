@@ -1032,8 +1032,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         value={formStaffId}
                         onChange={(e) => setFormStaffId(e.target.value.toUpperCase())}
                         placeholder="WIS-CLN-085"
-                        disabled={!!editingStaffId}
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                         required
                       />
                     </div>
