@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from './components/Header';
 import DashboardStats from './components/DashboardStats';
 import StaffManager from './components/StaffManager';
@@ -120,6 +120,16 @@ export default function App() {
   // Tab Selection State
   const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'admindocs' | 'canteen_attendance' | 'otherlinks' | 'staff' | 'attendance' | 'telegram' | 'khmercalendar'>('dashboard');
 
+  const workspaceScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to top when tab changes to ensure Header is always visible immediately
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    if (workspaceScrollRef.current) {
+      workspaceScrollRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
+
   // Key Global states representing the workspace data - Hydrated immediately from pre-populated localStorage
   const [staffList, setStaffList] = useState<Staff[]>(() => {
     try {
@@ -186,7 +196,7 @@ export default function App() {
   const totalPresentToday = todayAttendance.filter(r => r.status === 'Present').length;
 
   return (
-    <div className="min-h-screen lg:h-screen text-slate-800 flex flex-col lg:flex-row font-sans selection:bg-amber-100 selection:text-slate-900 relative lg:overflow-hidden">
+    <div className="min-h-screen md:h-screen text-slate-800 flex flex-col md:flex-row font-sans selection:bg-amber-100 selection:text-slate-900 relative md:overflow-hidden">
       {/* Perfect static full-viewport background image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat pointer-events-none z-0"
@@ -196,7 +206,7 @@ export default function App() {
       <div className="fixed inset-0 bg-slate-50/85 backdrop-blur-[4px] pointer-events-none z-0" />
       
       {/* Left Navigation Sidebar (System Menu) - Relocated to viewport left corner */}
-      <aside className="w-full lg:w-[290px] shrink-0 bg-white/90 backdrop-blur-md border-b lg:border-b-0 lg:border-r border-slate-200 p-4 lg:p-6 lg:sticky lg:top-0 lg:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-nitean shadow-sm relative">
+      <aside className="w-full md:w-[270px] lg:w-[290px] shrink-0 bg-white/90 backdrop-blur-md border-b md:border-b-0 md:border-r border-slate-200 p-4 lg:p-6 md:sticky md:top-0 md:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-nitean shadow-sm relative">
         <div className="px-3 py-1.5 border-b border-slate-200/70 flex items-center justify-between">
           <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
             បញ្ជីគ្រប់គ្រងសាលា (System Menu)
@@ -419,13 +429,18 @@ export default function App() {
               </div>
             </div>
 
-            {/* Header Area - Completely frozen/sticky on desktop */}
-            <div className="max-w-full w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 shrink-0 z-10">
-              <Header totalStaff={staffList.length} totalPresentToday={totalPresentToday} />
-            </div>
+            {/* Header Area - Completely frozen/sticky on desktop, only visible on Dashboard */}
+            {activeTab === 'dashboard' && (
+              <div className="max-w-full w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 shrink-0 z-10">
+                <Header totalStaff={staffList.length} totalPresentToday={totalPresentToday} />
+              </div>
+            )}
 
             {/* Scrollable Work Area containing active dynamic views and the brand footer */}
-            <div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 xl:px-12 mt-2 flex flex-col pr-1 relative z-10">
+            <div 
+              ref={workspaceScrollRef}
+              className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 xl:px-12 mt-2 flex flex-col pr-1 relative z-10"
+            >
               <main className="min-w-0 w-full flex-grow">
                 <div className="w-full">
               {activeTab === 'dashboard' && (
