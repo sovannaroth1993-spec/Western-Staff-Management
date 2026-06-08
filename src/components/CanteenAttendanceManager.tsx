@@ -405,10 +405,10 @@ export default function CanteenAttendanceManager() {
               <p className="text-xs text-slate-400 font-bold text-center py-4">គ្មានសន្លឹកទិន្នន័យទេ</p>
             ) : (
               sheets.map((s) => (
-                <button
+                <div
                   key={s.id}
                   onClick={() => setSelectedSheetId(s.id)}
-                  className={`w-full text-left p-3 rounded-xl border transition-all flex justify-between items-start ${
+                  className={`w-full text-left p-3 rounded-xl border transition-all flex justify-between items-start cursor-pointer select-none ${
                     selectedSheetId === s.id 
                       ? 'bg-slate-900 text-white border-slate-900 shadow-md' 
                       : 'bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 border-slate-200'
@@ -434,7 +434,7 @@ export default function CanteenAttendanceManager() {
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                </button>
+                </div>
               ))
             )}
           </div>

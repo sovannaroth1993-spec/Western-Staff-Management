@@ -10,7 +10,7 @@ import { exportStaffToPdf } from '../utils/pdfHelper';
 import { 
   Plus, Edit2, Trash2, FileSpreadsheet, FileText, Upload, 
   Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, X, Info,
-  Paperclip, Download, Eye, File
+  Paperclip, Download, Eye, File, Link2, Globe, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -113,6 +113,9 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   const attachmentFileInputRef = useRef<HTMLInputElement>(null);
   const [previewingAttachment, setPreviewingAttachment] = useState<{ id: string; name: string; type: string; dataUrl: string } | null>(null);
   const [deleteAttachmentTarget, setDeleteAttachmentTarget] = useState<{ id: string; name: string } | null>(null);
+  const [linkTitle, setLinkTitle] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [activeAttachmentTab, setActiveAttachmentTab] = useState<'upload' | 'link'>('upload');
 
   // Helper to construct an empty bulk row
   const createEmptyBulkRow = (dept: Department): BulkRow => ({
@@ -512,9 +515,10 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   };
 
   // Attachment managers
-  const openAttachmentModal = (staff: Staff) => {
+  const openAttachmentModal = (staff: Staff, defaultTab: 'upload' | 'link' = 'upload') => {
     const activeStaff = staffList.find(s => s.id === staff.id) || staff;
     setSelectedStaffForAttachments(activeStaff);
+    setActiveAttachmentTab(defaultTab);
     setIsAttachmentModalOpen(true);
   };
 
@@ -575,6 +579,44 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         attachmentFileInputRef.current.value = '';
       }
     }
+  };
+
+  const handleAddWebLinkAttachment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStaffForAttachments || !linkTitle.trim() || !linkUrl.trim()) return;
+
+    let targetUrl = linkUrl.trim();
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      targetUrl = 'https://' + targetUrl;
+    }
+
+    const newAttachment = {
+      id: `attach_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      name: linkTitle.trim(),
+      size: 'Web Link',
+      type: 'link',
+      dataUrl: targetUrl
+    };
+
+    const updatedList = staffList.map(s => {
+      if (s.id === selectedStaffForAttachments.id) {
+        const currentAttachments = s.attachments || [];
+        return {
+          ...s,
+          attachments: [...currentAttachments, newAttachment]
+        };
+      }
+      return s;
+    });
+
+    setStaffList(updatedList);
+    const activeStaff = updatedList.find(s => s.id === selectedStaffForAttachments.id);
+    if (activeStaff) {
+      setSelectedStaffForAttachments(activeStaff);
+    }
+
+    setLinkTitle('');
+    setLinkUrl('');
   };
 
   const handleDeleteAttachment = (attachmentId: string) => {
@@ -912,27 +954,39 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               {/* Edit / Delete quick buttons */}
               <div className="flex items-center gap-2 border-t border-slate-200/50 mt-4 pt-3 justify-end">
                 <button 
-                  onClick={() => openAttachmentModal(staff)}
-                  className="p-1.5 text-slate-400 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative"
-                  title="ឯកសារភ្ជាប់ (Attachments)"
+                  onClick={() => openAttachmentModal(staff, 'upload')}
+                  className="p-1.5 text-slate-400 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative cursor-pointer"
+                  title="ឯកសារភ្ជាប់ (File Attachments)"
                 >
                   <Paperclip className="w-3.5 h-3.5" />
-                  {staff.attachments && staff.attachments.length > 0 && (
+                  {staff.attachments && staff.attachments.filter(a => a.type !== 'link').length > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-teal-500 text-white font-sans text-[8px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-xs border border-white">
-                      {staff.attachments.length}
+                      {staff.attachments.filter(a => a.type !== 'link').length}
+                    </span>
+                  )}
+                </button>
+                <button 
+                  onClick={() => openAttachmentModal(staff, 'link')}
+                  className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative cursor-pointer"
+                  title="តំណភ្ជាប់ Web (Other Links)"
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  {staff.attachments && staff.attachments.filter(a => a.type === 'link').length > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-indigo-500 text-white font-sans text-[8px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-xs border border-white">
+                      {staff.attachments.filter(a => a.type === 'link').length}
                     </span>
                   )}
                 </button>
                 <button 
                   onClick={() => openEditForm(staff)}
-                  className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg border border-slate-200/60 transition"
+                  className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg border border-slate-200/60 transition cursor-pointer"
                   title="កែសម្រួលព័ត៌មាន"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button 
                   onClick={() => handleDeleteStaff(staff.id, staff.name, staff.staffId)}
-                  className="p-1.5 text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 rounded-lg border border-slate-200/60 transition"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 rounded-lg border border-slate-200/60 transition cursor-pointer"
                   title="លុបចោល"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -1504,13 +1558,17 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               {/* Header */}
               <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-purple-500">
                 <div className="flex items-center gap-2">
-                  <Paperclip className="w-5 h-5 text-purple-400" />
+                  {activeAttachmentTab === 'link' ? (
+                    <Link2 className="w-5 h-5 text-indigo-400 animate-pulse" />
+                  ) : (
+                    <Paperclip className="w-5 h-5 text-purple-400" />
+                  )}
                   <div>
                     <h3 className="text-sm font-black font-moul leading-snug text-white">
-                      ឯកសារភ្ជាប់របស់បុគ្គលិក
+                      {activeAttachmentTab === 'link' ? 'តំណភ្ជាប់ Web របស់បុគ្គលិក' : 'ឯកសារភ្ជាប់របស់បុគ្គលិក'}
                     </h3>
                     <p className="text-[10px] text-slate-400 font-bold font-sans mt-0.5">
-                      Attachments for {selectedStaffForAttachments.name} ({selectedStaffForAttachments.staffId})
+                      {activeAttachmentTab === 'link' ? 'Web Links' : 'File Attachments'} for {selectedStaffForAttachments.name} ({selectedStaffForAttachments.staffId})
                     </p>
                   </div>
                 </div>
@@ -1525,24 +1583,67 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                 </button>
               </div>
 
-              {/* Upload Dropzone Area */}
-              <div className="p-4 border-b border-slate-100 bg-slate-50/70">
-                <input 
-                  type="file"
-                  multiple
-                  ref={attachmentFileInputRef}
-                  onChange={handleUploadAttachments}
-                  className="hidden"
-                />
-                <div 
-                  onClick={() => attachmentFileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-slate-50 rounded-xl p-6 text-center cursor-pointer transition-all duration-250 select-none group"
-                >
-                  <Upload className="w-8 h-8 text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition mx-auto mb-2" />
-                  <span className="text-xs font-extrabold text-slate-700 block">ជ្រើសរើសឯកសារភ្ជាប់ ឬ រូបភាព (ព្រីនសន្លឹក, ឯកសារ PDF...)</span>
-                  <span className="text-[10px] font-bold text-slate-400 block mt-1">អាចផ្ទុកឯកសារបានច្រើនក្នុងពេលតែមួយ (Supports multiple files)</span>
+              {/* Upload or Link input block */}
+              {activeAttachmentTab === 'link' ? (
+                <form onSubmit={handleAddWebLinkAttachment} className="p-4 border-b border-slate-100 bg-teal-50/20 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] uppercase font-extrabold text-slate-500 mb-1">
+                        ឈ្មោះតំណភ្ជាប់ / Link Title <span className="text-rose-500">*</span>
+                      </label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="ឧ. បទបង្ហាញការងារ, ផែនការបង្រៀន..."
+                        value={linkTitle}
+                        onChange={(e) => setLinkTitle(e.target.value)}
+                        className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-800 outline-hidden"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-extrabold text-slate-500 mb-1">
+                        អាសយដ្ឋានតំណភ្ជាប់ / Web URL <span className="text-rose-500">*</span>
+                      </label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="ឧ. https://drive.google.com/..."
+                        value={linkUrl}
+                        onChange={(e) => setLinkUrl(e.target.value)}
+                        className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-hidden font-sans"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="submit"
+                      disabled={!linkTitle.trim() || !linkUrl.trim()}
+                      className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-black px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>បញ្ចូលតំណភ្ជាប់ (Add URL)</span>
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="p-4 border-b border-slate-100 bg-slate-50/70">
+                  <input 
+                    type="file"
+                    multiple
+                    ref={attachmentFileInputRef}
+                    onChange={handleUploadAttachments}
+                    className="hidden"
+                  />
+                  <div 
+                    onClick={() => attachmentFileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-slate-50 rounded-xl p-6 text-center cursor-pointer transition-all duration-250 select-none group"
+                  >
+                    <Upload className="w-8 h-8 text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition mx-auto mb-2" />
+                    <span className="text-xs font-extrabold text-slate-700 block col-span-full">ជ្រើសរើសឯកសារភ្ជាប់ ឬ រូបភាព (ព្រីនសន្លឹក, ឯកសារ PDF...)</span>
+                    <span className="text-[10px] font-bold text-slate-400 block mt-1">អាចផ្ទុកឯកសារបានច្រើនក្នុងពេលតែមួយ (Supports multiple files)</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Attachments List */}
               <div className="p-4 overflow-y-auto flex-1 space-y-3 min-h-[160px]">
@@ -1554,12 +1655,13 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   <div className="text-center py-10">
                     <Paperclip className="w-10 h-10 text-slate-300 mx-auto mb-2.5 opacity-60" />
                     <p className="text-xs text-slate-400 font-black">មិនទាន់មានឯកសារភ្ជាប់នៅឡើយទេ</p>
-                    <p className="text-[10px] text-slate-400 mt-1">លោកអ្នកអាចចុចប្រអប់ខាងលើ ដើម្បីភ្ជាប់ឯកសារផ្សេងៗ។</p>
+                    <p className="text-[10px] text-slate-400 mt-1">លោកអ្នកអាចចុចប្រអប់ខាងលើ ដើម្បីភ្ជាប់ឯកសារ ឬតំណភ្ជាប់ផ្សេងៗ។</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {selectedStaffForAttachments.attachments.map((file) => {
                       const isImage = file.type?.startsWith('image/');
+                      const isLink = file.type === 'link';
                       return (
                         <div 
                           key={file.id}
@@ -1575,6 +1677,10 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                                   className="w-full h-full object-cover"
                                   referrerPolicy="no-referrer"
                                 />
+                              ) : isLink ? (
+                                <div className="w-full h-full bg-sky-50 flex items-center justify-center">
+                                  <Link2 className="w-5 h-5 text-sky-500" />
+                                </div>
                               ) : (
                                 <File className="w-5 h-5 text-slate-400" />
                               )}
@@ -1588,33 +1694,48 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                               >
                                 {file.name}
                               </span>
-                              <span className="text-[10px] text-slate-400 block font-semibold mt-0.5 font-sans">
-                                {file.size} • {file.type ? file.type.split('/')[1]?.toUpperCase() : 'DOC'}
+                              <span className="text-[10px] text-slate-400 block font-semibold mt-0.5 font-sans truncate">
+                                {isLink ? 'តំណភ្ជាប់ Web • URL' : `${file.size} • ${file.type ? file.type.split('/')[1]?.toUpperCase() : 'DOC'}`}
                               </span>
                             </div>
                           </div>
 
                           {/* Action Buttons */}
                           <div className="flex items-center gap-1.5 shrink-0">
-                            {/* Download Icon */}
-                            <a 
-                              href={file.dataUrl}
-                              download={file.name}
-                              className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition rounded-lg border border-slate-200 bg-white"
-                              title="ទាញយក (Download File)"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                            </a>
+                            {isLink ? (
+                              <a 
+                                href={file.dataUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1.5 hover:bg-sky-50 text-sky-600 hover:text-sky-800 border border-slate-200 bg-white transition rounded-lg flex items-center justify-center gap-1 font-bold text-[10px]"
+                                title="បើកតំណភ្ជាប់ (Open Link)"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5 shadow-2xs" />
+                                <span>បើកមើល</span>
+                              </a>
+                            ) : (
+                              <>
+                                {/* Download Icon */}
+                                <a 
+                                  href={file.dataUrl}
+                                  download={file.name}
+                                  className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition rounded-lg border border-slate-200 bg-white"
+                                  title="ទាញយក (Download File)"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                </a>
 
-                            {/* Preview / View trigger */}
-                            <button 
-                              type="button"
-                              onClick={() => setPreviewingAttachment(file)}
-                              className="p-1.5 hover:bg-slate-100 text-indigo-500 hover:text-indigo-700 transition rounded-lg border border-slate-200 bg-white"
-                              title="មើលឯកសារពេញ (View/Print File)"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
+                                {/* Preview / View trigger */}
+                                <button 
+                                  type="button"
+                                  onClick={() => setPreviewingAttachment(file)}
+                                  className="p-1.5 hover:bg-slate-100 text-indigo-500 hover:text-indigo-700 transition rounded-lg border border-slate-200 bg-white"
+                                  title="មើលឯកសារពេញ (View/Print File)"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
 
                             {/* Delete specific attachment */}
                             <button 
