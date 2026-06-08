@@ -328,7 +328,7 @@ export default function FixedAssetManager() {
       case 'Camera':
         return <Camera className="w-4.5 h-4.5 text-rose-600" />;
       case 'TV':
-        return <Tv className="w-4.5 h-4.5 text-purple-600" />;
+        return <Tv className="w-4.5 h-4.5 text-green-700" />;
       default:
         return <Box className="w-4.5 h-4.5 text-slate-500" />;
     }

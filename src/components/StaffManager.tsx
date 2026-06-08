@@ -103,6 +103,15 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   // Excel input target department selection
   const [importDept, setImportDept] = useState<Department>('Cleaner');
   const [importError, setImportError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showNotice = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message: msg, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === msg ? null : prev));
+    }, 4500);
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -224,7 +233,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     if (file) {
       // Basic size validation
       if (!file.type.startsWith('image/')) {
-        alert('សូមជ្រើសរើសតែឯកសាររូបភាពប៉ុណ្ណោះ (Please select only image files)!');
+        showNotice('សូមជ្រើសរើសតែឯកសាររូបភាពប៉ុណ្ណោះ (Please select only image files)!', 'error');
         return;
       }
 
@@ -232,7 +241,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
       const reader = new FileReader();
       reader.onerror = () => {
-        alert('មានបញ្ហាក្នុងការអានឯកសាររូបភាពនេះ! (Error reading file)');
+        showNotice('មានបញ្ហាក្នុងការអានឯកសាររូបភាពនេះ! (Error reading file)', 'error');
         setIsCompressing(false);
       };
 
@@ -296,7 +305,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         };
 
         img.onerror = () => {
-          alert('មិនអាចដំណើរការរូបភាពនេះបានឡើយ! (Invalid image data)');
+          showNotice('មិនអាចដំណើរការរូបភាពនេះបានឡើយ! (Invalid image data)', 'error');
           setIsCompressing(false);
         };
       };
@@ -309,7 +318,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   const handleSaveStaff = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim()) {
-      alert('សូមបំពេញឈ្មោះពេញរបស់បុគ្គលិក!');
+      showNotice('សូមបំពេញឈ្មោះពេញរបស់បុគ្គលិក!', 'error');
       return;
     }
 
@@ -341,7 +350,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       setStaffList(updatedList);
       setIsFormOpen(false);
       resetForm();
-      alert(`ជោគជ័យ! បានកែសម្រួលព័ត៌មានបុគ្គលិកឈ្មោះ ៖ ${formName.trim()} រួចរាល់ដោយជោគជ័យ។`);
+      showNotice(`ជោគជ័យ! បានកែសម្រួលព័ត៌មានបុគ្គលិកឈ្មោះ ៖ ${formName.trim()} រួចរាល់ដោយជោគជ័យ។`);
     } else {
       // Create new
       // If the target staffId already exists, automatically auto-increment to prevent duplicate errors
@@ -395,7 +404,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       } else {
         setIsFormOpen(false);
         resetForm();
-        alert(`ជោគជ័យ! បានបញ្ចូលបុគ្គលិកថ្មីឈ្មោះ ៖ ${newStaff.name} (លេខសម្គាល់ ៖ ${newStaff.staffId}) ទៅក្នុងប្រព័ន្ធដោយរលូន និងជោគជ័យ។`);
+        showNotice(`ជោគជ័យ! បានបញ្ចូលបុគ្គលិកថ្មីឈ្មោះ ៖ ${newStaff.name} (លេខសម្គាល់ ៖ ${newStaff.staffId}) ទៅក្នុងប្រព័ន្ធដោយរលូន និងជោគជ័យ។`);
       }
     }
   };
@@ -407,7 +416,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     // Validate rows containing at least a name
     const filledRows = bulkRows.filter(row => row.name.trim() !== '');
     if (filledRows.length === 0) {
-      alert('សូមបំពេញឈ្មោះបុគ្គលិកយ៉ាងតិច ១ នាក់នៅក្នុងតារាង!');
+      showNotice('សូមបំពេញឈ្មោះបុគ្គលិកយ៉ាងតិច ១ នាក់នៅក្នុងតារាង!', 'error');
       return;
     }
 
@@ -447,7 +456,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       createEmptyBulkRow('Security'),
     ]);
 
-    alert(`ជោគជ័យ! បញ្ចូលបុគ្គលិកថ្មីចំនួន ${filledRows.length} នាក់ ដោយរលូន និងរហ័សបំផុត។`);
+    showNotice(`ជោគជ័យ! បញ្ចូលបុគ្គលិកថ្មីចំនួន ${filledRows.length} នាក់ ដោយរលូន និងរហ័សបំផុត។`);
   };
 
   const handleBulkRowChange = (index: number, key: keyof BulkRow, val: any) => {
@@ -458,7 +467,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
   const handleRemoveBulkRow = (index: number) => {
     if (bulkRows.length <= 1) {
-      alert('ត្រូវរក្សាទុកយ៉ាងហោចណាស់ ១ ជួរ!');
+      showNotice('ត្រូវរក្សាទុកយ៉ាងហោចណាស់ ១ ជួរ!', 'error');
       return;
     }
     setBulkRows(bulkRows.filter((_, idx) => idx !== index));
@@ -471,7 +480,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
   const handleApplyBulkPaste = () => {
     if (!bulkPasteText.trim()) {
-      alert('សូមបញ្ចូល ឬបិទភ្ជាប់ឈ្មោះជាមុនសិន!');
+      showNotice('សូមបញ្ចូល ឬបិទភ្ជាប់ឈ្មោះជាមុនសិន!', 'error');
       return;
     }
     const names = bulkPasteText
@@ -480,7 +489,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       .filter(n => n.length > 0);
 
     if (names.length === 0) {
-      alert('រកមិនឃើញឈ្មោះណាមួយឡើយ!');
+      showNotice('រកមិនឃើញឈ្មោះណាមួយឡើយ!', 'error');
       return;
     }
 
@@ -499,7 +508,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     }
 
     setBulkPasteText('');
-    alert(`ជោគជ័យ! បានបញ្ចូលឈ្មោះ ${names.length} នាក់ ទៅក្នុងតារាងខាងក្រោមរួចរាល់។ លោកអ្នកគ្រាន់តែពិនិត្យភេទ ផ្នែកការងារ ឬវាយលេខទូរស័ព្ទ រួចចុច "រក្សាទុកជាក្រុម" ជាការស្រេច!`);
+    showNotice(`ជោគជ័យ! បានបញ្ចូលឈ្មោះ ${names.length} នាក់ ទៅក្នុងតារាងខាងក្រោមរួចរាល់។ លោកអ្នកគ្រាន់តែពិនិត្យភេទ ផ្នែកការងារ ឬវាយលេខទូរស័ព្ទ រួចចុច "រក្សាទុកជាក្រុម" ជាការស្រេច!`);
   };
 
   // Delete staff member
@@ -572,7 +581,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       }
     } catch (err) {
       console.error(err);
-      alert('មានបញ្ហាក្នុងការអានឯកសារ សូមសាកល្បងម្ដងទៀត!');
+      showNotice('មានបញ្ហាក្នុងការអានឯកសារ សូមសាកល្បងម្ដងទៀត!', 'error');
     } finally {
       setIsCompressing(false);
       if (attachmentFileInputRef.current) {
@@ -671,7 +680,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       });
       
       setStaffList(updatedList);
-      alert(`បញ្ចូលជោគជ័យ! បានរកឃើញបុគ្គលិកថ្មី ${filteredNew.length} នាក់ បញ្ចូលក្នុង "${DEPARTMENT_NAMES_KM[importDept]}"។`);
+      showNotice(`បញ្ចូលជោគជ័យ! បានរកឃើញបុគ្គលិកថ្មី ${filteredNew.length} នាក់ បញ្ចូលក្នុង "${DEPARTMENT_NAMES_KM[importDept]}"។`);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err: any) {
       setImportError('សូមពិនិត្យមើលទ្រង់ទ្រាយឯកសារ Excel ថាតើត្រឹមត្រូវតាមលក្ខខណ្ឌដែរឬទេ!');
@@ -1556,12 +1565,12 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               id="attachments-modal"
             >
               {/* Header */}
-              <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-purple-500">
+              <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-green-600">
                 <div className="flex items-center gap-2">
                   {activeAttachmentTab === 'link' ? (
                     <Link2 className="w-5 h-5 text-indigo-400 animate-pulse" />
                   ) : (
-                    <Paperclip className="w-5 h-5 text-purple-400" />
+                    <Paperclip className="w-5 h-5 text-green-400" />
                   )}
                   <div>
                     <h3 className="text-sm font-black font-moul leading-snug text-white">
@@ -1783,9 +1792,9 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               id="attachment-preview-modal"
             >
               {/* Preview Header */}
-              <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-purple-500 shrink-0">
+              <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-green-600 shrink-0">
                 <div className="flex items-center gap-2 max-w-[80%]">
-                  <Eye className="w-5 h-5 text-purple-400 shrink-0" />
+                  <Eye className="w-5 h-5 text-green-400 shrink-0" />
                   <div className="min-w-0">
                     <h3 className="text-sm font-black font-moul leading-snug text-white truncate" title={previewingAttachment.name}>
                       {previewingAttachment.name}
@@ -1960,6 +1969,25 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] px-5 py-3.5 rounded-2xl shadow-xl border text-xs font-extrabold flex items-center gap-3 backdrop-blur-md ${
+              toast.type === 'success'
+                ? 'bg-slate-900/95 border-slate-800 text-emerald-400 font-tapenh shadow-black/10'
+                : 'bg-rose-600/95 border-rose-500 text-white font-tapenh shadow-rose-900/10'
+            }`}
+          >
+            <div className={`w-2.5 h-2.5 rounded-full ${toast.type === 'success' ? 'bg-emerald-400 animate-ping' : 'bg-white animate-pulse'}`} />
+            <span className="leading-relaxed">{toast.message}</span>
+          </motion.div>
         )}
       </AnimatePresence>
  

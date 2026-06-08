@@ -356,9 +356,39 @@ export interface AirConditionerInspection {
   technicianSigDate: string;
   approverSigName: string;
   approverSigDate: string;
+}export type StudentGrade = 'Kindergarten' | 'Grade 1' | 'Grade 2' | 'Grade 3' | 'Grade 4' | 'Grade 5' | 'Grade 6' | 'Grade 7' | 'Grade 8' | 'Grade 9' | 'Grade 10' | 'Grade 11' | 'Grade 12';
+
+export const ALL_GRADES: StudentGrade[] = ['Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'];
+
+export const GRADE_NAMES_KM: Record<StudentGrade, string> = {
+  Kindergarten: 'ថ្នាក់មត្តេយ្យ (Kindergarten)',
+  'Grade 1': 'ថ្នាក់ទី ១ (Grade 1)',
+  'Grade 2': 'ថ្នាក់ទី ២ (Grade 2)',
+  'Grade 3': 'ថ្នាក់ទី ៣ (Grade 3)',
+  'Grade 4': 'ថ្នាក់ទី ៤ (Grade 4)',
+  'Grade 5': 'ថ្នាក់ទី ៥ (Grade 5)',
+  'Grade 6': 'ថ្នាក់ទី ៦ (Grade 6)',
+  'Grade 7': 'ថ្នាក់ទី ៧ (Grade 7)',
+  'Grade 8': 'ថ្នាក់ទី ៨ (Grade 8)',
+  'Grade 9': 'ថ្នាក់ទី ៩ (Grade 9)',
+  'Grade 10': 'ថ្នាក់ទី ១០ (Grade 10)',
+  'Grade 11': 'ថ្នាក់ទី ១១ (Grade 11)',
+  'Grade 12': 'ថ្នាក់ទី ១២ (Grade 12)'
+};
+
+export interface Student {
+  id: string; // Unique student ID
+  no: number;
+  studentId: string;
+  name: string;
+  gender: 'ប្រុស' | 'ស្រី' | 'Male' | 'Female';
+  dob: string;
+  phoneNumber: string; // Parent/guardian contact
+  photo: string;
+  grade: StudentGrade;
+  enrollmentDate?: string;
+  responsibleLocation?: string; // Classroom room number, e.g., "Room 102"
+  icom?: string; // Optionally keep same structure " walkie / extra card " or status
+  attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
 }
-
-
-
-
 

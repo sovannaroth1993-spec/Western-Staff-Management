@@ -42,7 +42,7 @@ const ICON_OPTIONS = [
   { key: 'globe', label: 'គេហទំព័រ (Website)', icon: Globe, color: 'text-indigo-500 bg-indigo-50 border-indigo-100' },
   { key: 'settings', label: 'ប្រព័ន្ធគ្រប់គ្រង (Admin System)', icon: Settings, color: 'text-slate-600 bg-slate-50 border-slate-100' },
   { key: 'briefcase', label: 'ការងាររដ្ឋបាល (PR Job)', icon: Briefcase, color: 'text-orange-500 bg-orange-50 border-orange-100' },
-  { key: 'file', label: 'លិខិតយោង (Documents)', icon: FileText, color: 'text-purple-500 bg-purple-50 border-purple-100' },
+  { key: 'file', label: 'លិខិតយោង (Documents)', icon: FileText, color: 'text-green-700 bg-green-50 border-green-100' },
   { key: 'layers', label: 'ប្រភពចំរុះ (Layers)', icon: Layers, color: 'text-teal-500 bg-teal-50 border-teal-100' },
   { key: 'link', label: 'តំណភ្ជាប់ទូទៅ (Link)', icon: Link2, color: 'text-rose-500 bg-rose-50 border-rose-100' }
 ];

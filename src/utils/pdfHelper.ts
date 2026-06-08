@@ -13,6 +13,83 @@ interface jsPDFWithAutoTable extends jsPDF {
 }
 
 /**
+ * Phonetically transliterates Khmer Unicode characters to Latin/English counterparts.
+ * This yields beautiful English/Latin directory listings and prevents standard Roman-only
+ * fonts in pdf layout engines (like Helvetica) from throwing exceptions or freezing threads.
+ */
+export function transliterateKhmerToLatin(text: string): string {
+  if (!text) return '';
+  
+  // High fidelity pre-mappings for typical names/words to keep business reports looking stellar
+  const preMappedNames: Record<string, string> = {
+    'សោម សុខា': 'Som Sokha',
+    'កែវ ពិសិដ្ឋ': 'Keo Piseth',
+    'ចាន់ ធារី': 'Chan Theary',
+    'សុខ ស្រីនឿន': 'Sok Sreynoeun',
+    'លី ចាន់ណា': 'Ly Channa',
+    'ជា ពិសី': 'Chea Pisey',
+    'អ៊ុំ សុវណ្ណារី': 'Oum Sovannary',
+    'អ៊ុំ ស្រីមុំ': 'Oum Sreymom',
+    'ប៉ែន សម្បត្តិ': 'Pen Sambath',
+    'សន ចាន់ធូ': 'Sorn Chanthou',
+    'អនាម័យ': 'Cleaner',
+    'សន្តិសុខ': 'Security',
+    'បណ្ណារក្ស': 'Librarian',
+    'គិលានុបដ្ឋាយិកា': 'Nurse',
+    'រដ្ឋបាល': 'Admin',
+    'អាហារដ្ឋាន': 'Canteen',
+    'បណ្ណារ័ក្ស': 'Librarian',
+    'អាយកូម': 'Icom'
+  };
+
+  const trimmed = text.trim();
+  if (preMappedNames[trimmed]) {
+    return preMappedNames[trimmed];
+  }
+
+  // Fallback character-by-character transliteration mapper
+  const consonants: Record<string, string> = {
+    'ក': 'K', 'ខ': 'Kh', 'គ': 'K', 'ឃ': 'Kh', 'ង': 'Ng',
+    'ច': 'Ch', 'ឆ': 'Chh', 'ជ': 'Ch', 'ឈ': 'Chh', 'ញ': 'Nh',
+    'ដ': 'D', 'ឋ': 'Th', 'ឌ': 'D', 'ឍ': 'Th', 'ណ': 'N',
+    'ត': 'T', 'ថ': 'Th', 'ទ': 'T', 'ធ': 'Th', 'ន': 'N',
+    'ប': 'B', 'ផ': 'Ph', 'ព': 'P', 'ភ': 'Ph', 'ម': 'M',
+    'យ': 'Y', 'រ': 'R', 'ល': 'L', 'វ': 'V',
+    'ស': 'S', 'ហ': 'H', 'ឡ': 'L', 'អ': 'O'
+  };
+
+  const vowels: Record<string, string> = {
+    'ា': 'a', 'ិ': 'i', 'ី': 'ei', 'ឹ': 'teu', 'ឺ': 'teu',
+    'ុ': 'u', 'ូ': 'ou', 'ួ': 'uor', 'ើ': 'eu', 'ឿ': 'eua',
+    'ៀ': 'ieth', 'េ': 'e', 'ែ': 'ae', 'ៃ': 'ey', 'ោ': 'ao',
+    'ៅ': 'au', 'ុំ': 'om', 'ំ': 'om', 'ំា': 'am', 'ះ': 'ah',
+    'ុះ': 'uh', 'េះ': 'eh', 'ោះ': 'oh'
+  };
+
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (consonants[char] !== undefined) {
+      result += consonants[char];
+    } else if (vowels[char] !== undefined) {
+      result += vowels[char];
+    } else if (char === ' ') {
+      result += ' ';
+    } else if (char >= '0' && char <= '9') {
+      result += char;
+    } else if (char === '-' || char === '_' || char === '/' || char === '(' || char === ')') {
+      result += char;
+    }
+    // ignore nested sub-signs and diacritics like ្ and ៍ to keep output strictly raw ASCII
+  }
+
+  // Clean layout spacing and capitalization
+  return result
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
  * Helper to export Staff list to PDF
  */
 export function exportStaffToPdf(staffList: Staff[], department: Department | 'All') {
@@ -41,8 +118,7 @@ export function exportStaffToPdf(staffList: Staff[], department: Department | 'A
   doc.text(`Generated Date: ${new Date().toLocaleDateString()}`, 14, 35);
   doc.text(`Total Staff Count: ${staffList.length}`, 14, 40);
   
-  // Dynamic columns Setup: If a single department is selected, the department column is redundant.
-  // We can hide it and expand other columns to make it look exceptionally clean.
+  // Dynamic columns Setup
   const showDept = department === 'All';
   const tableColumn = [
     'No', 
@@ -60,20 +136,21 @@ export function exportStaffToPdf(staffList: Staff[], department: Department | 'A
   const tableRows: any[][] = [];
   
   staffList.forEach((s, idx) => {
+    // Transliterate Khmer text to Latin to guarantee perfect jsPDF metric measuring
     const row = [
       idx + 1,
       s.staffId,
-      s.name,
-      s.gender,
+      transliterateKhmerToLatin(s.name),
+      s.gender === 'ស្រី' ? 'Female' : 'Male',
       s.dob,
       s.joinDate || '-',
       s.phoneNumber,
     ];
     if (showDept) {
-      row.push(DEPARTMENT_NAMES_KM[s.department] || s.department);
+      row.push(s.department);
     }
-    row.push(s.icom || '-');
-    row.push(s.responsibleLocation || '-');
+    row.push(s.icom ? transliterateKhmerToLatin(s.icom) : '-');
+    row.push(s.responsibleLocation ? transliterateKhmerToLatin(s.responsibleLocation) : '-');
     tableRows.push(row);
   });
 
@@ -149,7 +226,7 @@ export function exportAttendanceToPdf(records: AttendanceRecord[], staffList: St
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(10);
   doc.text(`Attendance Date: ${date}`, 14, 35);
-  doc.text(`Department: ${DEPARTMENT_NAMES_KM[department]} (${department})`, 14, 40);
+  doc.text(`Department: ${department}`, 14, 40);
   
   const presentCount = records.filter(r => r.status === 'Present').length;
   const excusedCount = records.filter(r => r.status === 'Excused').length;
@@ -166,24 +243,24 @@ export function exportAttendanceToPdf(records: AttendanceRecord[], staffList: St
   
   records.forEach((r, idx) => {
     const staff = staffList.find(s => s.staffId === r.staffId);
-    let statusId = 'Present (មក)';
-    if (r.status === 'Excused') statusId = 'Excused (ច្បាប់)';
-    if (r.status === 'Absent') statusId = 'Absent (អវត្តមាន)';
+    let statusId = 'Present';
+    if (r.status === 'Excused') statusId = 'Excused';
+    if (r.status === 'Absent') statusId = 'Absent';
     
     const row = [
       idx + 1,
       r.staffId,
-      r.staffName,
-      staff?.gender || 'N/A',
+      transliterateKhmerToLatin(r.staffName),
+      staff?.gender === 'ស្រី' ? 'Female' : 'Male',
       statusId,
     ];
     
     if (isSecurity) {
-      row.push(staff?.icom || '-');
-      row.push(staff?.responsibleLocation || '-');
+      row.push(staff?.icom ? transliterateKhmerToLatin(staff.icom) : '-');
+      row.push(staff?.responsibleLocation ? transliterateKhmerToLatin(staff.responsibleLocation) : '-');
     }
     
-    row.push(r.notes || '');
+    row.push(r.notes ? transliterateKhmerToLatin(r.notes) : '');
     tableRows.push(row);
   });
   
@@ -261,12 +338,12 @@ export function exportCleaningToPdf(tasks: CleaningTask[], date: string) {
   tasks.forEach((t, idx) => {
     tableRows.push([
       idx + 1,
-      t.areaName,
-      `${t.cleanerName} (${t.cleanerId})`,
-      t.timeOfDay === 'Morning' ? 'Morning (ព្រឹក)' : 'Afternoon (រសៀល)',
-      t.status === 'Completed' ? 'Completed (រួចរាល់)' : 'In Progress (កំពុងធ្វើ)',
+      transliterateKhmerToLatin(t.areaName),
+      `${transliterateKhmerToLatin(t.cleanerName)} (${t.cleanerId})`,
+      t.timeOfDay === 'Morning' ? 'Morning' : 'Afternoon',
+      t.status === 'Completed' ? 'Completed' : 'In Progress',
       t.completedAt || '-',
-      t.notes || ''
+      t.notes ? transliterateKhmerToLatin(t.notes) : ''
     ]);
   });
   
@@ -334,22 +411,23 @@ export function exportWaterToPdf(waterRecords: WaterRecord[]) {
   
   doc.text(`Total Water Expense: $${totalCostUsd.toFixed(2)} | Average Monthly: $${averageCostUsd.toFixed(2)}`, 110, 45);
   
-  const khmerMonths = [
-    'មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 
-    'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
+  const englishMonths = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  const formatKhmerMonthPdf = (monthYearStr: string) => {
+  
+  const formatEnglishMonthPdf = (monthYearStr: string) => {
     if (!monthYearStr) return '';
     const [year, month] = monthYearStr.split('-');
     const monthIndex = parseInt(month, 10) - 1;
-    const khmerMonthName = khmerMonths[monthIndex] || month;
-    return `${khmerMonthName} ${year}`;
+    const name = englishMonths[monthIndex] || month;
+    return `${name} ${year}`;
   };
 
   const tableColumn = ['No', 'Month-Year', 'Cost Before ($)', 'Cost After ($)', 'Difference ($)', 'Variance (%)', 'Recorded By', 'Notes'];
   const tableRows: any[][] = [];
   
-  // Sort chronologically for sheet consistency
+  // Sort chronologically
   const sorted = [...waterRecords].sort((a, b) => a.monthYear.localeCompare(b.monthYear));
   
   sorted.forEach((r, idx) => {
@@ -368,13 +446,13 @@ export function exportWaterToPdf(waterRecords: WaterRecord[]) {
 
     tableRows.push([
       idx + 1,
-      formatKhmerMonthPdf(r.monthYear) + ` (${r.monthYear})`,
+      formatEnglishMonthPdf(r.monthYear) + ` (${r.monthYear})`,
       `$${r.costBeforeUsd.toFixed(2)}`,
       `$${r.costAfterUsd.toFixed(2)}`,
       diffStr,
       pctStr,
-      r.recordedBy,
-      r.notes || ''
+      transliterateKhmerToLatin(r.recordedBy),
+      r.notes ? transliterateKhmerToLatin(r.notes) : ''
     ]);
   });
   

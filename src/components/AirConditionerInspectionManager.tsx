@@ -913,7 +913,7 @@ export default function AirConditionerInspectionManager() {
                       {item.planChangeParts && <span className="bg-amber-100 text-amber-805 px-2 py-0.5 rounded text-[9.5px] font-bold">ដូរគ្រឿងបន្លាស់</span>}
                       {item.planRepairWiring && <span className="bg-rose-100 text-rose-850 px-2 py-0.5 rounded text-[9.5px] font-bold">ជួសជុលខ្សែភ្លើង</span>}
                       {item.planRepairWaterPipe && <span className="bg-teal-100 text-teal-805 px-2 py-0.5 rounded text-[9.5px] font-bold">ជួសជុលបំពង់ទឹក</span>}
-                      {item.planSendBigRepair && <span className="bg-purple-100 text-purple-805 px-2 py-0.5 rounded text-[9.5px] font-bold">ជួសជុលធំ</span>}
+                      {item.planSendBigRepair && <span className="bg-green-100 text-green-900 px-2 py-0.5 rounded text-[9.5px] font-bold">ជួសជុលធំ</span>}
                     </div>
                     {item.repairs && item.repairs.length > 0 ? (
                       <p className="text-slate-500 italic text-[10.5px] truncate">

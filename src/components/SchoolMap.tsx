@@ -255,7 +255,7 @@ const FLOOR_ROOM_TEMPLATES: { [key: string]: Array<{ id: string; nameKh: string;
       ]
     },
     { 
-      id: '1-lib', nameKh: 'បណ្ណាល័យធំ (Central Library)', nameEn: 'Central Library Hall', teacher: 'អ្នកគ្រូ ឈីម រស្មី (Chhim Raksmey)', capacity: 50, currentStudents: 32, status: 'active', color: 'bg-violet-50 border-violet-500 text-violet-800',
+      id: '1-lib', nameKh: 'បណ្ណាល័យធំ (Central Library)', nameEn: 'Central Library Hall', teacher: 'អ្នកគ្រូ ឈីម រស្មី (Chhim Raksmey)', capacity: 50, currentStudents: 32, status: 'active', color: 'bg-green-50 border-green-600 text-green-800',
       seats: [
         ['តុអាន ១', 'តុអាន ២', 'តុអាន ៣'],
         ['រទេះសៀវភៅ', 'កុំព្យូទ័រស្រាវជ្រាវ', 'តុបណ្ណារក្ស']
@@ -305,7 +305,7 @@ const FLOOR_ROOM_TEMPLATES: { [key: string]: Array<{ id: string; nameKh: string;
       ]
     },
     { 
-      id: '3-music', nameKh: 'បន្ទប់តន្រ្តី និងឧបករណ៍ (Music & Performing Arts)', nameEn: 'Music Studio', teacher: 'អ្នកគ្រូ នួន ចាន់ធី (Noun Chanthy)', capacity: 25, currentStudents: 18, status: 'active', color: 'bg-purple-50 border-purple-500 text-purple-800',
+      id: '3-music', nameKh: 'បន្ទប់តន្រ្តី និងឧបករណ៍ (Music & Performing Arts)', nameEn: 'Music Studio', teacher: 'អ្នកគ្រូ នួន ចាន់ធី (Noun Chanthy)', capacity: 25, currentStudents: 18, status: 'active', color: 'bg-green-50 border-green-700 text-green-900',
       seats: [
         ['ព្យាណូធំ (Piano)', 'ស្គរ (Drums)', 'ហ្គីតា (Guitars)'],
         ['ឧបករណ៍ភ្លេងខ្មែរ', 'មីក្រូហ្វូន', 'កៅអីហាត់ច្រៀង']

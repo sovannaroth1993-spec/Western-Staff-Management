@@ -5,13 +5,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Award, ShieldCheck, Users, Sparkles, Upload, X, User, Camera, PenLine } from 'lucide-react';
+import { translations, Language } from '../lib/translations';
 
 interface HeaderProps {
   totalStaff: number;
   totalPresentToday: number;
+  lang: Language;
 }
 
-export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
+export default function Header({ totalStaff, totalPresentToday, lang }: HeaderProps) {
+  const t = translations[lang];
   const [time, setTime] = useState(new Date());
   const [logo, setLogo] = useState<string>(() => {
     try {
@@ -60,7 +63,7 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
           localStorage.setItem('wis_profile_avatar', base64String);
         } catch (error) {
           console.error("Local storage error:", error);
-          alert("រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពដែលមានទំហំតូចជាង ២MB");
+          alert(t.imageTooLarge);
         }
       };
       reader.readAsDataURL(file);
@@ -115,7 +118,7 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
           localStorage.setItem('wis_school_logo', base64String);
         } catch (error) {
           console.error("Local storage error:", error);
-          alert("រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពដែលមានទំហំតូចជាង ២MB");
+          alert(t.imageTooLarge);
         }
       };
       reader.readAsDataURL(file);
@@ -132,8 +135,16 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
     }
   };
 
-  // Format Date in Khmer
-  const formatKhmerDate = (date: Date) => {
+  // Format Date dynamically
+  const formatDateString = (date: Date) => {
+    if (lang === 'en') {
+      const weekdaysEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const monthsEn = [
+        'January', 'February', 'March', 'April', 'May', 'June', 
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      return `${weekdaysEn[date.getDay()]}, ${monthsEn[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+    }
     const weekdays = ['អាទិត្យ', 'ច័ន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
     const months = [
       'មករា', 'កម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 
@@ -210,10 +221,10 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
 
           <div>
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-moul tracking-normal mt-1 mb-1.5 leading-relaxed text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-400">
-              សាលាវេស្ទើនអន្តរជាតិ
+              {lang === 'en' ? 'Western International School' : 'សាលាវេស្ទើនអន្តរជាតិ'}
             </h1>
             <p className="text-sm md:text-base font-bold text-emerald-200 tracking-wider uppercase">
-              Western International School • សាខាចំការដូង
+              {lang === 'en' ? 'Chamkar Doung Branch' : 'Western International School • សាខាចំការដូង'}
             </p>
           </div>
         </div>
@@ -226,12 +237,12 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
               <Clock className="w-6 h-6 animate-spin-slow" />
             </div>
             <div>
-              <div className="text-sm font-bold text-emerald-300/90">ពេលវេលាជាក់ស្តែង</div>
+              <div className="text-sm font-bold text-emerald-300/90">{t.realtimeClock}</div>
               <div className="text-lg md:text-xl font-extrabold text-white tracking-tight">
                 {time.toLocaleTimeString('en-US', { hour12: true })}
               </div>
               <div className="text-xs md:text-sm font-semibold text-amber-400 mt-1">
-                {formatKhmerDate(time)}
+                {formatDateString(time)}
               </div>
             </div>
           </div>
@@ -245,9 +256,9 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
               </div>
             </div>
             <div>
-              <div className="text-sm font-bold text-emerald-300/90">វត្តមានថ្ងៃនេះ</div>
+              <div className="text-sm font-bold text-emerald-300/90">{t.todayAttendance}</div>
               <div className="text-base md:text-lg font-black text-white mt-0.5">
-                {totalPresentToday} / {totalStaff} នាក់
+                {totalPresentToday} / {totalStaff} {t.peopleUnit}
               </div>
               <div className="w-28 bg-emerald-900/55 h-2 rounded-full overflow-hidden mt-1.5">
                 <div 
@@ -277,7 +288,7 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
                 </div>
               )}
               {/* Camera Icon on Hover to quickly upload profile */}
-              <label className="absolute -bottom-1 -right-1 w-5.5 h-5.5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-xs" title="ប្តូររូបថត">
+              <label className="absolute -bottom-1 -right-1 w-5.5 h-5.5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-xs" title={lang === 'en' ? 'Change Photo' : 'ប្តូររូបថត'}>
                 <Camera className="w-3 h-3" />
                 <input 
                   type="file" 
@@ -290,20 +301,20 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
             {/* Name and role block */}
             <div className="flex-1 min-w-0">
               <div className="text-xs font-bold text-emerald-300/90 flex items-center justify-between">
-                <span>គណនីបច្ចុប្បន្ន</span>
+                <span>{t.currentAccount}</span>
                 <button 
                   onClick={handleOpenEditModal}
                   className="text-amber-400 hover:text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer p-0.5 rounded hover:bg-white/5 inline-flex items-center"
-                  title="កែប្រែព័ត៌មានគណនី"
+                  title={t.editProfile}
                 >
                   <PenLine className="w-3.5 h-3.5" />
                 </button>
               </div>
               <div className="text-sm font-extrabold text-white truncate mt-0.5" title={profileName}>
-                {profileName}
+                {profileName === 'សុវណ្ណារ័ត្ន' && lang === 'en' ? 'Sovannaroth' : profileName}
               </div>
               <div className="text-[11px] font-semibold text-emerald-200 truncate mt-0.5" title={profileRole}>
-                {profileRole}
+                {profileRole === 'អ្នកគ្រប់គ្រងប្រព័ន្ធ' && lang === 'en' ? 'System Administrator' : profileRole}
               </div>
             </div>
           </div>
@@ -319,8 +330,8 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
             <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <User className="w-4.5 h-4.5 text-amber-400" />
-                <h3 className="font-moul text-xs text-white tracking-normal leading-relaxed">
-                  កែប្រែព័ត៌មានគណនី (Edit Profile)
+                <h3 className="font-sans text-xs text-white font-bold leading-relaxed">
+                  {t.editProfile}
                 </h3>
               </div>
               <button 
@@ -331,7 +342,7 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
               </button>
             </div>
 
-            <form onSubmit={handleSaveProfile} className="p-5 space-y-4">
+            <form onSubmit={handleSaveProfile} className="p-5 space-y-4 font-sans">
               {/* Profile Avatar Selection in Form */}
               <div className="flex flex-col items-center gap-2 pb-2 border-b border-slate-100">
                 <div className="relative group">
@@ -372,12 +383,12 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
                     )}
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-400 font-bold">ចុចលើរូបដើម្បី ប្តូរ ឬ លុប</span>
+                <span className="text-[10px] text-slate-400 font-bold">{t.clickToChange}</span>
               </div>
 
               {/* Name Field */}
               <div className="space-y-1">
-                <label className="block text-xs font-black text-slate-500">ឈ្មោះគណនី (Name) <span className="text-rose-500">*</span></label>
+                <label className="block text-xs font-black text-slate-500">{t.accountName} <span className="text-rose-500">*</span></label>
                 <input 
                   type="text" 
                   value={editNameField}
@@ -389,7 +400,7 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
 
               {/* Role Field */}
               <div className="space-y-1">
-                <label className="block text-xs font-black text-slate-500">តួនាទី (Role) <span className="text-rose-500">*</span></label>
+                <label className="block text-xs font-black text-slate-500">{t.accountRole} <span className="text-rose-500">*</span></label>
                 <input 
                   type="text" 
                   value={editRoleField}
@@ -406,13 +417,13 @@ export default function Header({ totalStaff, totalPresentToday }: HeaderProps) {
                   onClick={() => setIsEditModalOpen(false)}
                   className="px-4 py-2 hover:bg-slate-100 transition border rounded-xl text-slate-500 text-xs font-bold cursor-pointer"
                 >
-                  បោះបង់
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl transition cursor-pointer"
                 >
-                  រក្សាទុក
+                  {t.save}
                 </button>
               </div>
             </form>

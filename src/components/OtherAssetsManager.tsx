@@ -51,6 +51,74 @@ export interface OtherAsset {
   costUsd: number; // Price in USD
   serialNumber?: string; // Serial / code
   notes?: string;
+  grade?: string;
+  roomNumber?: string;
+}
+
+export const GRADE_LABELS_KM: Record<string, string> = {
+  All: 'គ្រប់ថ្នាក់ ទាំងអស់ (All Grades)',
+  Nursery: 'ថ្នាក់មត្តេយ្យសំបុកកូនឈើ (Nursery)',
+  Kindergarten: 'ថ្នាក់មត្តេយ្យកម្រិតខ្ពស់ (Kindergarten)',
+  'Grade 1': 'ថ្នាក់ទី១ (Grade 1)',
+  'Grade 2': 'ថ្នាក់ទី២ (Grade 2)',
+  'Grade 3': 'ថ្នាក់ទី៣ (Grade 3)',
+  'Grade 4': 'ថ្នាក់ទី៤ (Grade 4)',
+  'Grade 5': 'ថ្នាក់ទី៥ (Grade 5)',
+  'Grade 6': 'ថ្នាក់ទី៦ (Grade 6)',
+  'Grade 7': 'ថ្នាក់ទី៧ (Grade 7)',
+  'Grade 8': 'ថ្នាក់ទី៨ (Grade 8)',
+  'Grade 9': 'ថ្នាក់ទី៩ (Grade 9)',
+  'Grade 10': 'ថ្នាក់ទី១០ (Grade 10)',
+  'Grade 11': 'ថ្នាក់ទី១១ (Grade 11)',
+  'Grade 12': 'ថ្នាក់ទី១២ (Grade 12)',
+  None: 'ថ្នាក់ឯកទេស/បន្ទប់ផ្សេងៗ (Specialty Room)'
+};
+
+export function parseGradeAndRoom(asset: Partial<OtherAsset>): { grade: string; roomNumber: string } {
+  let grade = 'None';
+  let roomNumber = '';
+
+  // Extract Grade from specificRoom or name
+  const textToSearch = `${asset.name || ''} ${asset.specificRoom || ''}`.toLowerCase();
+  if (textToSearch.includes('nursery') || textToSearch.includes('ថ្នាក់ (n)') || textToSearch.includes('មត្តេយ្យសំបុក')) {
+    grade = 'Nursery';
+  } else if (textToSearch.includes('kindergarten') || textToSearch.includes('ថ្នាក់ (k)') || textToSearch.includes('មត្តេយ្យកម្រិតខ្ពស់')) {
+    grade = 'Kindergarten';
+  } else if (textToSearch.includes('grade 1') || textToSearch.includes('ថ្នាក់ទី១') || textToSearch.includes('g01')) {
+    grade = 'Grade 1';
+  } else if (textToSearch.includes('grade 2') || textToSearch.includes('ថ្នាក់ទី២') || textToSearch.includes('g02')) {
+    grade = 'Grade 2';
+  } else if (textToSearch.includes('grade 3') || textToSearch.includes('ថ្នាក់ទី៣') || textToSearch.includes('g03')) {
+    grade = 'Grade 3';
+  } else if (textToSearch.includes('grade 4') || textToSearch.includes('ថ្នាក់ទី៤') || textToSearch.includes('g04')) {
+    grade = 'Grade 4';
+  } else if (textToSearch.includes('grade 5') || textToSearch.includes('ថ្នាក់ទី៥') || textToSearch.includes('g05')) {
+    grade = 'Grade 5';
+  } else if (textToSearch.includes('grade 6') || textToSearch.includes('ថ្នាក់ទី៦') || textToSearch.includes('g06')) {
+    grade = 'Grade 6';
+  } else if (textToSearch.includes('grade 7') || textToSearch.includes('ថ្នាក់ទី៧') || textToSearch.includes('g07')) {
+    grade = 'Grade 7';
+  } else if (textToSearch.includes('grade 8') || textToSearch.includes('ថ្នាក់ទី៨') || textToSearch.includes('g08')) {
+    grade = 'Grade 8';
+  } else if (textToSearch.includes('grade 9') || textToSearch.includes('ថ្នាក់ទី៩') || textToSearch.includes('g09')) {
+    grade = 'Grade 9';
+  } else if (textToSearch.includes('grade 10') || textToSearch.includes('ថ្នាក់ទី១០') || textToSearch.includes('g10')) {
+    grade = 'Grade 10';
+  } else if (textToSearch.includes('grade 11') || textToSearch.includes('ថ្នាក់ទី១១') || textToSearch.includes('g11')) {
+    grade = 'Grade 11';
+  } else if (textToSearch.includes('grade 12') || textToSearch.includes('ថ្នាក់ទី១២') || textToSearch.includes('g12')) {
+    grade = 'Grade 12';
+  }
+
+  // Extract Room Number (e.g., "បន្ទប់ ២០១", "បន្ទប់ ២០២", "Room 204", "IT Lab B")
+  const roomMatch = (asset.specificRoom || '').match(/(បន្ទប់\s*\d+|room\s*\d+|it\s*lab[-A-Z]*|piano\s*lab\s*\d+|home-eco|បន្ទប់\s*[ក-អ])/i);
+  if (roomMatch) {
+    roomNumber = roomMatch[0];
+  } else {
+    roomNumber = asset.specificRoom || '';
+  }
+
+  return { grade, roomNumber };
 }
 
 const DEFAULT_OTHER_ASSETS: OtherAsset[] = [
@@ -666,6 +734,8 @@ export default function OtherAssetsManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<RoomCategory | 'All'>('All');
   const [filterCondition, setFilterCondition] = useState<AssetCondition | 'All'>('All');
+  const [filterGrade, setFilterGrade] = useState<string>('All');
+  const [filterRoomNumber, setFilterRoomNumber] = useState<string>('All');
   
   // Modals and Toasts
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -679,6 +749,8 @@ export default function OtherAssetsManager() {
   const [formName, setFormName] = useState('');
   const [formRoomCategory, setFormRoomCategory] = useState<RoomCategory>('Classroom');
   const [formSpecificRoom, setFormSpecificRoom] = useState('');
+  const [formRoomNumber, setFormRoomNumber] = useState('');
+  const [formGrade, setFormGrade] = useState('None');
   const [formBrand, setFormBrand] = useState('');
   const [formModel, setFormModel] = useState('');
   const [formQuantity, setFormQuantity] = useState(1);
@@ -729,6 +801,8 @@ export default function OtherAssetsManager() {
     setFormName('');
     setFormRoomCategory('Classroom');
     setFormSpecificRoom('');
+    setFormRoomNumber('');
+    setFormGrade('None');
     setFormBrand('');
     setFormModel('');
     setFormQuantity(1);
@@ -748,6 +822,12 @@ export default function OtherAssetsManager() {
     setFormName(asset.name);
     setFormRoomCategory(asset.roomCategory);
     setFormSpecificRoom(asset.specificRoom);
+    
+    // Fallback parsing for pre-existing items
+    const fallback = parseGradeAndRoom(asset);
+    setFormRoomNumber(asset.roomNumber || fallback.roomNumber);
+    setFormGrade(asset.grade || fallback.grade);
+
     setFormBrand(asset.brand || '');
     setFormModel(asset.model || '');
     setFormQuantity(asset.quantity || 1);
@@ -771,7 +851,7 @@ export default function OtherAssetsManager() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || !formSpecificRoom.trim()) {
+    if (!formName.trim() || !formSpecificRoom.trim() || !formRoomNumber.trim()) {
       triggerToast('សូមបំពេញព័ត៌មានចាំបាច់ឲ្យបានគ្រប់គ្រាន់!', 'danger');
       return;
     }
@@ -781,6 +861,8 @@ export default function OtherAssetsManager() {
       name: formName.trim(),
       roomCategory: formRoomCategory,
       specificRoom: formSpecificRoom.trim(),
+      roomNumber: formRoomNumber.trim(),
+      grade: formGrade,
       brand: formBrand.trim(),
       model: formModel.trim(),
       quantity: Number(formQuantity),
@@ -891,11 +973,17 @@ export default function OtherAssetsManager() {
           const serialNumber = cleanFields[12] || 'N/A';
           const notes = cleanFields[13] || '';
 
+          const parsed = parseGradeAndRoom({ name, specificRoom });
+          const roomNumber = cleanFields[14] || parsed.roomNumber;
+          const grade = cleanFields[15] || parsed.grade;
+
           newAssets.push({
             id,
             name,
             roomCategory,
             specificRoom,
+            roomNumber,
+            grade,
             brand,
             model,
             quantity,
@@ -932,20 +1020,34 @@ export default function OtherAssetsManager() {
     }
   };
 
+  // Helper getters to get grade and roomNumber with dynamic fallbacks
+  const getAssetGrade = (item: OtherAsset) => item.grade || parseGradeAndRoom(item).grade;
+  const getAssetRoomNumber = (item: OtherAsset) => item.roomNumber || parseGradeAndRoom(item).roomNumber;
+
   // Filter calculation
   const filteredAssets = assets.filter(item => {
     const matchesSearch = 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.specificRoom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      getAssetRoomNumber(item).toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.serialNumber && item.serialNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.assignedStaff && item.assignedStaff.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesCategory = filterCategory === 'All' || item.roomCategory === filterCategory;
     const matchesCondition = filterCondition === 'All' || item.condition === filterCondition;
+    
+    const assetGrade = getAssetGrade(item);
+    const matchesGrade = filterGrade === 'All' || assetGrade === filterGrade;
 
-    return matchesSearch && matchesCategory && matchesCondition;
+    const assetRoomNumber = getAssetRoomNumber(item);
+    const matchesRoomNumber = filterRoomNumber === 'All' || assetRoomNumber.toLowerCase() === filterRoomNumber.toLowerCase();
+
+    return matchesSearch && matchesCategory && matchesCondition && matchesGrade && matchesRoomNumber;
   });
+
+  // Extract unique room numbers for filtering select
+  const uniqueRoomNumbers = Array.from(new Set(assets.map(item => getAssetRoomNumber(item)))).filter(Boolean).sort();
 
   // KPI count statistics
   const statTotalQty = assets.reduce((sum, item) => sum + item.quantity, 0);
@@ -970,10 +1072,10 @@ export default function OtherAssetsManager() {
       )}
 
       {/* Main Title Banner */}
-      <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl px-6 py-5.5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-900 to-emerald-950 text-white rounded-2xl px-6 py-5.5 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <School className="w-6 h-6 text-indigo-400" />
+            <School className="w-6 h-6 text-emerald-400" />
             <h2 className="text-lg sm:text-xl font-black font-moul tracking-wide">គ្រប់គ្រងសម្ភារៈបន្ទប់រៀន</h2>
           </div>
           <p className="text-slate-350 text-xs sm:text-[13px] font-medium leading-relaxed mt-1">
@@ -997,7 +1099,7 @@ export default function OtherAssetsManager() {
           </button>
           <button
             onClick={() => setShowBulkModal(true)}
-            className="px-4.5 py-2.5 bg-indigo-600/80 hover:bg-indigo-600 text-white rounded-xl text-xs sm:text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border border-indigo-500/30"
+            className="px-4.5 py-2.5 bg-[#0d5c5a]/80 hover:bg-[#0d5c5a] text-white rounded-xl text-xs sm:text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border border-emerald-500/30"
           >
             <Upload className="w-4 h-4" />
             <span>នាំចូលច្រើន (Bulk Import)</span>
@@ -1090,72 +1192,130 @@ export default function OtherAssetsManager() {
         </div>
       </div>
 
-      {/* Interactive Quick Rooms Select Bar */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4.5 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <span className="text-xs font-black text-slate-550 mr-1.5">បន្ទប់ជំនាញ៖</span>
-          <button
-            onClick={() => setFilterCategory('All')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
-              filterCategory === 'All'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-            }`}
-          >
-            🏡 ទាំងអស់ ({assets.length})
-          </button>
-          
-          {(Object.keys(ROOM_CATEGORIES_KM) as RoomCategory[]).map(cat => {
-            const count = assets.filter(a => a.roomCategory === cat).length;
-            return (
-              <button
-                key={cat}
-                onClick={() => setFilterCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-1 cursor-pointer ${
-                  filterCategory === cat
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'bg-slate-50 hover:bg-slate-150 border border-slate-150 text-slate-700'
-                }`}
-              >
-                <span>{ROOM_CATEGORIES_EMOJI[cat]}</span>
-                <span>{ROOM_CATEGORIES_KM[cat].split(' (')[0]}</span>
-                <span className="font-mono ml-0.5 opacity-75">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Searching input and Status filters */}
-        <div className="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto shrink-0">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="ស្វែងរកសម្ភារៈ ទីតាំង ឬអ្នកគ្រប់គ្រង..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-[240px] pl-9.5 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+      {/* Interactive Classrooms, Room Numbers & Grades Multi-Filter Panel */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4 shadow-sm">
+        {/* Row 1: Category Pill Tabs */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-black text-slate-500 mr-1">ប្រភេទបន្ទប់ (Room Category)៖</span>
+            <button
+              onClick={() => setFilterCategory('All')}
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                filterCategory === 'All'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              🏡 ទាំងអស់ ({assets.length})
+            </button>
+            
+            {(Object.keys(ROOM_CATEGORIES_KM) as RoomCategory[]).map(cat => {
+              const count = assets.filter(a => a.roomCategory === cat).length;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setFilterCategory(cat)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-black transition-all flex items-center gap-1 cursor-pointer ${
+                    filterCategory === cat
+                      ? 'bg-emerald-800 text-white shadow-xs'
+                      : 'bg-slate-50 hover:bg-slate-150 border border-slate-150 text-slate-700'
+                  }`}
+                >
+                  <span>{ROOM_CATEGORIES_EMOJI[cat]}</span>
+                  <span>{ROOM_CATEGORIES_KM[cat].split(' (')[0]}</span>
+                  <span className="font-mono ml-0.5 opacity-75">({count})</span>
+                </button>
+              );
+            })}
           </div>
 
-          <select
-            value={filterCondition}
-            onChange={(e) => setFilterCondition(e.target.value as AssetCondition | 'All')}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-extrabold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="All">⚙️ ស្ថានភាព៖ ទាំងអស់</option>
-            <option value="Operational">🟢 ល្អ عادي/ប្រើប្រាស់បាន</option>
-            <option value="Maintenance">🟡 កំពុងជួសជុល</option>
-            <option value="Broken">🔴 ខូចខាត</option>
-          </select>
+          {/* Quick Clear Filters Button */}
+          {(filterCategory !== 'All' || filterGrade !== 'All' || filterRoomNumber !== 'All' || filterCondition !== 'All' || searchQuery) && (
+            <button
+              onClick={() => {
+                setFilterCategory('All');
+                setFilterGrade('All');
+                setFilterRoomNumber('All');
+                setFilterCondition('All');
+                setSearchQuery('');
+              }}
+              className="text-[10.5px] font-bold text-rose-600 hover:text-rose-700 underline flex items-center gap-1 transition self-end lg:self-auto cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <span>សម្អាតតម្រងទាំងអស់ (Clear Filters)</span>
+            </button>
+          )}
+        </div>
+
+        {/* Row 2: Selectors Grid for Classroom, Room Number, Grade, Condition and Search */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Sub-Filter: Grade */}
+          <div className="space-y-1">
+            <label className="block text-[10px] text-slate-450 font-extrabold uppercase tracking-wider">ត្រងតាម កម្រិតថ្នាក់ (Grade)</label>
+            <select
+              value={filterGrade}
+              onChange={(e) => setFilterGrade(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-black text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+            >
+              <option value="All">🎓 គ្រប់ថ្នាក់ ទាំងអស់ (All Grades)</option>
+              {Object.entries(GRADE_LABELS_KM).filter(([key]) => key !== 'All').map(([key, value]) => (
+                <option key={key} value={key}>{value}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sub-Filter: Room Number */}
+          <div className="space-y-1">
+            <label className="block text-[10px] text-slate-450 font-extrabold uppercase tracking-wider">ត្រងតាម លេខបន្ទប់ (Room Number)</label>
+            <select
+              value={filterRoomNumber}
+              onChange={(e) => setFilterRoomNumber(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-black text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+            >
+              <option value="All">📍 គ្រប់លេខបន្ទប់ ទាំងអស់ (All Rooms)</option>
+              {uniqueRoomNumbers.map(room => (
+                <option key={room} value={room}>🚪 បន្ទប់៖ {room}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sub-Filter: Status */}
+          <div className="space-y-1">
+            <label className="block text-[10px] text-slate-450 font-extrabold uppercase tracking-wider">ត្រងតាម ស្ថានភាព (Condition)</label>
+            <select
+              value={filterCondition}
+              onChange={(e) => setFilterCondition(e.target.value as AssetCondition | 'All')}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-black text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+            >
+              <option value="All">⚙️ ស្ថានភាព៖ ទាំងអស់ (All)</option>
+              <option value="Operational">🟢 ល្អ عادي/ប្រើប្រាស់បាន (Operational)</option>
+              <option value="Maintenance">🟡 កំពុងជួសជុល (Maintenance)</option>
+              <option value="Broken">🔴 ខូចខាត (Broken)</option>
+            </select>
+          </div>
+
+          {/* Sub-Filter: Search Bar */}
+          <div className="space-y-1">
+            <label className="block text-[10px] text-slate-450 font-extrabold uppercase tracking-wider">ស្វែងរកពាក្យគន្លឹះ (Search)</label>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="ស្វែងរកសម្ភារៈ ទីតាំង ឬអ្នកគ្រប់គ្រង..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9.5 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1178,7 +1338,7 @@ export default function OtherAssetsManager() {
             </button>
             <button 
               onClick={handleOpenAddModal}
-              className="bg-indigo-650 hover:bg-indigo-700 text-white text-xs font-black px-4 py-2 rounded-xl transition cursor-pointer shadow-sm"
+              className="bg-[#0d5c5a] hover:bg-emerald-800 text-white text-xs font-black px-4 py-2 rounded-xl transition cursor-pointer shadow-sm"
             >
               បន្ថែមវិធានការដំបូង
             </button>
@@ -1199,11 +1359,11 @@ export default function OtherAssetsManager() {
                 {/* Header portion */}
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-start justify-between gap-2 shrink-0">
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-sm shrink-0">
+                    <span className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-sm shrink-0">
                       {emoji}
                     </span>
                     <div>
-                      <span className="text-[10px] font-black uppercase text-indigo-600 font-mono tracking-wider">{asset.id}</span>
+                      <span className="text-[10px] font-black uppercase text-emerald-700 font-mono tracking-wider">{asset.id}</span>
                       <span className="block text-[9.5px] font-extrabold text-slate-400 mt-0.5">{catLabel}</span>
                     </div>
                   </div>
@@ -1216,7 +1376,7 @@ export default function OtherAssetsManager() {
                 {/* Body Details */}
                 <div className="p-4 flex-grow space-y-3">
                   <div>
-                    <h4 className="text-xs font-black text-slate-800 leading-snug group-hover:text-indigo-600 transition-colors">
+                    <h4 className="text-xs font-black text-slate-800 leading-snug group-hover:text-emerald-700 transition-colors">
                       {asset.name}
                     </h4>
                     {asset.serialNumber && asset.serialNumber !== 'N/A' && (
@@ -1227,15 +1387,27 @@ export default function OtherAssetsManager() {
                   {/* Meta Grid info */}
                   <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-2.5 text-[10px] border border-slate-150 font-semibold text-slate-600">
                     <div>
-                      <span className="text-slate-400 block mb-0.5">📍 ទីតាំងខ្លះៗ៖</span>
-                      <span className="font-extrabold text-slate-800 truncate block hover:text-indigo-600" title={asset.specificRoom}>
-                        {asset.specificRoom}
+                      <span className="text-slate-400 block mb-0.5">🚪 លេខបន្ទប់ / Room៖</span>
+                      <span className="font-black text-slate-800 truncate block" title={getAssetRoomNumber(asset)}>
+                        🚪 {getAssetRoomNumber(asset) || 'មិនកំណត់'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block mb-0.5">👤 អ្នកទទួលខុសត្រូវ៖</span>
-                      <span className="font-extrabold text-slate-850 block truncate">
-                        {asset.assignedStaff || 'គ្មាន (Not assigned)'}
+                      <span className="text-slate-400 block mb-0.5">🎓 កម្រិតថ្នាក់ / Grade៖</span>
+                      <span className="font-black text-emerald-800 truncate block">
+                        🏫 {GRADE_LABELS_KM[getAssetGrade(asset)]?.split(' (')[0] || getAssetGrade(asset)}
+                      </span>
+                    </div>
+                    <div className="col-span-2 border-t border-slate-200/60 pt-1.5 mt-0.5">
+                      <span className="text-slate-400 block mb-0.5">📍 ទីតាំងជាក់លាក់ (Location)៖</span>
+                      <span className="font-extrabold text-slate-700 truncate block text-[9.5px]" title={asset.specificRoom}>
+                        {asset.specificRoom}
+                      </span>
+                    </div>
+                    <div className="col-span-2 border-t border-slate-200/60 pt-1.5">
+                      <span className="text-slate-400 block mb-0.5">👤 អ្នកទទួលខុសត្រូវ (Custodian)៖</span>
+                      <span className="font-extrabold text-slate-800 block truncate text-[9.5px]">
+                        👤 {asset.assignedStaff || 'គ្មាន (Not assigned)'}
                       </span>
                     </div>
                   </div>
@@ -1250,7 +1422,7 @@ export default function OtherAssetsManager() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-450 font-bold">បរិមាណដែលមាន៖</span>
-                      <span className="font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.2 rounded font-mono text-[10px]">
+                      <span className="font-black text-emerald-800 bg-emerald-50 border border-emerald-100 px-1.5 py-0.2 rounded font-mono text-[10px]">
                         {asset.quantity} {asset.unit}
                       </span>
                     </div>
@@ -1265,7 +1437,7 @@ export default function OtherAssetsManager() {
                   </div>
 
                   {asset.notes && (
-                    <div className="bg-slate-50 border-l-2 border-indigo-300 rounded p-2 text-[10px] text-slate-500 font-medium leading-relaxed italic">
+                    <div className="bg-slate-50 border-l-2 border-emerald-500 rounded p-2 text-[10px] text-slate-500 font-medium leading-relaxed italic">
                       📝 {asset.notes}
                     </div>
                   )}
@@ -1281,7 +1453,7 @@ export default function OtherAssetsManager() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEditModal(asset)}
-                      className="p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 rounded-lg transition shrink-0 cursor-pointer"
+                      className="p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-emerald-700 hover:border-emerald-200 rounded-lg transition shrink-0 cursor-pointer"
                       title="កែសម្រួលព័ត៌មាន (Edit)"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -1305,9 +1477,9 @@ export default function OtherAssetsManager() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white border border-slate-250 rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden flex flex-col my-8 animate-fade-in text-xs sm:text-xs">
-            <div className="bg-indigo-950 text-white px-5 py-4 flex items-center justify-between shrink-0">
+            <div className="bg-emerald-950 text-white px-5 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <School className="w-5 h-5 text-indigo-300" />
+                <School className="w-5 h-5 text-emerald-300" />
                 <h3 className="font-moul font-black text-xs sm:text-sm tracking-wide">
                   {editingAsset ? 'កែសម្រួលទិន្នន័យសម្ភារៈ' : 'បន្ថែមសម្ភារៈបន្ទប់រៀន ឬវិជ្ជាជីវៈថ្មី'}
                 </h3>
@@ -1343,19 +1515,19 @@ export default function OtherAssetsManager() {
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="ឈ្មោះឧបករណ៍ (ឧទាហរណ៍៖ ព្យាណូដោតភ្លើង, ម៉ាស៊ីនដេរ...)"
                     required
-                    className="w-full bg-slate-5.0 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-indigo-550 focus:outline-none"
+                    className="w-full bg-slate-5.0 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-emerald-700 focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* Form Row 2: Room Category and Specific Room */}
+              {/* Form Row 2: Room Category and Grade Level */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">បន្ទប់ជំនាញធំ *</label>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">បន្ទប់ជំនាញធំ / Category *</label>
                   <select
                     value={formRoomCategory}
                     onChange={(e) => setFormRoomCategory(e.target.value as RoomCategory)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black focus:ring-1 focus:ring-indigo-500 text-slate-800"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black focus:ring-1 focus:ring-emerald-700 text-slate-800"
                   >
                     {(Object.keys(ROOM_CATEGORIES_KM) as RoomCategory[]).map(cat => (
                       <option key={cat} value={cat}>{ROOM_CATEGORIES_EMOJI[cat]} {ROOM_CATEGORIES_KM[cat]}</option>
@@ -1363,14 +1535,41 @@ export default function OtherAssetsManager() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ទីតាំង និងលេខបន្ទប់ *</label>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">កម្រិតថ្នាក់ (Grade Level) *</label>
+                  <select
+                    value={formGrade}
+                    onChange={(e) => setFormGrade(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black focus:ring-1 focus:ring-emerald-700 text-slate-800"
+                  >
+                    {Object.entries(GRADE_LABELS_KM).filter(([key]) => key !== 'All').map(([key, value]) => (
+                      <option key={key} value={key}>{value}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Form Row 2.5: Specific Room Number and Entire Location Description */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">លេខបន្ទប់ជាក់លាក់ (Room Number Ex. 201, IT Lab-B) *</label>
+                  <input
+                    type="text"
+                    value={formRoomNumber}
+                    onChange={(e) => setFormRoomNumber(e.target.value)}
+                    placeholder="ឧ. បន្ទប់ ២០១, IT Lab-B, 304"
+                    required
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-emerald-700 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-500 font-extrabold text-[10px] mb-1 uppercase tracking-wider">ទីតាំងលម្អិត (Location / Description) *</label>
                   <input
                     type="text"
                     value={formSpecificRoom}
                     onChange={(e) => setFormSpecificRoom(e.target.value)}
-                    placeholder="ឧ. បន្ទប់ IT Lab-B, បន្ទប់រាំជាន់ទី៣"
+                    placeholder="ឧ. បន្ទប់ ២០១ ជាន់ទី២ (Grade 1)"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-emerald-700 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1384,7 +1583,7 @@ export default function OtherAssetsManager() {
                     value={formBrand}
                     onChange={(e) => setFormBrand(e.target.value)}
                     placeholder="ឧទាហរណ៍៖ Yamaha, Singer, Sony"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold focus:ring-1 focus:ring-emerald-700 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1394,7 +1593,7 @@ export default function OtherAssetsManager() {
                     value={formModel}
                     onChange={(e) => setFormModel(e.target.value)}
                     placeholder="ឧទាហរណ៍៖ Model 2024, EOT40D ..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-semibold focus:ring-1 focus:ring-emerald-700 focus:outline-none"
                   />
                 </div>
               </div>
@@ -1409,7 +1608,7 @@ export default function OtherAssetsManager() {
                     value={formQuantity}
                     onChange={(e) => setFormQuantity(Number(e.target.value))}
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black text-center font-mono focus:ring-1 focus:ring-indigo-550"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-black text-center font-mono focus:ring-1 focus:ring-emerald-700"
                   />
                 </div>
                 <div>
@@ -1420,7 +1619,7 @@ export default function OtherAssetsManager() {
                     onChange={(e) => setFormUnit(e.target.value)}
                     placeholder="ឧ. គ្រឿង, ឈុត, កំប្លេ"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-center focus:outline-none focus:ring-1 focus:ring-indigo-550"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-center focus:outline-none focus:ring-1 focus:ring-emerald-700"
                   />
                 </div>
                 <div>
@@ -1434,7 +1633,7 @@ export default function OtherAssetsManager() {
                       value={formCostUsd}
                       onChange={(e) => setFormCostUsd(Number(e.target.value))}
                       required
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-6.5 p-2.5 font-mono font-black text-right focus:outline-none focus:ring-1 focus:ring-indigo-505"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-6.5 p-2.5 font-mono font-black text-right focus:outline-none focus:ring-1 focus:ring-emerald-700"
                     />
                   </div>
                 </div>
@@ -1449,7 +1648,7 @@ export default function OtherAssetsManager() {
                     value={formSerialNumber}
                     onChange={(e) => setFormSerialNumber(e.target.value)}
                     placeholder="N/A"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono focus:outline-none focus:ring-1 focus:ring-emerald-700 text-xs"
                   />
                 </div>
                 <div>
@@ -1457,7 +1656,7 @@ export default function OtherAssetsManager() {
                   <select
                     value={formCondition}
                     onChange={(e) => setFormCondition(e.target.value as AssetCondition)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-extrabold focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-extrabold focus:outline-none focus:ring-1 focus:ring-emerald-700"
                   >
                     <option value="Operational">🟢 ល្អ عادي/ប្រើបានធម្មតា</option>
                     <option value="Maintenance">🟡 កំពុងថែទាំជួសជុល</option>
@@ -1484,7 +1683,7 @@ export default function OtherAssetsManager() {
                   value={formAssignedStaff}
                   onChange={(e) => setFormAssignedStaff(e.target.value)}
                   placeholder="បំពេញឈ្មោះគ្រូ ឬជំនួយការរដ្ឋបាល"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-indigo-500 text-slate-750"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold focus:ring-1 focus:ring-emerald-700 text-slate-750"
                 />
               </div>
 
@@ -1511,7 +1710,7 @@ export default function OtherAssetsManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition shadow-md shadow-indigo-100 cursor-pointer"
+                  className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-905 text-white text-xs font-black rounded-xl transition shadow-md shadow-emerald-100 cursor-pointer"
                 >
                   រក្សាទុក (Save)
                 </button>
@@ -1525,9 +1724,9 @@ export default function OtherAssetsManager() {
       {showBulkModal && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white border border-slate-350 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col text-xs">
-            <div className="bg-indigo-950 text-white px-5 py-4 flex items-center justify-between shrink-0">
+            <div className="bg-emerald-950 text-white px-5 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-indigo-400" />
+                <Upload className="w-5 h-5 text-emerald-400" />
                 <h3 className="font-moul font-normal text-xs sm:text-xs">CSV Bulk Import (សម្ភារៈបន្ទប់រៀន)</h3>
               </div>
               <button 
@@ -1544,7 +1743,7 @@ export default function OtherAssetsManager() {
                 <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
                   អ្នកអាចចម្លងទិន្នន័យពី Excel ឬ CSV ដែលមានជួរឈរតាមលំដាប់លំដោយខាងក្រោម ហើយបិទភ្ជាប់វា (Paste) ក្នុងប្រអប់ខាងក្រោម៖
                 </p>
-                <div className="bg-slate-100 rounded-lg p-2.5 font-mono text-[9px] text-indigo-650 font-semibold select-all select-all mt-1.5 overflow-x-auto leading-relaxed border border-slate-200">
+                <div className="bg-slate-100 rounded-lg p-2.5 font-mono text-[9px] text-emerald-800 font-semibold select-all select-all mt-1.5 overflow-x-auto leading-relaxed border border-slate-200">
                   ID, Name, RoomCategory, SpecificRoom, Brand, Model, Quantity, Unit, AssignedStaff, Condition, PurchaseDate, CostUSD, SerialNumber, Notes
                 </div>
                 <p className="text-[9.5px] mt-1 text-amber-600 font-semibold italic">
@@ -1559,7 +1758,7 @@ export default function OtherAssetsManager() {
                   value={bulkCsvText}
                   onChange={(e) => setBulkCsvText(e.target.value)}
                   placeholder="WIS-OTH-010, កៅអីឈើគ្រូ, Classroom, Room 101, Local, Std-Teacher, 1, គ្រឿង, Mr. Samnang, Operational, 2024-10-01, 45, N/A, Row Note"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-[10.5px] leading-relaxed focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-mono text-[10.5px] leading-relaxed focus:ring-1 focus:ring-emerald-700"
                 />
               </div>
 
@@ -1572,7 +1771,7 @@ export default function OtherAssetsManager() {
                 </button>
                 <button
                   onClick={handleBulkImport}
-                  className="px-4 py-2 bg-indigo-650 hover:bg-indigo-700 text-white font-black rounded-xl transition shadow-xs"
+                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-905 text-white font-black rounded-xl transition shadow-xs"
                 >
                   យល់ព្រមនាំចូល (Import)
                 </button>

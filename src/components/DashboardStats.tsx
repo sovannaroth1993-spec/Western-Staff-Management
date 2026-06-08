@@ -46,7 +46,7 @@ const DEPT_COLORS: Record<Department, { bg: string; text: string; iconBg: string
   Nurse: { bg: 'bg-rose-50 border-rose-100', text: 'text-rose-800', iconBg: 'bg-rose-600', border: 'border-rose-200' },
   'Customer Service': { bg: 'bg-amber-50 border-amber-100', text: 'text-amber-800', iconBg: 'bg-amber-600', border: 'border-amber-200' },
   'Lab Assistant': { bg: 'bg-teal-50 border-teal-100', text: 'text-teal-800', iconBg: 'bg-teal-600', border: 'border-teal-200' },
-  'Admin Head': { bg: 'bg-purple-50 border-purple-100', text: 'text-purple-800', iconBg: 'bg-purple-600', border: 'border-purple-200' }
+  'Admin Head': { bg: 'bg-green-50 border-green-100', text: 'text-green-800', iconBg: 'bg-green-700', border: 'border-green-200' }
 };
 
 const formatKhmerMonth = (monthYearStr: string) => {
