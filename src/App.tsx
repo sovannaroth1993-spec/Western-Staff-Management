@@ -13,13 +13,9 @@ import AttendanceTracker from './components/AttendanceTracker';
 import ElectricityTracker from './components/ElectricityTracker';
 import WaterTracker from './components/WaterTracker';
 import TelegramReporter from './components/TelegramReporter';
-import SchoolMap from './components/SchoolMap';
 import FixedAssetManager from './components/FixedAssetManager';
 import StudentInsuranceManager from './components/StudentInsuranceManager';
-import FireExtinguisherInspectionManager from './components/FireExtinguisherInspectionManager';
 import AdminDocumentationManager from './components/AdminDocumentationManager';
-import OtherAssetsManager from './components/OtherAssetsManager';
-import CanteenAttendanceManager from './components/CanteenAttendanceManager';
 import OtherLinksManager from './components/OtherLinksManager';
 import KhmerCalendarManager from './components/KhmerCalendarManager';
 // @ts-ignore
@@ -30,7 +26,7 @@ import { DEFAULT_STAFF } from './data/defaultStaff';
 import { DEFAULT_STUDENTS } from './data/defaultStudents';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Flame, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -133,7 +129,7 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'schoolmap' | 'fixedassets' | 'otherassets' | 'insurance' | 'fireextinguisher' | 'admindocs' | 'canteen_attendance' | 'otherlinks' | 'staff' | 'students' | 'attendance' | 'telegram' | 'khmercalendar'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'attendance' | 'telegram' | 'khmercalendar'>('dashboard');
 
   // Save language to localStorage on change
   useEffect(() => {
@@ -342,19 +338,6 @@ export default function App() {
             <span className="flex-1">{t.water}</span>
           </button>
 
-          {/* Tab 1.7: School Map Viewer */}
-          <button
-            onClick={() => setActiveTab('schoolmap')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'schoolmap'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Map className="w-4.5 h-4.5 text-teal-400" />
-            <span className="flex-1">{t.schoolmap}</span>
-          </button>
-
           {/* Tab 1.75: Khmer Calendar */}
           <button
             onClick={() => setActiveTab('khmercalendar')}
@@ -381,19 +364,6 @@ export default function App() {
             <span className="flex-1">{t.fixedassets}</span>
           </button>
 
-          {/* Tab 1.85: Other Classroom & Specialty Room Material & Assets */}
-          <button
-            onClick={() => setActiveTab('otherassets')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'otherassets'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <School className="w-4.5 h-4.5 text-indigo-400 fill-indigo-500/15" />
-            <span className="flex-1">{t.otherassets}</span>
-          </button>
-
           {/* Tab 1.9: Student Insurance */}
           <button
             onClick={() => setActiveTab('insurance')}
@@ -403,22 +373,11 @@ export default function App() {
                 : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
             }`}
           >
-            <ShieldCheck className="w-4.5 h-4.5 text-indigo-400 fill-indigo-500/15" />
+            <ShieldCheck className="w-4.5 h-4.5 text-emerald-400 fill-emerald-500/15" />
             <span className="flex-1">{t.insurance}</span>
           </button>
 
-          {/* Tab 1.10: Fire Extinguisher Inspection */}
-          <button
-            onClick={() => setActiveTab('fireextinguisher')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'fireextinguisher'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Flame className="w-4.5 h-4.5 text-rose-400 fill-rose-500/15 animate-pulse" />
-            <span className="flex-1">{t.fireextinguisher}</span>
-          </button>
+
 
           {/* Tab 1.12: Admin Documentation */}
           <button
@@ -429,21 +388,8 @@ export default function App() {
                 : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
             }`}
           >
-            <FolderOpen className="w-4.5 h-4.5 text-cyan-400 animate-bounce" />
+            <FolderOpen className="w-4.5 h-4.5 text-emerald-400 animate-bounce" />
             <span className="flex-1">{t.admindocs}</span>
-          </button>
-
-          {/* Tab 1.13: Canteen Attendance */}
-          <button
-            onClick={() => setActiveTab('canteen_attendance')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'canteen_attendance'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Coffee className="w-4.5 h-4.5 text-teal-400" />
-            <span className="flex-1">{t.canteen_attendance}</span>
           </button>
 
           {/* Tab 1.14: Other Web Links (Other) */}
@@ -455,7 +401,7 @@ export default function App() {
                 : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
             }`}
           >
-            <Link2 className="w-4.5 h-4.5 text-indigo-400" />
+            <Link2 className="w-4.5 h-4.5 text-emerald-400" />
             <span className="flex-1">{t.otherlinks}</span>
           </button>
 
@@ -568,10 +514,6 @@ export default function App() {
                 />
               )}
 
-              {activeTab === 'schoolmap' && (
-                <SchoolMap />
-              )}
-
               {activeTab === 'khmercalendar' && (
                 <KhmerCalendarManager />
               )}
@@ -580,24 +522,12 @@ export default function App() {
                 <FixedAssetManager />
               )}
 
-              {activeTab === 'otherassets' && (
-                <OtherAssetsManager />
-              )}
-
               {activeTab === 'insurance' && (
                 <StudentInsuranceManager />
               )}
 
-              {activeTab === 'fireextinguisher' && (
-                <FireExtinguisherInspectionManager />
-              )}
-
               {activeTab === 'admindocs' && (
                 <AdminDocumentationManager />
-              )}
-
-              {activeTab === 'canteen_attendance' && (
-                <CanteenAttendanceManager />
               )}
 
               {activeTab === 'otherlinks' && (

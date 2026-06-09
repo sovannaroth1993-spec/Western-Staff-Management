@@ -244,37 +244,6 @@ export interface StudentInsurance {
   officeRemarks?: string;
 }
 
-export interface FireExtinguisherInspection {
-  id: string; // Extinguisher ID (e.g. WIS-FE-01)
-  type: string; // e.g., 'Dry Chemical (ម្សៅស្ងួត)', 'CO2 (កាបូនឌីអុកស៊ីត)', 'Foam (ហ្វូម)'
-  capacity: string; // e.g., '4kg', '6kg', '9kg'
-  location: string; // e.g. "ជិតជណ្តើរយន្ត", "ក្បែរបន្ទប់រដ្ឋបាល"
-  buildingFloor: string; // e.g. "អគារ A - ជាន់ទី ១"
-  inspectionDate: string; // YYYY-MM-DD
-  inspectorName: string;
-
-  // 2. Checklist Points
-  isInPlace: boolean; // បំពង់ស្ថិតនៅទីតាំងត្រឹមត្រូវ
-  hasClearSign: boolean; // មានស្លាកសម្គាល់ច្បាស់លាស់
-  isPressureOk: boolean; // សម្ពាធស្ថិតក្នុងកម្រិតស្តង់ដារ
-  isPinPresent: boolean; // សោសុវត្ថិភាព (Safety Pin) នៅគ្រប់គ្រាន់
-  isSealIntact: boolean; // ខ្សែសោមិនខូច
-  isNoCorrosion: boolean; // បំពង់មិនច្រេះ ឬបែកបាក់
-  isNozzleClean: boolean; // ទុយោ / Nozzle មិនស្ទះ
-  isNotExpired: boolean; // ថ្ងៃផុតកំណត់មិនហួស
-  isInstructionClear: boolean; // ស្លាកណែនាំប្រើប្រាស់នៅច្បាស់
-  isUsable: boolean; // អាចប្រើប្រាស់បានធម្មតា
-
-  // 3. Corrective Actions (សកម្មភាពជួសជុល / ផ្លាស់ប្តូរ)
-  needsRepair: string; // ត្រូវការជួសជុល: Yes/No or descriptive explanation
-  needsRefill: string; // ត្រូវការបញ្ចូលសារធាតុឡើងវិញ: Yes/No or descriptive explanation
-  needsReplacement: string; // ត្រូវការផ្លាស់ប្តូរ: Yes/No or descriptive explanation
-
-  // 4. Signatures
-  inspectorSignature: string; // អ្នកត្រួតពិនិត្យ
-  deptHeadSignature: string; // ប្រធានផ្នែក
-  signatureDate: string; // កាលបរិច្ឆេទ
-}
 
 export type ACType = 'Split' | 'Cassette' | 'Standing' | 'Ceiling Concealed';
 

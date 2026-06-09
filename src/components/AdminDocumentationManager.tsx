@@ -763,7 +763,7 @@ export default function AdminDocumentationManager() {
               toast.type === 'success' ? 'bg-emerald-50 text-emerald-600' :
               toast.type === 'danger' ? 'bg-rose-50 text-rose-600' :
               toast.type === 'warning' ? 'bg-amber-50 text-amber-600' :
-              'bg-sky-50 text-sky-600'
+              'bg-sky-50 text-sky-655'
             }`}>
               {toast.type === 'success' && <Check className="w-4 h-4" />}
               {toast.type === 'danger' && <XCircle className="w-4 h-4" />}
@@ -781,7 +781,7 @@ export default function AdminDocumentationManager() {
       <div className="p-5 sm:p-6 bg-white border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-emerald-400">
               <FolderOpen className="w-5 h-5 animate-pulse" />
             </div>
             <div>
@@ -815,7 +815,7 @@ export default function AdminDocumentationManager() {
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
             }`}
           >
-            <Calendar className="w-3.5 h-3.5 text-cyan-500" />
+            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
             តារាងម៉ាទ្រីសប្រចាំឆ្នាំ (Yearly Grid Matrix)
           </button>
         </div>
@@ -832,7 +832,7 @@ export default function AdminDocumentationManager() {
             >
               -
             </button>
-            <span className="px-2 text-xs font-black font-mono text-cyan-400">{currentYear}</span>
+            <span className="px-2 text-xs font-black font-mono text-emerald-400">{currentYear}</span>
             <button
               onClick={() => setCurrentYear(prev => prev + 1)}
               className="p-1 hover:bg-slate-700 text-slate-400 hover:text-white rounded transition text-xs font-bold"
@@ -846,20 +846,20 @@ export default function AdminDocumentationManager() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={prevMonth}
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 rounded-lg transition"
+            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 rounded-lg transition"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
           <div className="flex items-center gap-1 font-moul text-xs text-white max-w-[180px] justify-center">
-            <Calendar className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span className="text-cyan-400 tracking-wide">ខែ {MONTHS_KM[selectedMonthIndex].label}</span>
+            <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="text-emerald-400 tracking-wide">ខែ {MONTHS_KM[selectedMonthIndex].label}</span>
             <span className="font-mono text-slate-400 font-bold ml-1">({MONTHS_KM[selectedMonthIndex].eng})</span>
           </div>
 
           <button
             onClick={nextMonth}
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 rounded-lg transition"
+            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-emerald-400 rounded-lg transition"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -873,7 +873,7 @@ export default function AdminDocumentationManager() {
               onClick={() => setSelectedMonthIndex(idx)}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 selectedMonthIndex === idx
-                  ? 'bg-cyan-500 text-slate-950 font-black scale-105'
+                  ? 'bg-emerald-600 text-white font-black scale-105'
                   : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800'
               }`}
             >
@@ -890,7 +890,7 @@ export default function AdminDocumentationManager() {
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h2 className="text-xs font-black text-slate-900 font-moul flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-cyan-500" />
+                  <Sparkles className="w-4 h-4 text-emerald-500" />
                   ម៉ាទ្រីសស្ថានភាពទុកដាក់ឯកសារប្រចាំឆ្នាំ {currentYear}
                 </h2>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Monthly Checklist Matrix & Fulfillment Registry</p>
@@ -955,7 +955,7 @@ export default function AdminDocumentationManager() {
                               <span className="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block" />
                             )}
                             {fileCount > 0 && (
-                              <span className="text-[9px] px-1 font-mono font-black rounded-full bg-slate-900 text-cyan-400 scale-90">
+                              <span className="text-[9px] px-1 font-mono font-black rounded-full bg-slate-900 text-emerald-400 scale-90">
                                 {fileCount}F
                               </span>
                             )}
@@ -1011,7 +1011,7 @@ export default function AdminDocumentationManager() {
                   >
                     <div className={`p-2 rounded-xl shrink-0 ${
                       selectedCategory.id === cat.id
-                        ? 'bg-slate-800 text-cyan-400'
+                        ? 'bg-slate-800 text-emerald-400'
                         : 'bg-slate-100 text-slate-500'
                     }`}>
                       {getIcon(cat.iconType, "w-4.5 h-4.5")}
@@ -1035,7 +1035,7 @@ export default function AdminDocumentationManager() {
 
                       <div className="flex items-center gap-2 mt-2">
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono font-black ${
-                          selectedCategory.id === cat.id ? 'bg-slate-800 text-cyan-400' : 'bg-slate-100 text-slate-500'
+                          selectedCategory.id === cat.id ? 'bg-slate-800 text-emerald-400' : 'bg-slate-100 text-slate-500'
                         }`}>
                           {filesCount} ឯកសារ (Files)
                         </span>
@@ -1067,7 +1067,7 @@ export default function AdminDocumentationManager() {
 
                 <div className="relative z-10 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="bg-cyan-400 text-slate-950 text-[9px] font-black px-2 py-0.5 rounded-md uppercase font-mono">
+                    <span className="bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase font-mono">
                       កាតព្វកិច្ចកូដរដ្ឋបាល #{selectedCategory.num}
                     </span>
                     <span className="text-[10px] text-slate-400 font-bold font-mono">/ Month: {activeMonthString}</span>
@@ -1148,7 +1148,7 @@ export default function AdminDocumentationManager() {
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition ${
                     isDragOver
-                      ? 'border-cyan-500 bg-cyan-500/5'
+                      ? 'border-emerald-600 bg-emerald-500/5'
                       : 'border-slate-300 hover:border-slate-900 bg-slate-50/50 hover:bg-slate-50'
                   }`}
                 >
@@ -1160,7 +1160,7 @@ export default function AdminDocumentationManager() {
                     accept=".pdf,.xlsx,.xls,.csv"
                     className="hidden"
                   />
-                  <UploadCloud className={`w-10 h-10 mb-2 transition-transform ${isDragOver ? 'scale-110 text-cyan-500' : 'text-slate-400'}`} />
+                  <UploadCloud className={`w-10 h-10 mb-2 transition-transform ${isDragOver ? 'scale-110 text-emerald-600' : 'text-slate-400'}`} />
                   <p className="text-xs font-black text-slate-800">
                     អូស និងទម្លាក់ឯកសារ Excel ឬ PDF ជាច្រើននៅទីនេះ ឬ ចុចដើម្បីស្វែងរកឯកសារ
                   </p>
@@ -1174,7 +1174,7 @@ export default function AdminDocumentationManager() {
               <div className="space-y-2.5 pt-2">
                 <div className="flex items-center justify-between border-b pb-1.5 border-slate-200">
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-3.5 bg-cyan-500 rounded-full" />
+                    <span className="w-1.5 h-3.5 bg-emerald-600 rounded-full" />
                     <h4 className="text-xs font-black text-slate-900">
                       បញ្ជីឯកសារភ្ជាប់ខែនេះ ({activeFiles.length} ឯកសារ)
                     </h4>
@@ -1225,7 +1225,7 @@ export default function AdminDocumentationManager() {
                           </button>
                           <button
                             onClick={() => setFileToView(file)}
-                            className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-500 hover:text-indigo-700 transition cursor-pointer"
+                            className="p-1.5 hover:bg-emerald-50 rounded-lg text-emerald-600 hover:text-emerald-800 transition cursor-pointer"
                             title="មើលឯកសារ (View Doc)"
                           >
                             <Eye className="w-4.5 h-4.5" />
@@ -1329,14 +1329,14 @@ export default function AdminDocumentationManager() {
               {/* PDF Viewer OR Spreadsheet SheetJS Viewer */}
               {fileToView.fileType === 'pdf' ? (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl text-[10px] sm:text-xs font-black text-indigo-700 leading-normal">
+                  <div className="flex items-center justify-between p-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-[10px] sm:text-xs font-black text-emerald-800 leading-normal">
                     <span className="flex items-center gap-1.5 min-w-0">
-                      <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse shrink-0"></span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse shrink-0"></span>
                       <span className="truncate">កម្រងឯកសារ PDF គោលដៅ (Viewing Active PDF Document Scan)</span>
                     </span>
                     <button
                       onClick={() => downloadFile(fileToView)}
-                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition text-[9px] font-black cursor-pointer shadow-xs shrink-0"
+                      className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition text-[9px] font-black cursor-pointer shadow-xs shrink-0"
                     >
                       ទាញយកច្បាប់ដើម (Download PDF)
                     </button>
@@ -1366,7 +1366,7 @@ export default function AdminDocumentationManager() {
               ) : (
                 /* Excel / Spreadsheet SheetJS Viewer */
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-                  <div className="p-3.5 bg-slate-900 text-cyan-400 text-[10px] sm:text-xs font-black font-moul flex items-center justify-between shrink-0">
+                  <div className="p-3.5 bg-slate-900 text-emerald-400 text-[10px] sm:text-xs font-black font-moul flex items-center justify-between shrink-0">
                     <span>{fileToView.fileData ? 'ទិន្នន័យក្នុងតារាង Excel ដើម (Spreadsheet)' : 'ទិន្នន័យក្នុងឯកសារ (Structured Data Grid)'}</span>
                     <span className="font-mono text-[8px] text-slate-400 uppercase tracking-widest">{fileToView.fileData ? 'XLSX/CSV Live Render' : 'Interactive Table Preview'}</span>
                   </div>
@@ -1603,8 +1603,8 @@ export default function AdminDocumentationManager() {
                   <p className="text-[10px] text-slate-800 underline underline-offset-4 truncate">{fileToView.uploadedBy}</p>
                 </div>
 
-                {/* Simulated digital stamp in professional dark blue */}
-                <div className="hidden sm:flex relative items-center justify-center w-20 h-20 border-4 border-indigo-900/40 rounded-full scale-75 select-none shrink-0 text-center leading-none text-indigo-900 flex-col font-sans">
+                {/* Simulated digital stamp in professional dark green */}
+                <div className="hidden sm:flex relative items-center justify-center w-20 h-20 border-4 border-emerald-900/40 rounded-full scale-75 select-none shrink-0 text-center leading-none text-emerald-900 flex-col font-sans">
                   <span className="text-[6px] tracking-tighter">THE WESTLINE</span>
                   <span className="text-[8px] font-black tracking-widest my-0.5">APPROVED</span>
                   <span className="text-[6px] font-medium">{fileToView.month}</span>
@@ -1612,7 +1612,7 @@ export default function AdminDocumentationManager() {
 
                 <div className="text-center space-y-6 w-[120px] sm:w-[150px]">
                   <p className="text-[9px] text-slate-400">រដ្ឋបាលផ្ទៀងផ្ទាត់</p>
-                  <p className="text-[10px] text-indigo-700 font-bold">រដ្ឋបាលសាលា</p>
+                  <p className="text-[10px] text-emerald-700 font-bold">រដ្ឋបាលសាលា</p>
                 </div>
               </div>
 
@@ -1633,7 +1633,7 @@ export default function AdminDocumentationManager() {
                 }}
                 className="bg-slate-900 hover:bg-slate-850 text-white font-extrabold px-6 py-2.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow"
               >
-                <Download className="w-4 h-4 text-cyan-400 animate-bounce" />
+                <Download className="w-4 h-4 text-emerald-400 animate-bounce" />
                 ទាញយកឯកសារនេះ (Download)
               </button>
             </div>

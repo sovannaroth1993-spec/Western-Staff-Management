@@ -3,16 +3,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Staff, Department, AttendanceRecord, AttendanceStatus, DEPARTMENT_NAMES_KM, ATTENDANCE_STATUS_KM, ALL_DEPARTMENTS } from '../types';
 import { exportAttendanceToExcel } from '../utils/excelHelper';
 import { exportAttendanceToPdf } from '../utils/pdfHelper';
 import { 
   Users, Calendar, CheckSquare, ShieldAlert, FileSpreadsheet, 
   FileText, ArrowRight, UserCheck, AlertCircle, Save, HelpCircle, X,
-  Search, BarChart3, ChevronDown, ChevronUp
+  Search, BarChart3, ChevronDown, ChevronUp, QrCode, Printer, Camera, 
+  Upload, Play, Sparkles, CheckCircle2, RefreshCw, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Html5Qrcode } from 'html5-qrcode';
+
+interface QrScanLog {
+  id: string;
+  staffName: string;
+  staffId: string;
+  photo?: string;
+  departmentName: string;
+  time: string;
+  status: 'success' | 'warning' | 'error';
+  message: string;
+}
 
 interface AttendanceTrackerProps {
   staffList: Staff[];
@@ -32,6 +45,24 @@ export default function AttendanceTracker({
   
   const [activeDept, setActiveDept] = useState<Department>('Security');
   const [localRecords, setLocalRecords] = useState<Record<string, { status: AttendanceStatus; notes: string }>>({});
+
+  // QR Check-In Station states
+  const [isQrStationOpen, setIsQrStationOpen] = useState(false);
+  const [isQrGeneratorOpen, setIsQrGeneratorOpen] = useState(false);
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scanState, setScanState] = useState<{
+    status: 'idle' | 'success' | 'error';
+    message: string;
+    staffName?: string;
+    staffId?: string;
+    photo?: string;
+    dept?: string;
+    time?: string;
+  }>({ status: 'idle', message: '' });
+  
+  const [qrScanLogs, setQrScanLogs] = useState<QrScanLog[]>([]);
+  const [selectedSimStaffId, setSelectedSimStaffId] = useState('');
+  const [selectedBadgeStaffId, setSelectedBadgeStaffId] = useState('');
 
   // Monthly Summary View states
   const [summarySearch, setSummarySearch] = useState('');
@@ -197,6 +228,195 @@ export default function AttendanceTracker({
     });
   };
 
+  // Core handler for successful barcode/QR-code decodes
+  const handleDecodedCode = (scannedText: string) => {
+    if (!scannedText) return;
+    
+    // Parse potential ID
+    let cleaned = scannedText.trim();
+    // Match WIS-XXX, STAFF-XXX, AST-XXX, etc., or use the whole text fallback
+    const match = cleaned.match(/(WIS-\d+|STAFF-\d+|[A-Z0-9-]+)/i);
+    const codeToSearch = match ? match[0].toUpperCase() : cleaned.toUpperCase();
+
+    const staff = staffList.find(s => 
+      s.staffId.trim().toUpperCase() === codeToSearch ||
+      s.name.trim().toUpperCase() === cleaned.toUpperCase()
+    );
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit', 
+      hour12: true 
+    });
+
+    if (staff) {
+      // Create new record
+      const recordId = `${staff.department}_${selectedDate}_${staff.staffId}`;
+      
+      // Filter out existing record
+      const otherRecords = attendanceRecords.filter(
+        r => !(r.date === selectedDate && r.staffId === staff.staffId)
+      );
+
+      const displayTimeLog = `[ស្កេន QR @ ${timeStr}]`;
+      const newRecord: AttendanceRecord = {
+        id: recordId,
+        staffId: staff.staffId,
+        staffName: staff.name,
+        department: staff.department,
+        date: selectedDate,
+        status: 'Present',
+        notes: displayTimeLog
+      };
+
+      // Set parent state
+      setAttendanceRecords([...otherRecords, newRecord]);
+
+      // If active department matches staff department, update localRecords as well
+      if (staff.department === activeDept) {
+        setLocalRecords(prev => ({
+          ...prev,
+          [staff.staffId]: { status: 'Present', notes: displayTimeLog }
+        }));
+      }
+
+      // Success scan effect
+      setScanState({
+        status: 'success',
+        message: 'វត្តមានត្រូវបានចុះឈ្មោះដោយស្វ័យប្រវត្តិតាមរយៈ QR Code!',
+        staffName: staff.name,
+        staffId: staff.staffId,
+        photo: staff.photo,
+        dept: DEPARTMENT_NAMES_KM[staff.department],
+        time: timeStr
+      });
+
+      // Add to session logs
+      const logEntry: QrScanLog = {
+        id: Math.random().toString(),
+        staffName: staff.name,
+        staffId: staff.staffId,
+        photo: staff.photo,
+        departmentName: DEPARTMENT_NAMES_KM[staff.department],
+        time: timeStr,
+        status: 'success',
+        message: 'ឆែកចូលជោគជ័យ (Check-In OK)'
+      };
+      setQrScanLogs(prev => [logEntry, ...prev].slice(0, 5));
+      showToast(`ស្កេនជោគជ័យ៖ ${staff.name} បានឆែកចូលវត្តមាន!`, 'success');
+
+      // Play sound synthesis notification
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const speech = new SpeechSynthesisUtterance(`${staff.name} checked in.`);
+          speech.rate = 1.0;
+          speech.pitch = 1.1;
+          speech.volume = 0.5;
+          window.speechSynthesis.speak(speech);
+        }
+      } catch (e) {
+        // silent fail
+      }
+    } else {
+      // Error
+      setScanState({
+        status: 'error',
+        message: `រកមិនឃើញលេខកូដ "${cleaned}" ក្នុងប្រព័ន្ធបុគ្គលិកឡើយ។`
+      });
+
+      const logEntry: QrScanLog = {
+        id: Math.random().toString(),
+        staffName: 'មិនស្គាល់អត្តសញ្ញាណ',
+        staffId: codeToSearch,
+        departmentName: 'រកមិនឃើញផ្នែក',
+        time: timeStr,
+        status: 'error',
+        message: `កូដមិនត្រឹមត្រូវ: "${cleaned}"`
+      };
+      setQrScanLogs(prev => [logEntry, ...prev].slice(0, 5));
+      showToast(`រកមិនឃើញកូដបុគ្គលិក៖ ${cleaned}`, 'error');
+    }
+  };
+
+  // Process manual image files scanned via html5-qrcode
+  const handleFileScan = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setScanState({ status: 'idle', message: 'កំពុងអានឯកសាររូបភាព...' });
+
+    // Use a temporary Html5Qrcode instance
+    const html5QrCode = new Html5Qrcode("qr-reader-hidden-temp");
+    html5QrCode.scanFile(file, true)
+      .then(decodedText => {
+        handleDecodedCode(decodedText);
+        // Clean up input element
+        e.target.value = '';
+      })
+      .catch(err => {
+        console.error("Error scanning file", err);
+        setScanState({
+          status: 'error',
+          message: 'មិនអាចស្កេនរកកូដ ឬ QR ក្នុងរូបភាពនេះឃើញទេ! សូមជ្រើសរើសរូបភាពដែលមាន QR Code ច្បាស់។'
+        });
+        showToast("បរាជ័យក្នុងការស្កេនរូបភាព QR!", "error");
+        e.target.value = '';
+      });
+  };
+
+  // Camera scanning hook
+  useEffect(() => {
+    let html5QrCode: any = null;
+    
+    if (scannerActive) {
+      try {
+        const qrContainer = document.getElementById("qr-reader");
+        if (qrContainer) {
+          html5QrCode = new Html5Qrcode("qr-reader");
+          html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: (width: number, height: number) => {
+                const size = Math.min(width, height) * 0.7;
+                return { width: size, height: size };
+              }
+            },
+            (decodedText: string) => {
+              handleDecodedCode(decodedText);
+              setScannerActive(false);
+            },
+            (errorMessage: string) => {
+              // passive error callback
+            }
+          ).catch((err: any) => {
+            console.error("Camera scanner start failed", err);
+            showToast("មិនអាចកំណត់កាមេរ៉ាបានទេ! (សូមប្រើ File scan ឬ Simulation)", "error");
+            setScannerActive(false);
+          });
+        }
+      } catch (e) {
+        console.error("Scanner exception", e);
+        setScannerActive(false);
+      }
+    }
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        try {
+          html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+          }).catch((err: any) => console.error("Scanner clear error", err));
+        } catch (err) {
+          // fallback
+        }
+      }
+    };
+  }, [scannerActive]);
+
   // Fast Bulk Register: Mark all in active department as Present / Excused / Absent
   const handleBulkMark = (status: AttendanceStatus) => {
     const updated = { ...localRecords };
@@ -300,16 +520,53 @@ export default function AttendanceTracker({
           </p>
         </div>
 
-        {/* Date Field & Quick Switcher */}
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl">
-          <Calendar className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-bold text-slate-500">កាលបរិច្ឆេទ៖</span>
-          <input 
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="bg-transparent text-xs font-black text-slate-700 outline-none cursor-pointer" 
-          />
+        {/* Date Field & Action Stations Switchers */}
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setIsQrStationOpen(!isQrStationOpen);
+              if (isQrGeneratorOpen) setIsQrGeneratorOpen(false);
+            }}
+            className={`flex items-center gap-2 text-xs font-black px-4 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer shadow-sm ${
+              isQrStationOpen 
+                ? 'bg-emerald-600 border-emerald-500 text-white shadow-emerald-200/40' 
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+            }`}
+          >
+            <QrCode className={`w-4 h-4 ${isQrStationOpen ? 'animate-pulse text-amber-300' : 'text-emerald-600'}`} />
+            <span>ស្កេន QR វត្តមាន (QR Check-In)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsQrGeneratorOpen(!isQrGeneratorOpen);
+              if (isQrStationOpen) {
+                setIsQrStationOpen(false);
+                setScannerActive(false);
+              }
+            }}
+            className={`flex items-center gap-2 text-xs font-black px-4 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer shadow-sm ${
+              isQrGeneratorOpen 
+                ? 'bg-amber-500 border-amber-400 text-white shadow-amber-150/40' 
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+            }`}
+          >
+            <Printer className={`w-4 h-4 ${isQrGeneratorOpen ? 'text-slate-900' : 'text-amber-500'}`} />
+            <span>កាត QR បុគ្គលិក (Staff QR Badges)</span>
+          </button>
+
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl">
+            <Calendar className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-bold text-slate-500">កាលបរិច្ឆេទ៖</span>
+            <input 
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="bg-transparent text-xs font-black text-slate-700 outline-none cursor-pointer" 
+            />
+          </div>
         </div>
       </div>
 
@@ -341,6 +598,461 @@ export default function AttendanceTracker({
           );
         })}
       </div>
+
+      {/* 🔍 QR Code Check-In Station Drawer */}
+      <AnimatePresence>
+        {isQrStationOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="bg-slate-905 bg-slate-900 text-white rounded-2xl border border-slate-800 p-5 md:p-6 shadow-xl relative">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+              
+              {/* Header Title inside drawer */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <span className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                    <QrCode className="w-5 h-5 animate-pulse" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-black text-rose-50 font-sans tracking-tight">
+                      ម៉ាស៊ីនស្កេន QR កូដ (QR Code Check-In Station)
+                    </h3>
+                    <p className="text-[10.5px] font-bold text-slate-400 mt-0.5">
+                      ឆែកវត្តមានស្វ័យប្រវត្តិតាមរយៈការស្កេនកាតកូដបុគ្គលិក • Timestamp Auto Recorder
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsQrStationOpen(false);
+                    setScannerActive(false);
+                  }}
+                  className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Main content grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                {/* Left block - Interactive Scan Screen & File Upload */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="bg-slate-950 rounded-2xl p-4.5 border border-slate-800/80">
+                    
+                    {/* Live Scanner Screen Container */}
+                    <div className="relative aspect-video max-w-md mx-auto bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 flex flex-col items-center justify-center text-center p-4">
+                      {scannerActive ? (
+                        <div id="qr-reader" className="w-full h-full overflow-hidden" />
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-500">
+                            <Camera className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-300">កាមេរ៉ាមិនទាន់បើកដំណើរការ</p>
+                            <p className="text-[9.5px] text-slate-500 max-w-xs leading-normal mt-1">
+                              ផ្ដើសិទ្ធិកាមេរ៉ាក្នុង Browser រួចចុចខាងក្រោមដើម្បីបើកកាមេរ៉ាស្កេន
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Decoded/Loading indicator overlay */}
+                      {scanState.status === 'success' && (
+                        <div className="absolute inset-0 bg-emerald-950/95 flex flex-col items-center justify-center text-center p-4 animate-fade-in z-10">
+                          <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-slate-950 shadow-lg mb-3">
+                            <CheckCircle2 className="w-7 h-7" />
+                          </div>
+                          <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">ស្កេនជោគជ័យ (Check-In Success)</p>
+                          <h4 className="text-base font-black text-white mt-1">{scanState.staffName}</h4>
+                          <p className="text-xs text-slate-300">{scanState.dept} ({scanState.staffId})</p>
+                          <p className="text-[10px] bg-slate-900 text-amber-400 px-3 py-1 rounded-full font-mono mt-3 border border-slate-800 font-extrabold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                            {scanState.time}
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setScanState({ status: 'idle', message: '' });
+                              setScannerActive(true);
+                            }}
+                            className="mt-4 px-3.5 py-1.5 text-[10px] bg-white text-slate-950 font-black rounded-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+                          >
+                            ស្កេនបន្តទៀត (Scan Next)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Scanner Controls block */}
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Toggle Camera Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (scannerActive) {
+                            setScannerActive(false);
+                            setScanState({ status: 'idle', message: '' });
+                          } else {
+                            setScanState({ status: 'idle', message: '' });
+                            setScannerActive(true);
+                          }
+                        }}
+                        className={`py-2.5 rounded-xl font-black text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow ${
+                          scannerActive
+                            ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-900/10'
+                        }`}
+                      >
+                        {scannerActive ? (
+                          <>
+                            <X className="w-4 h-4" />
+                            <span>បិទកាមេរ៉ា (Stop Scanner)</span>
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="w-4 h-4 animate-pulse" />
+                            <span>បើកកាមេរ៉ាស្កេន (Start Scanner)</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* File Upload Scan Button */}
+                      <div className="relative">
+                        <label className="flex items-center justify-center gap-2 bg-slate-805 bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 text-xs font-black py-2.5 rounded-xl transition-colors cursor-pointer">
+                          <Upload className="w-4 h-4 text-emerald-400" />
+                          <span>ស្កេនរូបភាព QR (Upload Photo)</span>
+                          <input 
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileScan}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Warning detail label */}
+                  {scanState.status === 'error' && (
+                    <div className="p-3.5 bg-rose-950/70 border border-rose-900/50 rounded-xl flex items-start gap-2.5 text-xs text-rose-300 leading-relaxed font-semibold">
+                      <AlertCircle className="w-4.5 h-4.5 text-rose-500 shrink-0 mt-0.5" />
+                      <div>{scanState.message}</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right block - Testing Simulation Hub & Log ledger */}
+                <div className="lg:col-span-5 space-y-4">
+                  {/* Simulation Helper */}
+                  <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4 space-y-3.5">
+                    <div className="flex items-center gap-2 text-rose-100">
+                      <Sparkles className="w-4.5 h-4.5 text-amber-400 animate-pulse" />
+                      <h4 className="text-xs font-black text-amber-400">សេវាកម្មត្រាប់ស្កេន (QR Simulation Helper)</h4>
+                    </div>
+                    <p className="text-[10px] text-slate-300 leading-normal font-medium">
+                      ប្រសិនបើ Browser បដិសេធសិទ្ធិកាមេរ៉ាក្នុង Iframe លោកអ្នកអាចជ្រើសរើសអត្តសញ្ញាណបុគ្គលិកខាងក្រោម ដើម្បីធ្វើត្រាប់ស្កេន QR និងពិនិត្យទិន្នន័យ៖
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <select
+                          value={selectedSimStaffId}
+                          onChange={(e) => setSelectedSimStaffId(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs font-black text-slate-300 outline-none focus:ring-1 focus:ring-emerald-500"
+                        >
+                          <option value="">-- ជ្រើសរើសបុគ្គលិកដើម្បីសាកល្បង --</option>
+                          {staffList.map(s => (
+                            <option key={s.staffId} value={s.staffId}>
+                              [{s.staffId}] {s.name} - {DEPARTMENT_NAMES_KM[s.department]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!selectedSimStaffId) {
+                            showToast("សូមជ្រើសរើសបុគ្គលិកសម្រាប់សាកល្បងជាមុនសិន!", "info");
+                            return;
+                          }
+                          setScannerActive(false);
+                          handleDecodedCode(selectedSimStaffId);
+                        }}
+                        className="w-full bg-white hover:bg-slate-150 hover:bg-slate-105 text-slate-950 font-black text-[11px] py-2 px-3 rounded-xl transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer shadow"
+                      >
+                        <Play className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>សាកល្បងឆែកវត្តមាន (Simulate QR Scan)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Rolling Transaction Ledger */}
+                  <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-850 border-slate-800 space-y-3">
+                    <h4 className="text-xs font-black text-slate-300">ប្រវត្តិនៃការស្កេនក្នុង Session នេះ (Scan Logs)</h4>
+                    
+                    {qrScanLogs.length === 0 ? (
+                      <div className="text-center py-5 border border-dashed border-slate-800 rounded-xl text-[10px] text-slate-500 font-bold">
+                        មិនទាន់មានការស្កេនវត្តមាននៅឡើយទេ
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[160px] overflow-y-auto">
+                        {qrScanLogs.map(log => (
+                          <div 
+                            key={log.id} 
+                            className={`p-2 rounded-xl border flex items-center justify-between gap-3 text-[11px] ${
+                              log.status === 'success' 
+                                ? 'bg-slate-900/60 border-slate-800' 
+                                : 'bg-rose-950/30 border-rose-900/40'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-7 h-7 bg-slate-800 rounded overflow-hidden flex items-center justify-center shrink-0">
+                                {log.photo ? (
+                                  <img src={log.photo} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-[10px] font-black">{log.staffName.substring(0, 1)}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-extrabold text-slate-200 truncate">{log.staffName}</p>
+                                <p className="text-[9.5px] text-slate-500 truncate">{log.staffId} • {log.departmentName}</p>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="font-mono text-[9px] text-amber-500 font-extrabold">{log.time}</p>
+                              <p className={`text-[9px] font-black ${log.status === 'success' ? 'text-emerald-400' : 'text-rose-455'}`}>
+                                {log.message}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div id="qr-reader-hidden-temp" className="hidden" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 2. 🖨️ Staff QR badges generator drawer */}
+      <AnimatePresence>
+        {isQrGeneratorOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="bg-slate-50 text-slate-800 rounded-2xl border border-slate-200 p-5 shadow-xl relative">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <span className="p-2 bg-amber-500/10 text-amber-600 rounded-xl border border-amber-500/20">
+                    <Printer className="w-5 h-5 animate-pulse" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-800 font-sans tracking-tight">
+                      បង្កើតកាតសម្គាល់បុគ្គលិក & QR Code (Staff ID Badge Maker)
+                    </h3>
+                    <p className="text-[10.5px] font-bold text-slate-500 mt-0.5">
+                      ជ្រើសរើសបុគ្គលិក ដើម្បីទាញយក ឬបោះពុម្ពប័ណ្ណសម្គាល់ខ្លួនដែលមាន QR Code ម៉ាស៊ីនស្កេន
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsQrGeneratorOpen(false)}
+                  className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-800 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                
+                {/* Left Controller Panel */}
+                <div className="md:col-span-5 space-y-4">
+                  <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 space-y-3 shadow-xs">
+                    <label className="block text-xs font-black text-slate-700">ជ្រើសរើសបុគ្គលិក (Select Staff)៖</label>
+                    <select
+                      value={selectedBadgeStaffId}
+                      onChange={(e) => setSelectedBadgeStaffId(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs font-black text-slate-700 outline-none focus:ring-1 focus:ring-amber-500"
+                    >
+                      <option value="">-- ជ្រើសរើសបុគ្គលិក --</option>
+                      {staffList.map(s => (
+                        <option key={s.staffId} value={s.staffId}>
+                          [{s.staffId}] {s.name} ({DEPARTMENT_NAMES_KM[s.department]})
+                        </option>
+                      ))}
+                    </select>
+
+                    {selectedBadgeStaffId && (
+                      <div className="pt-2 space-y-2">
+                        {/* Direct Print Badge */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const badgeEl = document.getElementById("staff-printable-badge");
+                            if (badgeEl) {
+                              const printWindow = window.open('', '', 'width=600,height=800');
+                              if (printWindow) {
+                                printWindow.document.write(`
+                                  <html>
+                                    <head>
+                                      <title>Print Staff Card - ${selectedBadgeStaffId}</title>
+                                      <style>
+                                        body { font-family: 'Inter', system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 95vh; margin: 0; background: #fafafa; }
+                                        .card { background: white; border: 1px solid #ddd; border-radius: 16px; width: 340px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+                                        .header { background: #059669; color: white; border-radius: 12px; padding: 12px; margin-bottom: 20px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+                                        .photo { width: 90px; height: 110px; border-radius: 8px; border: 2px solid #ddd; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; font-size: 24px; font-weight: bold; color: #6b7280; overflow: hidden; }
+                                        .photo img { width: 100%; height: 100%; object-fit: cover; }
+                                        .name { font-size: 18px; font-weight: 800; color: #111827; margin: 0 0 4px 0; }
+                                        .dept { font-size: 12px; font-weight: 700; color: #047857; margin: 0 0 16px 0; }
+                                        .details { border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 12px 0; margin-bottom: 16px; font-size: 11px; text-align: left; color: #4b5563; line-height: 1.6; }
+                                        .details child { margin-bottom: 3px; }
+                                        .details strong { color: #111827; }
+                                        .qr-box { background: #f9fafb; border: 1px solid #eee; border-radius: 12px; padding: 12px; display: inline-block; margin-bottom: 8px; }
+                                        .qr-img { width: 130px; height: 130px; display: block; }
+                                        .footer-note { font-size: 9px; color: #9ca3af; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+                                      </style>
+                                    </head>
+                                    <body>
+                                      <div class="card">
+                                        <div class="header">Western International School</div>
+                                        <div class="photo">
+                                          ${(() => {
+                                            const sObj = staffList.find(st => st.staffId === selectedBadgeStaffId);
+                                            return sObj?.photo 
+                                              ? `<img src="${sObj.photo}" />` 
+                                              : `<div>${sObj?.name.split(' ').pop()?.substring(0, 1)}</div>`;
+                                          })()}
+                                        </div>
+                                        <div class="name">${staffList.find(st => st.staffId === selectedBadgeStaffId)?.name}</div>
+                                        <div class="dept">${DEPARTMENT_NAMES_KM[staffList.find(st => st.staffId === selectedBadgeStaffId)?.department || 'Security']}</div>
+                                        <div class="details">
+                                          <div><strong>លេខសម្គាល់ / ID:</strong> ${selectedBadgeStaffId}</div>
+                                          <div><strong>ភេទ / Gender:</strong> ${staffList.find(st => st.staffId === selectedBadgeStaffId)?.gender}</div>
+                                          <div><strong>ទូរស័ព្ទ / Phone:</strong> ${staffList.find(st => st.staffId === selectedBadgeStaffId)?.phoneNumber || 'N/A'}</div>
+                                          <div><strong>ទីតាំង / Area:</strong> ${staffList.find(st => st.staffId === selectedBadgeStaffId)?.responsibleLocation || 'School Campus'}</div>
+                                        </div>
+                                        <div class="qr-box">
+                                          <img class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${selectedBadgeStaffId}" />
+                                        </div>
+                                        <div class="footer-note">Staff NFC & QR ID Badge</div>
+                                      </div>
+                                      <script>
+                                        window.onload = function() { window.print(); window.close(); }
+                                      </script>
+                                    </body>
+                                  </html>
+                                `);
+                                printWindow.document.close();
+                              }
+                            }
+                          }}
+                          className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow"
+                        >
+                          <Printer className="w-4 h-4 text-amber-400" />
+                          <span>បោះពុម្ពប័ណ្ណសម្គាល់ (Print ID Badge)</span>
+                        </button>
+
+                        {/* Download QR Image directly */}
+                        <a
+                          href={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${selectedBadgeStaffId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          download={`QR_${selectedBadgeStaffId}.png`}
+                          className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer text-center"
+                        >
+                          <Download className="w-4 h-4 text-emerald-600" />
+                          <span>ទាញយករូបភាព QR (Download QR Image)</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Preview Card Panel */}
+                <div className="md:col-span-7 flex justify-center">
+                  {selectedBadgeStaffId ? (
+                    (() => {
+                      const staff = staffList.find(st => st.staffId === selectedBadgeStaffId);
+                      if (!staff) return null;
+
+                      return (
+                        <div 
+                          id="staff-printable-badge" 
+                          className="bg-white border-2 border-slate-200 p-6 rounded-3xl w-full max-w-[340px] shadow-lg text-center relative overflow-hidden transition-all hover:shadow-xl"
+                        >
+                          {/* Card green head banner */}
+                          <div className="bg-emerald-600 border border-emerald-550 text-white rounded-2xl py-3 px-4 mb-4 text-center font-black tracking-wider text-xs">
+                            WESTERN INTERNATIONAL SCHOOL
+                          </div>
+                          
+                          {/* Staff Photo */}
+                          <div className="w-24 h-28 bg-slate-50 border border-slate-200 rounded-xl mx-auto mb-3.5 overflow-hidden flex items-center justify-center shadow-xs">
+                            {staff.photo ? (
+                              <img src={staff.photo} alt={staff.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xl font-black text-slate-400 uppercase">{staff.name.split(' ').pop()?.substring(0, 1)}</span>
+                            )}
+                          </div>
+
+                          {/* Profile metadata */}
+                          <h4 className="text-base font-black text-slate-900">{staff.name}</h4>
+                          <p className="text-xs font-extrabold text-emerald-600 mt-0.5">{DEPARTMENT_NAMES_KM[staff.department]}</p>
+
+                          {/* Detail Grid */}
+                          <div className="border-t border-b border-dashed border-slate-200/80 py-3 my-4 text-left text-[11px] font-semibold text-slate-500 space-y-1">
+                            <div className="flex justify-between"><span className="text-slate-400">អត្តសញ្ញាណប័ណ្ណ (ID):</span> <span className="font-mono font-black text-slate-800">{staff.staffId}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-400">ភេទ / Gender:</span> <span className="font-bold text-slate-800">{staff.gender}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-400">ល.ទូរស័ព្ទ / Phone:</span> <span className="font-bold text-slate-800">{staff.phoneNumber || 'N/A'}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-400">ទីតាំងការងារ / Location:</span> <span className="font-bold text-slate-800 truncate max-w-[130px]">{staff.responsibleLocation || 'School Campus'}</span></div>
+                          </div>
+
+                          {/* API generated QR code frame */}
+                          <div className="inline-block p-2 bg-slate-50 border border-slate-150 rounded-2xl self-center mx-auto mb-1 shadow-inner-sm">
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${staff.staffId}`} 
+                              alt="Staff QR Code" 
+                              className="w-32 h-32 object-contain block mx-auto rounded-lg"
+                            />
+                          </div>
+                          
+                          <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mt-2">
+                            Western Attendance QR Badge
+                          </p>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="bg-slate-100 border border-dashed border-slate-300 rounded-2xl p-10 text-center w-full max-w-sm flex flex-col justify-center items-center">
+                      <Printer className="w-10 h-10 text-slate-400 mb-2.5 bg-slate-200 p-2 rounded-xl" />
+                      <p className="text-xs font-black text-slate-500">មិនទាន់មានការជ្រើសរើសបុគ្គលិក</p>
+                      <p className="text-[10px] text-slate-400 max-w-[200px] mt-1 mx-auto leading-relaxed">
+                        សូមជ្រើសរើសបុគ្គលិកពីប្រអប់ខាងឆ្វេង ដើម្បីមើលគំរូកាតសម្គាល់ខ្លួន និងទាញយក QR Code។
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Warning/Guideline for Empty staff list */}
       {deptStaff.length === 0 ? (

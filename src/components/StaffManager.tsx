@@ -734,7 +734,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between border-b border-slate-100 pb-5 gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-            <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><BookOpen className="w-5 h-5" /></span>
+            <span className="p-1.5 bg-emerald-50 text-emerald-850 rounded-lg"><BookOpen className="w-5 h-5" /></span>
             រៀបចំ និងគ្រប់គ្រងទិន្នន័យបុគ្គលិក
           </h2>
           <p className="text-xs font-semibold text-slate-400 mt-1">
@@ -747,7 +747,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
           {/* New manual add button */}
           <button 
             onClick={openAddForm}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-indigo-100"
+            className="flex items-center gap-1.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition shadow-md shadow-emerald-100"
           >
             <UserPlus className="w-4 h-4" />
             បន្ថែមបុគ្គលិកថ្មី
@@ -772,7 +772,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   placeholder="ស្វែងរកឈ្មោះ, លេខបុគ្គលិក..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-slate-50 text-xs font-medium border border-slate-200 pl-9 pr-3 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-50 text-xs font-medium border border-slate-200 pl-9 pr-3 py-2 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                 />
               </div>
             </div>
@@ -783,7 +783,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               <select 
                 value={selectedDept} 
                 onChange={(e) => setSelectedDept(e.target.value as Department | 'All')}
-                className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-semibold rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-semibold rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
               >
                 <option value="All">គ្រប់ផ្នែកទាំងអស់</option>
                 {ALL_DEPARTMENTS.map(d => (
@@ -798,7 +798,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               <select 
                 value={selectedGender} 
                 onChange={(e) => setSelectedGender(e.target.value as 'All' | 'ប្រុស' | 'ស្រី')}
-                className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-semibold rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-semibold rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
               >
                 <option value="All">ប្រុស និងស្រី</option>
                 <option value="ប្រុស">ប្រុស (Male)</option>
@@ -873,7 +873,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
                 <div className="text-center mt-3">
                   <h4 className="text-base font-black text-slate-800">{staff.name}</h4>
-                  <p className="text-xs font-bold text-indigo-600 mt-0.5">{staff.staffId}</p>
+                  <p className="text-xs font-bold text-emerald-800 mt-0.5">{staff.staffId}</p>
                   
                   {/* Department description tag */}
                   <span className="inline-block bg-slate-200 text-slate-800 font-extrabold text-[9px] px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide">
@@ -884,7 +884,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                 <div className="border-t border-slate-200/50 mt-3 pt-3 space-y-1.5 text-xs font-semibold text-slate-500">
                   <div className="flex justify-between">
                     <span>ភេទ៖ <span className="font-extrabold text-slate-700">{staff.gender}</span></span>
-                    <span>ចំនួនឆ្នាំធ្វើការ៖ <span className="font-extrabold text-indigo-600 font-sans">{calculateYearsOfWork(staff.joinDate)}</span></span>
+                    <span>ចំនួនឆ្នាំធ្វើការ៖ <span className="font-extrabold text-emerald-800 font-sans">{calculateYearsOfWork(staff.joinDate)}</span></span>
                   </div>
                   {staff.joinDate && (
                     <div className="flex justify-between">
@@ -895,7 +895,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   <div className="flex justify-between items-center text-xs">
                     <span>ទូរស័ព្ទ៖</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-extrabold text-indigo-600 font-mono text-[11px]">{staff.phoneNumber}</span>
+                      <span className="font-extrabold text-emerald-850 font-mono text-[11px]">{staff.phoneNumber}</span>
                       {staff.phoneNumber && staff.phoneNumber !== 'N/A' && staff.phoneNumber !== 'គ្មាន' && (
                         <a
                           href={(() => {
@@ -976,19 +976,19 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                 </button>
                 <button 
                   onClick={() => openAttachmentModal(staff, 'link')}
-                  className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative cursor-pointer"
+                  className="p-1.5 text-slate-400 hover:text-emerald-805 bg-white hover:bg-emerald-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative cursor-pointer"
                   title="តំណភ្ជាប់ Web (Other Links)"
                 >
                   <Link2 className="w-3.5 h-3.5" />
                   {staff.attachments && staff.attachments.filter(a => a.type === 'link').length > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-indigo-500 text-white font-sans text-[8px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-xs border border-white">
+                    <span className="absolute -top-1.5 -right-1.5 bg-emerald-600 text-white font-sans text-[8px] font-bold h-4 w-4 rounded-full flex items-center justify-center shadow-xs border border-white">
                       {staff.attachments.filter(a => a.type === 'link').length}
                     </span>
                   )}
                 </button>
                 <button 
                   onClick={() => openEditForm(staff)}
-                  className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white hover:bg-indigo-50 rounded-lg border border-slate-200/60 transition cursor-pointer"
+                  className="p-1.5 text-slate-400 hover:text-emerald-805 bg-white hover:bg-emerald-50 rounded-lg border border-slate-200/60 transition cursor-pointer"
                   title="កែសម្រួលព័ត៌មាន"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
@@ -1046,7 +1046,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                     }}
                     className={`flex-1 py-3 text-xs font-black transition flex items-center justify-center gap-2 ${
                       entryMode === 'single'
-                        ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+                        ? 'bg-white text-emerald-850 border-b-2 border-emerald-850'
                         : 'text-slate-500 hover:bg-slate-50'
                     }`}
                   >
@@ -1060,7 +1060,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                     }}
                     className={`flex-1 py-3 text-xs font-black transition flex items-center justify-center gap-2 ${
                       entryMode === 'bulk'
-                        ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+                        ? 'bg-white text-emerald-850 border-b-2 border-emerald-850'
                         : 'text-slate-500 hover:bg-slate-50'
                     }`}
                   >
@@ -1095,7 +1095,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         value={formStaffId}
                         onChange={(e) => setFormStaffId(e.target.value.toUpperCase())}
                         placeholder="WIS-CLN-085"
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                         required
                       />
                     </div>
@@ -1107,7 +1107,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         placeholder="ឈ្មោះបុគ្គលិក..."
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                         required
                       />
                     </div>
@@ -1120,7 +1120,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       <select
                         value={formGender}
                         onChange={(e) => setFormGender(e.target.value as 'ប្រុស' | 'ស្រី')}
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                       >
                         <option value="ប្រុស">ប្រុស (Male)</option>
                         <option value="ស្រី">ស្រី (Female)</option>
@@ -1128,7 +1128,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                     </div>
                     <div>
                       <label className="text-xs font-bold text-slate-700">ចំនួនឆ្នាំធ្វើការ (Years of Work)</label>
-                      <div className="w-full bg-slate-100 text-xs font-black p-2.5 border border-slate-200 text-indigo-600 rounded-lg mt-1 select-none font-sans min-h-[38px] flex items-center">
+                      <div className="w-full bg-slate-100 text-xs font-black p-2.5 border border-slate-200 text-emerald-800 rounded-lg mt-1 select-none font-sans min-h-[38px] flex items-center">
                         {calculateYearsOfWork(formJoinDate)} (គណនាស្វ័យប្រវត្ត)
                       </div>
                     </div>
@@ -1141,7 +1141,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       type="date"
                       value={formJoinDate}
                       onChange={(e) => setFormJoinDate(e.target.value)}
-                      className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                     />
                   </div>
 
@@ -1154,7 +1154,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         value={formPhone}
                         onChange={(e) => setFormPhone(e.target.value)}
                         placeholder="012 345 678"
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                       />
                     </div>
                     <div>
@@ -1169,7 +1169,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                             setFormStaffId(suggestedId);
                           }
                         }}
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                       >
                         {ALL_DEPARTMENTS.map(d => (
                           <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
@@ -1188,7 +1188,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       value={formIcom}
                       onChange={(e) => setFormIcom(e.target.value)}
                       placeholder="ឧទាហរណ៍៖ មាន (ម៉ាក Motorola), Channel 3, លេខ ០២..."
-                      className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                     />
                   </div>
 
@@ -1202,7 +1202,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       value={formResponsibleLocation}
                       onChange={(e) => setFormResponsibleLocation(e.target.value)}
                       placeholder="ឧទាហរណ៍៖ អគារ A, បណ្ណាល័យ, ច្រកទ្វារធំ..."
-                      className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                     />
                     {formResponsibleLocation.trim() && formPhone.trim() && (
                       <div className="mt-2.5 bg-sky-50 border border-sky-100/75 rounded-xl p-3 text-[11px] text-sky-900 font-extrabold animate-fade-in space-y-1.5 shadow-sm">
@@ -1257,7 +1257,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       {/* Tiny preview */}
                       <div className="w-14 h-20 bg-slate-100 rounded border border-slate-300 overflow-hidden flex items-center justify-center relative">
                         {isCompressing ? (
-                          <span className="text-[9px] text-indigo-600 text-center font-semibold animate-pulse leading-none">កំពុងបង្ហាប់...</span>
+                          <span className="text-[9px] text-emerald-800 text-center font-semibold animate-pulse leading-none">កំពុងបង្ហាប់...</span>
                         ) : formPhoto ? (
                           <img src={formPhoto} alt="4x6 Preview" className="w-full h-full object-cover" />
                         ) : (
@@ -1303,7 +1303,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                           type="checkbox"
                           checked={keepAndAddMore}
                           onChange={(e) => setKeepAndAddMore(e.target.checked)}
-                          className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          className="w-4 h-4 rounded border-slate-300 text-emerald-800 focus:ring-emerald-700"
                         />
                         <span>រក្សាទុក និងបន្ថែមបន្តទៀត (Continuous Adding)</span>
                       </label>
@@ -1321,7 +1321,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       </button>
                       <button
                         type="submit"
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition shadow-md shadow-indigo-100"
+                        className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition shadow-md shadow-emerald-100"
                       >
                         {editingStaffId ? 'រក្សាទុកការកែសម្រួល' : 'បញ្ចូលទិន្នន័យ'}
                       </button>
@@ -1347,7 +1347,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   {/* Quick paste box for ultra-fast name inserting */}
                   <div className="mb-4 bg-slate-50 border border-slate-200 p-3 rounded-xl shrink-0">
                     <label className="text-xs font-black text-slate-700 flex items-center gap-1.5 mb-1.5">
-                      <Plus className="w-4 h-4 text-indigo-600" />
+                      <Plus className="w-4 h-4 text-emerald-800" />
                       បិទភ្ជាប់បញ្ជីឈ្មោះរហ័ស (Quick Name Paste)
                     </label>
                     <div className="flex gap-2">
@@ -1356,12 +1356,12 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         value={bulkPasteText}
                         onChange={(e) => setBulkPasteText(e.target.value)}
                         placeholder="បិទភ្ជាប់ ឬវាយឈ្មោះជាច្រើននៅទីនេះ (ចុះបន្ទាត់ ឬប្រើសញ្ញាក្បៀស [,] ដើម្បីញែកឈ្មោះ)..."
-                        className="flex-1 bg-white border border-slate-200 text-xs font-semibold p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
+                        className="flex-1 bg-white border border-slate-200 text-xs font-semibold p-2 rounded-lg focus:ring-2 focus:ring-emerald-700 focus:outline-none resize-none"
                       />
                       <button
                         type="button"
                         onClick={handleApplyBulkPaste}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-4 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs"
+                        className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-black px-4 rounded-lg transition shrink-0 flex items-center gap-1 shadow-xs"
                       >
                         <span>បញ្ចូលទៅក្នុងតារាង</span>
                       </button>
@@ -1385,7 +1385,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       </thead>
                       <tbody className="divide-y divide-slate-200 bg-white text-xs">
                         {bulkRows.map((row, index) => (
-                          <tr key={row.id} className="hover:bg-indigo-50/20 transition-colors">
+                          <tr key={row.id} className="hover:bg-emerald-50/20 transition-colors">
                             <td className="py-2 px-3 text-center font-bold text-slate-400">
                               {(index + 1).toString().padStart(2, '0')}
                             </td>
@@ -1395,20 +1395,20 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                                 value={row.name}
                                 onChange={(e) => handleBulkRowChange(index, 'name', e.target.value)}
                                 placeholder="ឧ. កែវ សុខា"
-                                className="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white text-xs font-bold p-2 border border-slate-200 focus:border-indigo-500 rounded-lg focus:outline-none transition"
+                                className="w-full bg-slate-50 hover:bg-slate-100 focus:bg-white text-xs font-bold p-2 border border-slate-200 focus:border-emerald-700 rounded-lg focus:outline-none transition"
                               />
                             </td>
                             <td className="py-2 px-3">
                               <select
                                 value={row.gender}
                                 onChange={(e) => handleBulkRowChange(index, 'gender', e.target.value)}
-                                className="w-full bg-slate-50 text-xs font-bold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-slate-50 text-xs font-bold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-700"
                               >
                                 <option value="ប្រុស">ប្រុស</option>
                                 <option value="ស្រី">ស្រី</option>
                               </select>
                             </td>
-                            <td className="py-2 px-3 text-center font-extrabold text-xs text-indigo-600 font-sans">
+                            <td className="py-2 px-3 text-center font-extrabold text-xs text-emerald-800 font-sans">
                               {calculateYearsOfWork(row.joinDate)}
                             </td>
                             <td className="py-2 px-3">
@@ -1416,7 +1416,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                                 type="date"
                                 value={row.joinDate || ''}
                                 onChange={(e) => handleBulkRowChange(index, 'joinDate', e.target.value)}
-                                className="w-full bg-slate-50 text-xs font-semibold p-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-slate-50 text-xs font-semibold p-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-700"
                               />
                             </td>
                             <td className="py-2 px-3">
@@ -1425,14 +1425,14 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                                 value={row.phoneNumber}
                                 onChange={(e) => handleBulkRowChange(index, 'phoneNumber', e.target.value)}
                                 placeholder="098 765 432"
-                                className="w-full bg-slate-50 text-xs font-semibold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-505 focus:border-indigo-500"
+                                className="w-full bg-slate-50 text-xs font-semibold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-800 focus:border-emerald-700"
                               />
                             </td>
                             <td className="py-2 px-3">
                               <select
                                 value={row.department}
                                 onChange={(e) => handleBulkRowChange(index, 'department', e.target.value as Department)}
-                                className="w-full bg-slate-50 text-xs font-bold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                                className="w-full bg-slate-50 text-xs font-bold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-700"
                               >
                                 {ALL_DEPARTMENTS.map(d => (
                                   <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
@@ -1480,7 +1480,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                     </button>
                     <button
                       type="submit"
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold px-6 py-2.5 rounded-xl transition shadow-md shadow-indigo-150"
+                      className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-extrabold px-6 py-2.5 rounded-xl transition shadow-md shadow-emerald-100"
                     >
                       រក្សាទុកជាក្រុម
                     </button>
@@ -1568,7 +1568,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-green-600">
                 <div className="flex items-center gap-2">
                   {activeAttachmentTab === 'link' ? (
-                    <Link2 className="w-5 h-5 text-indigo-400 animate-pulse" />
+                    <Link2 className="w-5 h-5 text-emerald-500 animate-pulse" />
                   ) : (
                     <Paperclip className="w-5 h-5 text-green-400" />
                   )}
@@ -1606,7 +1606,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         placeholder="ឧ. បទបង្ហាញការងារ, ផែនការបង្រៀន..."
                         value={linkTitle}
                         onChange={(e) => setLinkTitle(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-800 outline-hidden"
+                        className="w-full bg-white border border-slate-200 focus:border-emerald-700 focus:ring-1 focus:ring-emerald-700 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-800 outline-hidden"
                       />
                     </div>
                     <div>
@@ -1619,7 +1619,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                         placeholder="ឧ. https://drive.google.com/..."
                         value={linkUrl}
                         onChange={(e) => setLinkUrl(e.target.value)}
-                        className="w-full bg-white border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-hidden font-sans"
+                        className="w-full bg-white border border-slate-200 focus:border-emerald-700 focus:ring-1 focus:ring-emerald-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-hidden font-sans"
                       />
                     </div>
                   </div>
@@ -1627,7 +1627,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                     <button
                       type="submit"
                       disabled={!linkTitle.trim() || !linkUrl.trim()}
-                      className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-black px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      className="bg-emerald-800 hover:bg-emerald-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-black px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>បញ្ចូលតំណភ្ជាប់ (Add URL)</span>
@@ -1645,9 +1645,9 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   />
                   <div 
                     onClick={() => attachmentFileInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-slate-50 rounded-xl p-6 text-center cursor-pointer transition-all duration-250 select-none group"
+                    className="border-2 border-dashed border-slate-300 hover:border-emerald-700 hover:bg-slate-50 rounded-xl p-6 text-center cursor-pointer transition-all duration-250 select-none group"
                   >
-                    <Upload className="w-8 h-8 text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition mx-auto mb-2" />
+                    <Upload className="w-8 h-8 text-slate-400 group-hover:text-emerald-800 group-hover:scale-110 transition mx-auto mb-2" />
                     <span className="text-xs font-extrabold text-slate-700 block col-span-full">ជ្រើសរើសឯកសារភ្ជាប់ ឬ រូបភាព (ព្រីនសន្លឹក, ឯកសារ PDF...)</span>
                     <span className="text-[10px] font-bold text-slate-400 block mt-1">អាចផ្ទុកឯកសារបានច្រើនក្នុងពេលតែមួយ (Supports multiple files)</span>
                   </div>
@@ -1738,7 +1738,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                                 <button 
                                   type="button"
                                   onClick={() => setPreviewingAttachment(file)}
-                                  className="p-1.5 hover:bg-slate-100 text-indigo-500 hover:text-indigo-700 transition rounded-lg border border-slate-200 bg-white"
+                                  className="p-1.5 hover:bg-slate-100 text-emerald-800 hover:text-emerald-900 transition rounded-lg border border-slate-200 bg-white"
                                   title="មើលឯកសារពេញ (View/Print File)"
                                 >
                                   <Eye className="w-3.5 h-3.5" />

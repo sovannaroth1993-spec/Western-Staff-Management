@@ -914,16 +914,16 @@ export default function StudentInsuranceManager() {
       
       {/* Intro visual header Banner */}
       <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/10 shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-md shadow-emerald-500/10 shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
               <h1 className="text-lg md:text-xl font-moul tracking-normal text-slate-900 flex items-center gap-2">
                 សន្លឹកគ្រប់គ្រងធានារ៉ាប់រងសិស្ស (Western Student Insurance Register)
-                <span className="text-[10px] bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full font-bold">Auto Recorded ✔</span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">Auto Recorded ✔</span>
               </h1>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 គ្រប់គ្រងឯកសារធានារ៉ាប់រង កំណត់ត្រាសុខភាព ការស្នើសុំសំណងមន្ទីរពេទ្យ និងព័ត៌មានអាណាព្យាបាលសិស្សសាលា។
@@ -940,7 +940,7 @@ export default function StudentInsuranceManager() {
             </button>
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-1.5 bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-sm shadow-indigo-700/15"
+              className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-805 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-sm shadow-emerald-700/15"
             >
               <PlusCircle className="w-4 h-4" />
               <span>បញ្ចូលធានារ៉ាប់រងថ្មី (Add Insurance)</span>
@@ -1010,7 +1010,7 @@ export default function StudentInsuranceManager() {
               <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <div className="space-y-0.5">
-                    <span className="text-[9px] bg-indigo-100 text-indigo-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                       ប្រព័ន្ធស្វ័យប្រវត្ត (Bot Agent)
                     </span>
                     <h4 className="text-sm font-black text-slate-800">
@@ -1019,7 +1019,7 @@ export default function StudentInsuranceManager() {
                   </div>
                   <button
                     onClick={() => setShowTelegramSettings(!showTelegramSettings)}
-                    className="text-xs font-black text-slate-600 hover:text-indigo-600 bg-white hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl transition flex items-center gap-1 shrink-0 cursor-pointer"
+                    className="text-xs font-black text-slate-600 hover:text-emerald-600 bg-white hover:bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl transition flex items-center gap-1 shrink-0 cursor-pointer"
                   >
                     <Settings2 className="w-3.5 h-3.5" />
                     {showTelegramSettings ? 'លាក់ការកំណត់' : 'កំណត់អត្តសញ្ញាណ'}
@@ -1029,14 +1029,14 @@ export default function StudentInsuranceManager() {
                 {/* Configuration Fields */}
                 {(showTelegramSettings || (!telegramBotToken || !telegramChatId)) && (
                   <div className="bg-white border border-slate-200/80 rounded-xl p-4 space-y-4 text-xs animate-fade-in">
-                    <div className="space-y-1 bg-indigo-50/50 border border-indigo-100/60 p-3 rounded-lg">
-                      <p className="font-extrabold text-indigo-950 flex items-center gap-1.5">
-                        <Key className="w-4 h-4 text-indigo-600" /> ជំនួយណែនាំ៖
+                    <div className="space-y-1 bg-emerald-50/50 border border-emerald-100/60 p-3 rounded-lg">
+                      <p className="font-extrabold text-emerald-950 flex items-center gap-1.5">
+                        <Key className="w-4 h-4 text-emerald-600" /> ជំនួយណែនាំ៖
                       </p>
                       <ol className="list-decimal pl-4 mt-1 space-y-1.5 font-medium text-slate-600 text-[11px] leading-relaxed">
-                        <li>ផ្ញើរសារទៅកាន់ <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:underline">@BotFather</a> ដើម្បីទទួលបាន <b>Bot Token</b></li>
+                        <li>ផ្ញើរសារទៅកាន់ <a href="https://t.me/BotFather" target="_blank" rel="noreferrer" className="text-emerald-600 font-bold hover:underline">@BotFather</a> ដើម្បីទទួលបាន <b>Bot Token</b></li>
                         <li>បង្កើត Telegram Group / Channel រួចបន្ថែម Bot នេះចូល</li>
-                        <li>ស្វែងរក Chat ID (ដូចជាប្រើប្រាស់ <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer" className="text-indigo-600 font-bold hover:underline">@userinfobot</a>)</li>
+                        <li>ស្វែងរក Chat ID (ដូចជាប្រើប្រាស់ <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer" className="text-emerald-600 font-bold hover:underline">@userinfobot</a>)</li>
                       </ol>
                     </div>
 
@@ -1048,7 +1048,7 @@ export default function StudentInsuranceManager() {
                           placeholder="ឧ. 123456:ABC-DEF..."
                           value={telegramBotToken}
                           onChange={(e) => handleSaveTelegramConfig(e.target.value, telegramChatId)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"
                         />
                       </div>
                       <div>
@@ -1058,7 +1058,7 @@ export default function StudentInsuranceManager() {
                           placeholder="ឧ. -100123456789"
                           value={telegramChatId}
                           onChange={(e) => handleSaveTelegramConfig(telegramBotToken, e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-[11px] focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -1073,8 +1073,8 @@ export default function StudentInsuranceManager() {
                       <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">រួចរាល់សម្រាប់ការផ្ញើ</span>
                     )}
                     {telegramSendStatus === 'sending' && (
-                      <span className="text-[11px] font-bold text-indigo-600 animate-pulse flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping" />
+                      <span className="text-[11px] font-bold text-emerald-650 animate-pulse flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-150">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping" />
                         កំពុងបញ្ជូនទៅ Telegram...
                       </span>
                     )}
@@ -1095,7 +1095,7 @@ export default function StudentInsuranceManager() {
                     type="button"
                     onClick={sendSummaryToTelegram}
                     disabled={telegramSendStatus === 'sending'}
-                    className="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold text-xs px-6 py-3 rounded-xl border border-indigo-500 shadow-md transition-all scale-100 active:scale-95 cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-extrabold text-xs px-6 py-3 rounded-xl border border-emerald-500 shadow-md transition-all scale-100 active:scale-95 cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
                     {telegramSendStatus === 'sending' ? 'កំពុងផ្ញើ...' : 'ផ្ញើរបាយការណ៍សង្ខេបភ្លាមៗ (Bot)'}
@@ -1187,11 +1187,11 @@ export default function StudentInsuranceManager() {
           </span>
         </div>
 
-        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-indigo-950 to-slate-900 p-4 rounded-2xl text-white shadow-xs">
-          <p className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest text-indigo-200/80">បុព្វលាភសរុប (Premiums)</p>
+        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-emerald-950 to-slate-900 p-4 rounded-2xl text-white shadow-xs">
+          <p className="text-[10.5px] font-black text-slate-400 uppercase tracking-widest text-emerald-200/80">បុព្វលាភសរុប (Premiums)</p>
           <div className="flex items-baseline gap-0.5 mt-1">
             <span className="text-2xl font-mono font-black text-amber-400">${totalValueSumUsd}</span>
-            <span className="text-[10px] text-indigo-300 font-bold">USD</span>
+            <span className="text-[10px] text-emerald-300 font-bold">USD</span>
           </div>
           <p className="text-[9.5px] text-slate-400 mt-2 font-mono">គិតជាមធ្យមគ្របដណ្តប់</p>
         </div>
@@ -1208,7 +1208,7 @@ export default function StudentInsuranceManager() {
             placeholder="ស្វែងរក៖ ឈ្មោះសិស្ស លេខសម្គាល់ ប័ណ្ណធានា អាណាព្យាបាល... "
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/25 focus:border-indigo-600 transition"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-600 transition"
           />
           {searchQuery && (
             <button
@@ -1340,9 +1340,9 @@ export default function StudentInsuranceManager() {
                         <div>
                           <p className="font-extrabold text-slate-900 text-[12.5px]">{item.studentName}</p>
                           <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                            ID: <span className="font-bold text-slate-700">{item.studentId}</span> • ភេទ៖ <span className="font-bold text-slate-700">{item.gender}</span> • Class: <span className="font-semibold text-indigo-700">{item.gradeClass}</span>
+                            ID: <span className="font-bold text-slate-700">{item.studentId}</span> • ភេទ៖ <span className="font-bold text-slate-700">{item.gender}</span> • Class: <span className="font-semibold text-emerald-700">{item.gradeClass}</span>
                           </p>
-                          <p className="text-[10px] text-indigo-500 font-bold mt-0.5">
+                          <p className="text-[10px] text-emerald-600 font-bold mt-0.5">
                             ឆ្នាំសិក្សា៖ {item.academicYear}
                           </p>
                         </div>
@@ -1364,7 +1364,7 @@ export default function StudentInsuranceManager() {
                       {/* Policy cover details */}
                       <td className="px-4 py-3">
                         <div>
-                          <p className="font-bold text-indigo-950 font-mono text-[11px]">{item.policyNumber}</p>
+                          <p className="font-bold text-emerald-950 font-mono text-[11px]">{item.policyNumber}</p>
                           <p className="text-[11px] text-emerald-800 font-extrabold">
                             {item.provider}
                           </p>

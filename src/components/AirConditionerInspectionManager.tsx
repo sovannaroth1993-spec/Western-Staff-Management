@@ -599,16 +599,16 @@ export default function AirConditionerInspectionManager() {
 
       {/* Main Panel Banner Header */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs relative overflow-hidden" id="ac-panel-banner">
-        <div className="absolute top-0 right-0 w-36 h-36 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-600 to-blue-700 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-white shadow-md shrink-0">
               <Wind className="w-6.5 h-6.5 animate-pulse text-white" />
             </div>
             <div>
               <h1 className="text-lg md:text-xl font-moul tracking-normal text-slate-900 flex flex-wrap items-center gap-2">
                 សន្លឹកត្រួតពិនិត្យ និងការថែទាំម៉ាស៊ីនត្រជាក់ (Air Conditioner Inspection & Maintenance Form)
-                <span className="text-[10px] bg-cyan-100 text-cyan-800 px-2.5 py-0.5 rounded-full font-bold">Auto Synchronized ⚙</span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">Auto Synchronized ⚙</span>
               </h1>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 គណនីគ្រប់គ្រងការលាងសម្អាត សង្គ្រោះ កត់សម្គាល់សីតុណ្ហភាព បំពង់ទឹកហូរ សម្ពាធហ្គាស និងបញ្ជីជួសជុលឧបករណ៍ត្រជាក់។
@@ -625,7 +625,7 @@ export default function AirConditionerInspectionManager() {
             </button>
             <button
               onClick={openAddForm}
-              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-xs"
             >
               <PlusCircle className="w-4.5 h-4.5" />
               <span>បញ្ចូលកំណត់ត្រាថ្មី (Add Inspection Form)</span>
@@ -678,13 +678,13 @@ export default function AirConditionerInspectionManager() {
           </span>
         </div>
 
-        <div className="col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 to-cyan-950 p-4 rounded-2xl text-white shadow-xs">
-          <p className="text-[10.5px] font-black text-cyan-200 uppercase tracking-widest">ករណីជួសជុលសរុប (Maintenance Log)</p>
+        <div className="col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 to-emerald-950 p-4 rounded-2xl text-white shadow-xs">
+          <p className="text-[10.5px] font-black text-emerald-200 uppercase tracking-widest">ករណីជួសជុលសរុប (Maintenance Log)</p>
           <div className="flex items-baseline gap-0.5 mt-1">
-            <span className="text-2xl font-mono font-black text-cyan-400">{totalRepairsTracked}</span>
+            <span className="text-2xl font-mono font-black text-emerald-400">{totalRepairsTracked}</span>
             <span className="text-[10px] text-slate-300 font-bold ml-1">ការងារ</span>
           </div>
-          <p className="text-[9.5px] text-cyan-150 mt-2 font-mono">ចងក្រងក្នុងតារាង Form Sub-records</p>
+          <p className="text-[9.5px] text-emerald-200 mt-2 font-mono">ចងក្រងក្នុងតារាង Form Sub-records</p>
         </div>
       </div>
 
@@ -699,7 +699,7 @@ export default function AirConditionerInspectionManager() {
             placeholder="ស្វែងរក៖ លេខ Form ទីតាំង ម៉ាកម៉ាស៊ីន អ្នកត្រួតពិនិត្យ..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-cyan-500/25 focus:border-cyan-600 transition"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-600 transition"
           />
           {searchQuery && (
             <button
@@ -846,11 +846,11 @@ export default function AirConditionerInspectionManager() {
                   <div className="flex items-start justify-between gap-2 border-b border-dashed border-slate-100 pb-3">
                     <div>
                       <h4 className="font-extrabold text-sm text-slate-800 flex items-center gap-1.5">
-                        <Wind className="w-4 h-4 text-cyan-600 shrink-0" />
+                        <Wind className="w-4 h-4 text-emerald-600 shrink-0" />
                         <span>{item.brandModel}</span>
                       </h4>
                       <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-1 font-semibold">
-                        <MapPin className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
+                        <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                         <span>ទីតាំង៖ {item.location}</span>
                       </p>
                       <p className="text-[10px] text-slate-400 font-mono mt-0.5">
@@ -904,11 +904,11 @@ export default function AirConditionerInspectionManager() {
                   {/* Row 3: Maintenance Actions & Plan Summary */}
                   <div className="bg-slate-50 border border-slate-150 rounded-xl p-3 text-[11px] space-y-1 text-slate-700">
                     <p className="font-extrabold text-slate-800 mb-1 flex items-center gap-1 border-b border-rose-100 pb-1">
-                      <Wrench className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
+                      <Wrench className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span>ការងារជួសជុល និងផែនការថែទាំ (Repair & Plan):</span>
                     </p>
                     <div className="flex flex-wrap gap-1 py-1">
-                      {item.planCleanNormal && <span className="bg-cyan-100 text-cyan-805 px-2 py-0.5 rounded text-[9.5px] font-bold">លាងសម្អាតធម្មតា</span>}
+                      {item.planCleanNormal && <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[9.5px] font-bold">លាងសម្អាតធម្មតា</span>}
                       {item.planAddGas && <span className="bg-blue-100 text-blue-805 px-2 py-0.5 rounded text-[9.5px] font-bold">បញ្ចូលហ្គាស</span>}
                       {item.planChangeParts && <span className="bg-amber-100 text-amber-805 px-2 py-0.5 rounded text-[9.5px] font-bold">ដូរគ្រឿងបន្លាស់</span>}
                       {item.planRepairWiring && <span className="bg-rose-100 text-rose-850 px-2 py-0.5 rounded text-[9.5px] font-bold">ជួសជុលខ្សែភ្លើង</span>}
@@ -936,7 +936,7 @@ export default function AirConditionerInspectionManager() {
                 <div className="p-3 bg-slate-50 border-t border-slate-150 flex items-center justify-end gap-1.5">
                   <button
                     onClick={() => setViewingForm(item)}
-                    className="p-1.5 px-3 rounded-xl bg-cyan-50 border border-cyan-100 text-cyan-700 hover:bg-cyan-100 transition text-[11px] font-black cursor-pointer inline-flex items-center gap-1"
+                    className="p-1.5 px-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 hover:bg-emerald-100 transition text-[11px] font-black cursor-pointer inline-flex items-center gap-1"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>មើលលម្អិត</span>
@@ -944,7 +944,7 @@ export default function AirConditionerInspectionManager() {
 
                   <button
                     onClick={() => openEditForm(item)}
-                    className="p-1.5 px-3 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-cyan-700 hover:bg-cyan-50 hover:border-cyan-205 transition text-[11px] font-black cursor-pointer inline-flex items-center gap-1"
+                    className="p-1.5 px-3 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 transition text-[11px] font-black cursor-pointer inline-flex items-center gap-1"
                   >
                     <Edit className="w-3.5 h-3.5" />
                     <span>កែសម្រួល</span>
@@ -971,8 +971,8 @@ export default function AirConditionerInspectionManager() {
             
             {/* Dark banner style */}
             <div className="bg-slate-900 text-white p-5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3 text-cyan-400">
-                <Wind className="w-6 h-6 text-cyan-400" />
+              <div className="flex items-center gap-3 text-emerald-400">
+                <Wind className="w-6 h-6 text-emerald-400" />
                 <div>
                   <h3 className="font-moul text-sm tracking-normal leading-normal text-white">
                     របាយការណ៍ត្រួតពិនិត្យ និងថែទាំម៉ាស៊ីនត្រជាក់សាលា
@@ -1001,14 +1001,14 @@ export default function AirConditionerInspectionManager() {
               </div>
 
               {/* Title Section */}
-              <div className="text-center bg-cyan-50 border border-cyan-100 rounded-2xl py-3.5">
-                <h3 className="font-moul text-xs md:text-sm text-cyan-950">សន្លឹកត្រួតពិនិត្យម៉ាស៊ីនត្រជាក់ និងការជួសជុល</h3>
-                <h3 className="text-[10px] font-mono font-bold text-cyan-800 uppercase tracking-wider mt-0.5">Air Conditioner Inspection & Maintenance Sheet</h3>
+              <div className="text-center bg-emerald-50 border border-emerald-100 rounded-2xl py-3.5">
+                <h3 className="font-moul text-xs md:text-sm text-emerald-950">សន្លឹកត្រួតពិនិត្យម៉ាស៊ីនត្រជាក់ និងការជួសជុល</h3>
+                <h3 className="text-[10px] font-mono font-bold text-emerald-800 uppercase tracking-wider mt-0.5">Air Conditioner Inspection & Maintenance Sheet</h3>
               </div>
 
               {/* Box 1: General Specifications (១. ព័ត៌មានទូទៅ) */}
               <div className="space-y-2.5">
-                <h5 className="font-moul text-[11px] text-indigo-950 border-l-4 border-cyan-600 pl-2">
+                <h5 className="font-moul text-[11px] text-indigo-950 border-l-4 border-emerald-600 pl-2">
                   ១. ព័ត៌មានទូទៅឧបករណ៍ (General Specifications)
                 </h5>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-150">
@@ -1029,7 +1029,7 @@ export default function AirConditionerInspectionManager() {
 
               {/* Box 2: Checkpoint Grid Table (២. តារាងត្រួតពិនិត្យម៉ាស៊ីនត្រជាក់) */}
               <div className="space-y-2.5">
-                <h5 className="font-moul text-[11px] text-indigo-950 border-l-4 border-cyan-600 pl-2">
+                <h5 className="font-moul text-[11px] text-indigo-950 border-l-4 border-emerald-600 pl-2">
                   ២. សន្លឹកត្រួតពិនិត្យលម្អិតទាំង ១៥ ចំណុច (Detailed Inspection Checklist)
                 </h5>
                 <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -1094,7 +1094,7 @@ export default function AirConditionerInspectionManager() {
 
               {/* Box 3: Repairs & Actions Subtable (៣. ការជួសជុល) */}
               <div className="space-y-2.5">
-                <h5 className="font-moul text-[11px] text-indigo-950 border-l-4 border-cyan-600 pl-2">
+                <h5 className="font-moul text-[11px] text-indigo-950 border-l-4 border-emerald-600 pl-2">
                   ៣. សកម្មភាពជួសជុល និងលទ្ធផល (Corrective Maintenance & Actions Record)
                 </h5>
                 <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -1220,7 +1220,7 @@ export default function AirConditionerInspectionManager() {
                       <p className="text-[9.5px] text-slate-400 font-mono mt-0.5">Physical check performed</p>
                     </div>
                     <div className="space-y-1">
-                      <span className="font-bold text-slate-800 underline decoration-cyan-500 decoration-2 font-mono italic">
+                      <span className="font-bold text-slate-800 underline decoration-emerald-500 decoration-2 font-mono italic">
                         {viewingForm.inspectorSigName || viewingForm.inspectorName}
                       </span>
                       <p className="text-[10px] text-slate-400 font-mono">កាលបរិច្ឆេទ៖ {viewingForm.inspectorSigDate || viewingForm.inspectionDate}</p>
@@ -1233,7 +1233,7 @@ export default function AirConditionerInspectionManager() {
                       <p className="text-[9.5px] text-slate-400 font-mono mt-0.5">Applied maintenance action</p>
                     </div>
                     <div className="space-y-1">
-                      <span className="font-bold text-slate-800 underline decoration-cyan-500 decoration-2 font-mono italic">
+                      <span className="font-bold text-slate-800 underline decoration-emerald-500 decoration-2 font-mono italic">
                         {viewingForm.technicianSigName || 'គឹម ហេង'}
                       </span>
                       <p className="text-[10px] text-slate-400 font-mono">កាលបរិច្ឆេទ៖ {viewingForm.technicianSigDate || viewingForm.inspectionDate}</p>
@@ -1246,7 +1246,7 @@ export default function AirConditionerInspectionManager() {
                       <p className="text-[9.5px] text-slate-400 font-mono mt-0.5">Validation seal review</p>
                     </div>
                     <div className="space-y-1">
-                      <span className="font-bold text-indigo-900 underline decoration-cyan-500 decoration-2 font-mono italic">
+                      <span className="font-bold text-indigo-900 underline decoration-emerald-500 decoration-2 font-mono italic">
                         {viewingForm.approverSigName || 'អ៊ុំ រតនា'}
                       </span>
                       <p className="text-[10px] text-slate-400 font-mono">កាលបរិច្ឆេទ៖ {viewingForm.approverSigDate || viewingForm.inspectionDate}</p>
@@ -1283,9 +1283,9 @@ export default function AirConditionerInspectionManager() {
           <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-5xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh]">
             
             {/* Header style */}
-            <div className="bg-cyan-950 text-white p-4 flex items-center justify-between shrink-0">
+            <div className="bg-emerald-950 text-white p-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Wind className="w-5 h-5 text-cyan-400" />
+                <Wind className="w-5 h-5 text-emerald-400" />
                 <h3 className="font-moul text-xs md:text-sm text-white tracking-normal leading-relaxed">
                   {editingForm ? 'កែប្រែទម្រង់ត្រួតពិនិត្យម៉ាស៊ីនត្រជាក់ (Edit AC Inspection Form)' : 'បញ្ចូលទម្រង់ត្រួតពិនិត្យម៉ាស៊ីនត្រជាក់ថ្មី (Add AC Inspection Form)'}
                 </h3>
@@ -1303,7 +1303,7 @@ export default function AirConditionerInspectionManager() {
               
               {/* BLOCK 1: ព័ត៌មានទូទៅ */}
               <div className="bg-slate-50 border border-slate-150 p-4 rounded-2xl relative space-y-4">
-                <div className="absolute top-3 right-4 font-bold text-[10px] text-cyan-700 uppercase">
+                <div className="absolute top-3 right-4 font-bold text-[10px] text-emerald-700 uppercase">
                   SECTION 1: SPECIFICATION INFO
                 </div>
                 <h4 className="font-moul text-slate-900 text-[10.5px]">១. ព័ត៌មានទូទៅបំពង់ និងម៉ាស៊ីនត្រជាក់</h4>
@@ -1448,7 +1448,7 @@ export default function AirConditionerInspectionManager() {
                                 name={`chk-${pt.id}`}
                                 checked={score === lvl}
                                 onChange={() => setChecks({ ...checks, [pt.id]: lvl as 'ល្អ' | 'មធ្យម' | 'ខូច' })}
-                                className="text-cyan-600 focus:ring-cyan-500 w-3.5 h-3.5"
+                                className="text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
                               />
                               <span className={
                                 lvl === 'ល្អ' ? 'text-emerald-700' :
@@ -1464,7 +1464,7 @@ export default function AirConditionerInspectionManager() {
                           <input 
                             type="text"
                             placeholder="កំណត់សម្គាល់សម្រាប់ចំណុចនេះ..."
-                            className="w-full bg-white border border-slate-150 rounded-lg px-2.5 py-1.5 text-[10.5px] text-slate-700 focus:outline-hidden focus:border-cyan-500"
+                            className="w-full bg-white border border-slate-150 rounded-lg px-2.5 py-1.5 text-[10.5px] text-slate-700 focus:outline-hidden focus:border-emerald-500"
                             value={noteValue}
                             onChange={(e) => setCheckNotes({ ...checkNotes, [`${pt.id}Note`]: e.target.value })}
                           />
@@ -1482,7 +1482,7 @@ export default function AirConditionerInspectionManager() {
                   <button
                     type="button"
                     onClick={addRepairRow}
-                    className="inline-flex items-center gap-1 bg-cyan-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg hover:bg-cyan-700 transition cursor-pointer"
+                    className="inline-flex items-center gap-1 bg-emerald-600 text-white font-extrabold text-[10px] px-2.5 py-1.5 rounded-lg hover:bg-emerald-700 transition cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>បន្ថែមលំដាប់ជួសជុល (Add Repair)</span>
@@ -1512,7 +1512,7 @@ export default function AirConditionerInspectionManager() {
                               value={rep.issueFound}
                               onChange={(e) => updateRepairRowField(idx, 'issueFound', e.target.value)}
                               placeholder="ស្ទះក្បាលបាញ់ទឹក, ខូច Cap, លេចធ្លាយ..."
-                              className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 focus:outline-hidden focus:border-cyan-500 font-bold"
+                              className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 focus:outline-hidden focus:border-emerald-500 font-bold"
                             />
                           </td>
                           <td className="p-2">
@@ -1521,7 +1521,7 @@ export default function AirConditionerInspectionManager() {
                               value={rep.repairAction}
                               onChange={(e) => updateRepairRowField(idx, 'repairAction', e.target.value)}
                               placeholder="បានបាញ់ផ្លុំខ្យល់, ប្តូរ Cap ថ្មី, បូមទាក់សេ..."
-                              className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 focus:outline-hidden focus:border-cyan-500"
+                              className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 focus:outline-hidden focus:border-emerald-500"
                             />
                           </td>
                           <td className="p-2">
@@ -1579,7 +1579,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planCleanNormal}
                         onChange={(e) => setPlanCleanNormal(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>សម្អាតធម្មតា (Standard Clean)</span>
                     </label>
@@ -1589,7 +1589,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planAddGas}
                         onChange={(e) => setPlanAddGas(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>បន្ថែម Gas Refrigerant</span>
                     </label>
@@ -1599,7 +1599,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planChangeParts}
                         onChange={(e) => setPlanChangeParts(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>ប្តូរគ្រឿងបន្លាស់ (Change Parts)</span>
                     </label>
@@ -1609,7 +1609,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planRepairWiring}
                         onChange={(e) => setPlanRepairWiring(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>ជួសជុលខ្សែភ្លើង (Wiring)</span>
                     </label>
@@ -1619,7 +1619,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planRepairWaterPipe}
                         onChange={(e) => setPlanRepairWaterPipe(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>ជួសជុលបំពង់ទឹក (Water pipe)</span>
                     </label>
@@ -1629,7 +1629,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planSendBigRepair}
                         onChange={(e) => setPlanSendBigRepair(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>ផ្ញើទៅជួសជុលធំ (Send to Shop)</span>
                     </label>
@@ -1641,7 +1641,7 @@ export default function AirConditionerInspectionManager() {
                         type="checkbox"
                         checked={planOther}
                         onChange={(e) => setPlanOther(e.target.checked)}
-                        className="rounded text-cyan-600"
+                        className="rounded text-emerald-600"
                       />
                       <span>ផ្សេងៗ (Others)</span>
                     </label>
@@ -1668,7 +1668,7 @@ export default function AirConditionerInspectionManager() {
                           name="repairOutcomeGroup"
                           checked={repairOutcome === out}
                           onChange={() => setRepairOutcome(out as 'ដំណើរការល្អ' | 'ត្រូវត្រួតពិនិត្យបន្ថែម' | 'មិនអាចប្រើប្រាស់បាន')}
-                          className="text-cyan-600 focus:ring-cyan-500"
+                          className="text-emerald-600 focus:ring-emerald-500"
                         />
                         <span className={
                           out === 'ដំណើរការល្អ' ? 'text-emerald-700' :
@@ -1779,7 +1779,7 @@ export default function AirConditionerInspectionManager() {
                 </button>
                 <button
                   type="submit"
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-extrabold px-6 py-2 rounded-xl transition cursor-pointer shadow-xs"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-2 rounded-xl transition cursor-pointer shadow-xs"
                 >
                   {editingForm ? 'កែប្រែទម្រង់ និងរក្សាទុក' : 'រក្សាទុកទម្រង់ និងបញ្ចប់'}
                 </button>
