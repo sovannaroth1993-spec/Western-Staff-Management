@@ -59,6 +59,11 @@ export default function AttendanceTracker({
     dept?: string;
     time?: string;
   }>({ status: 'idle', message: '' });
+
+  // Mobile Wireless Remotescan States
+  const [channelId] = useState(() => 'WIS' + Math.floor(100000 + Math.random() * 900000));
+  const [mobileConnected, setMobileConnected] = useState(false);
+  const lastProcessedNonce = React.useRef<number>(0);
   
   const [qrScanLogs, setQrScanLogs] = useState<QrScanLog[]>([]);
   const [selectedSimStaffId, setSelectedSimStaffId] = useState('');
@@ -175,6 +180,51 @@ export default function AttendanceTracker({
     
     setLocalRecords(recordsMap);
   }, [activeDept, selectedDate, staffList]);
+
+  // Mobile Wireless Remotescan Database Poller
+  useEffect(() => {
+    if (!isQrStationOpen) return;
+
+    let isDisposed = false;
+
+    // Check status telemetry
+    const checkStatus = () => {
+      fetch(`/api/db/wis_remotescan_status_${channelId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!isDisposed && data && data.value && data.value.connected) {
+            setMobileConnected(true);
+          }
+        })
+        .catch(() => {});
+    };
+
+    checkStatus();
+    const statusInterval = setInterval(checkStatus, 3000);
+
+    // Poll scans with random nonces
+    const scanInterval = setInterval(() => {
+      fetch(`/api/db/wis_remotescan_${channelId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!isDisposed && data && data.value) {
+            const payload = data.value;
+            if (payload.nonce && payload.nonce !== lastProcessedNonce.current) {
+              lastProcessedNonce.current = payload.nonce;
+              // Trigger QR check in
+              handleDecodedCode(payload.staffId);
+            }
+          }
+        })
+        .catch(() => {});
+    }, 1800);
+
+    return () => {
+      isDisposed = true;
+      clearInterval(statusInterval);
+      clearInterval(scanInterval);
+    };
+  }, [isQrStationOpen, channelId]);
 
   // Helper to instantly save changes to the parent registry (updates localStorage in App)
   const syncToParentInstant = (updatedLocal: Record<string, { status: AttendanceStatus; notes: string }>) => {
@@ -792,6 +842,57 @@ export default function AttendanceTracker({
                         <Play className="w-3.5 h-3.5 text-emerald-600" />
                         <span>សាកល្បងឆែកវត្តមាន (Simulate QR Scan)</span>
                       </button>
+                    </div>
+                  </div>
+
+                  {/* Mobile Wireless Companion pair card */}
+                  <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4.5 space-y-3.5 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl" />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="p-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 002-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                        </span>
+                        <h4 className="text-xs font-black text-rose-50 font-sans">ភ្ជាប់ជាមួយទូរសព្ទដៃ (Mobile Scanner link)</h4>
+                      </div>
+                      
+                      {/* Connection state badge */}
+                      <span className={`px-2 py-0.5 rounded text-[8.5px] font-black tracking-wider uppercase ${
+                        mobileConnected 
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse'
+                      }`}>
+                        {mobileConnected ? 'Connected 🟢' : 'Waiting... 🟡'}
+                      </span>
+                    </div>
+
+                    <p className="text-[10px] text-slate-300 leading-normal font-semibold">
+                      ស្កេនរូបថត QR ខាងក្រោមដោយទូរស័ព្ទរបស់អ្នក ដើម្បីបើកកាមេរ៉ាក្នុងដៃផ្ញើទិន្នន័យចូល Computer និងស្រង់វត្តមានសិស្ស-បុគ្គលិកអូតូ!
+                    </p>
+
+                    <div className="flex items-center gap-4 bg-slate-900 border border-slate-750 p-3 rounded-xl">
+                      {/* Generative QR Code matching URL */}
+                      <div className="bg-white p-1 rounded-lg shrink-0">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(`${window.location.origin}${window.location.pathname}?remote_scan=${channelId}`)}`}
+                          alt="Mobile Scanner QR link" 
+                          className="w-24 h-24"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="text-[10px] text-slate-400 font-extrabold uppercase">Link ស្កេនទូរស័ព្ទដៃ៖</div>
+                        <div className="bg-slate-950 border border-slate-800 p-1.5 rounded text-[9.5px] font-mono text-amber-400 break-all select-all font-semibold max-h-[50px] overflow-y-auto">
+                          {window.location.origin}{window.location.pathname}?remote_scan={channelId}
+                        </div>
+                        <p className="text-[9px] text-slate-400 font-bold italic block">
+                          ** មិនចាំបាច់ដំឡើង App ឡើយ ស្កេនរួចប្រើកាមេរ៉ា Safari/Chrome លើទូរស័ព្ទជាការស្រេច។
+                        </p>
+                      </div>
                     </div>
                   </div>
 

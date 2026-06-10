@@ -18,6 +18,9 @@ import StudentInsuranceManager from './components/StudentInsuranceManager';
 import AdminDocumentationManager from './components/AdminDocumentationManager';
 import OtherLinksManager from './components/OtherLinksManager';
 import KhmerCalendarManager from './components/KhmerCalendarManager';
+import CctvManager from './components/CctvManager';
+import ClassroomEquipmentManager from './components/ClassroomEquipmentManager';
+import RemoteScannerMobile from './components/RemoteScannerMobile';
 // @ts-ignore
 import schoolWp from './assets/images/school_background_1780911630196.png';
 
@@ -26,7 +29,7 @@ import { DEFAULT_STAFF } from './data/defaultStaff';
 import { DEFAULT_STUDENTS } from './data/defaultStudents';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -129,7 +132,17 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'attendance' | 'telegram' | 'khmercalendar'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment'>('dashboard');
+
+  // Intercept Remote Scanner URL parameter on mobile devices
+  const [remoteScanChannel, setRemoteScanChannel] = useState<string | null>(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      return searchParams.get('remote_scan');
+    } catch {
+      return null;
+    }
+  });
 
   // Save language to localStorage on change
   useEffect(() => {
@@ -249,6 +262,22 @@ export default function App() {
   // Quick statistics for Header
   const todayAttendance = attendanceRecords.filter(r => r.date === selectedDate);
   const totalPresentToday = todayAttendance.filter(r => r.status === 'Present').length;
+
+  // Bypass to Mobile QR Camera Scanner client
+  if (remoteScanChannel) {
+    return (
+      <RemoteScannerMobile 
+        staffList={staffList} 
+        channelId={remoteScanChannel} 
+        onExit={() => {
+          try {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } catch {}
+          setRemoteScanChannel(null);
+        }} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen md:h-screen text-slate-800 flex flex-col md:flex-row font-sans selection:bg-amber-100 selection:text-slate-900 relative md:overflow-hidden">
@@ -375,6 +404,32 @@ export default function App() {
           >
             <ShieldCheck className="w-4.5 h-4.5 text-emerald-400 fill-emerald-500/15" />
             <span className="flex-1">{t.insurance}</span>
+          </button>
+
+          {/* Tab 1.10: CCTV Management */}
+          <button
+            onClick={() => setActiveTab('cctv')}
+            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+              activeTab === 'cctv'
+                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+            }`}
+          >
+            <Video className="w-4.5 h-4.5 text-emerald-400" />
+            <span className="flex-1">{t.cctv}</span>
+          </button>
+
+          {/* Tab 1.11: Classroom Equipment Management */}
+          <button
+            onClick={() => setActiveTab('classroomequipment')}
+            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+              activeTab === 'classroomequipment'
+                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+            }`}
+          >
+            <School className="w-4.5 h-4.5 text-emerald-400" />
+            <span className="flex-1">{t.classroomequipment}</span>
           </button>
 
 
@@ -567,6 +622,14 @@ export default function App() {
                   electricityRecords={electricityRecords}
                   waterRecords={waterRecords}
                 />
+              )}
+
+              {activeTab === 'cctv' && (
+                <CctvManager />
+              )}
+
+              {activeTab === 'classroomequipment' && (
+                <ClassroomEquipmentManager />
               )}
             </div>
           </main>
