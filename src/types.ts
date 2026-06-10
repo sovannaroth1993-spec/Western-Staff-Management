@@ -361,3 +361,22 @@ export interface Student {
   attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
 }
 
+export interface HourlyLog {
+  id: string;
+  timeSlot: string; // e.g. "08:00 - 09:00"
+  activity: string; // Detail of the hour's record/task
+  status: 'Completed' | 'In Progress' | 'Pending' | 'Delayed';
+  remarks?: string;
+}
+
+export interface DailyReport {
+  id: string;
+  date: string; // YYYY-MM-DD
+  checkInTime: string; // entry time e.g., "07:30"
+  checkOutTime: string; // exit time e.g., "17:00"
+  reporterName: string; // Name of person who records it
+  overallSummary: string;
+  hourlyLogs: HourlyLog[];
+  createdAt: string;
+}
+

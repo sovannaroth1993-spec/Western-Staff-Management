@@ -18,6 +18,7 @@ export const translations = {
     students: "គ្រប់គ្រងសិស្ស (Student Manager)",
     attendance: "ស្រង់វត្តមានប្រចាំថ្ងៃ (Daily Attendance)",
     telegram: "បញ្ជូនទៅ Telegram (Telegram Bot)",
+    dailyReport: "របាយការណ៍ប្រចាំថ្ងៃ (Daily Report)",
     
     // Header
     schoolName: "សាលាវេស្ទើនអន្តរជាតិ",
@@ -60,6 +61,7 @@ export const translations = {
     students: "Student Manager (គ្រប់គ្រងសិស្ស)",
     attendance: "Daily Attendance (ស្រង់វត្តមានប្រចាំថ្ងៃ)",
     telegram: "Telegram Bot (បញ្ជូនទៅ Telegram)",
+    dailyReport: "Daily Report (របាយការណ៍ប្រចាំថ្ងៃ)",
     
     // Header
     schoolName: "Western International School",

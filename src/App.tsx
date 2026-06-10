@@ -21,6 +21,7 @@ import KhmerCalendarManager from './components/KhmerCalendarManager';
 import CctvManager from './components/CctvManager';
 import ClassroomEquipmentManager from './components/ClassroomEquipmentManager';
 import RemoteScannerMobile from './components/RemoteScannerMobile';
+import DailyReportManager from './components/DailyReportManager';
 // @ts-ignore
 import schoolWp from './assets/images/school_background_1780911630196.png';
 
@@ -29,7 +30,7 @@ import { DEFAULT_STAFF } from './data/defaultStaff';
 import { DEFAULT_STUDENTS } from './data/defaultStudents';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -132,7 +133,7 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport'>('dashboard');
 
   // Intercept Remote Scanner URL parameter on mobile devices
   const [remoteScanChannel, setRemoteScanChannel] = useState<string | null>(() => {
@@ -290,7 +291,7 @@ export default function App() {
       <div className="fixed inset-0 bg-slate-50/85 backdrop-blur-[4px] pointer-events-none z-0" />
       
       {/* Left Navigation Sidebar (System Menu) - Relocated to viewport left corner */}
-      <aside className="w-full md:w-[270px] lg:w-[290px] shrink-0 bg-[#073B3A]/95 backdrop-blur-md border-b md:border-b-0 md:border-r border-[#052c2b]/60 p-4 lg:p-6 md:sticky md:top-0 md:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-tapenh shadow-sm relative text-emerald-100">
+      <aside className="w-full md:w-[270px] lg:w-[290px] shrink-0 bg-[#073B3A]/95 backdrop-blur-md border-b md:border-b-0 md:border-r border-[#052c2b]/60 p-4 lg:p-6 md:sticky md:top-0 md:h-screen flex flex-col gap-2 z-30 overflow-y-auto font-sans shadow-sm relative text-emerald-100">
         <div className="px-3 py-1.5 border-b border-[#0d5c5a]/40 flex items-center justify-between">
           <span className="text-[11px] font-semibold text-emerald-300 uppercase tracking-wider">
             {t.systemMenu}
@@ -431,6 +432,20 @@ export default function App() {
             <School className="w-4.5 h-4.5 text-emerald-400" />
             <span className="flex-1">{t.classroomequipment}</span>
           </button>
+
+          {/* Tab 1.115: Daily Report */}
+          <button
+            onClick={() => setActiveTab('dailyreport')}
+            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+              activeTab === 'dailyreport'
+                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+            }`}
+          >
+            <Clock className="w-4.5 h-4.5 text-emerald-400" />
+            <span className="flex-1">{t.dailyReport}</span>
+          </button>
+
 
 
 
@@ -630,6 +645,10 @@ export default function App() {
 
               {activeTab === 'classroomequipment' && (
                 <ClassroomEquipmentManager />
+              )}
+
+              {activeTab === 'dailyreport' && (
+                <DailyReportManager />
               )}
             </div>
           </main>

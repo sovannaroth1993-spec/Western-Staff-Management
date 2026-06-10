@@ -61,7 +61,17 @@ export default function AttendanceTracker({
   }>({ status: 'idle', message: '' });
 
   // Mobile Wireless Remotescan States
-  const [channelId] = useState(() => 'WIS' + Math.floor(100000 + Math.random() * 900000));
+  const [channelId] = useState(() => {
+    try {
+      const saved = localStorage.getItem('wis_remotescan_channel');
+      if (saved) return saved;
+      const fresh = 'WIS' + Math.floor(100000 + Math.random() * 900000);
+      localStorage.setItem('wis_remotescan_channel', fresh);
+      return fresh;
+    } catch {
+      return 'WIS' + Math.floor(100000 + Math.random() * 900000);
+    }
+  });
   const [mobileConnected, setMobileConnected] = useState(false);
   const lastProcessedNonce = React.useRef<number>(0);
   
@@ -183,8 +193,6 @@ export default function AttendanceTracker({
 
   // Mobile Wireless Remotescan Database Poller
   useEffect(() => {
-    if (!isQrStationOpen) return;
-
     let isDisposed = false;
 
     // Check status telemetry
@@ -213,6 +221,8 @@ export default function AttendanceTracker({
               lastProcessedNonce.current = payload.nonce;
               // Trigger QR check in
               handleDecodedCode(payload.staffId);
+              // Auto enter into the QR Scan check-in screen visually so they see the result immediately
+              setIsQrStationOpen(true);
             }
           }
         })
@@ -224,7 +234,7 @@ export default function AttendanceTracker({
       clearInterval(statusInterval);
       clearInterval(scanInterval);
     };
-  }, [isQrStationOpen, channelId]);
+  }, [channelId]);
 
   // Helper to instantly save changes to the parent registry (updates localStorage in App)
   const syncToParentInstant = (updatedLocal: Record<string, { status: AttendanceStatus; notes: string }>) => {
