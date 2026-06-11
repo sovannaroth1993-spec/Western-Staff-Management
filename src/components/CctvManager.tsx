@@ -388,7 +388,7 @@ export default function CctvManager() {
       {/* CCTV Data Table Grid representation */}
       <div className="overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full border-collapse text-left text-xs bg-white">
-          <thead className="bg-slate-50 font-black text-slate-650 uppercase border-b border-slate-200 font-tapenh text-[10px]">
+          <thead className="bg-slate-50 font-bold text-slate-650 uppercase border-b border-slate-200 text-[10px]">
             <tr>
               <th className="p-3.5 pl-4">កូដ/ឈ្មោះ (ID & Name)</th>
               <th className="p-3.5">ទីតាំង (Floor & Location)</th>

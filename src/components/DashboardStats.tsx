@@ -460,9 +460,12 @@ export default function DashboardStats({
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">ចំនួនបុគ្គលិកសរុប</p>
-              <h3 className="text-4xl font-black text-slate-800 mt-2">{staffList.length} នាក់</h3>
-              <p className="text-xs md:text-sm font-medium text-slate-455 text-slate-500 mt-2.5">កំពុងបំពេញការងារប្រចាំថ្ងៃ</p>
+              <p className="text-[11.5px] font-semibold text-slate-500 leading-snug">ចំនួនបុគ្គលិកសរុប</p>
+              <div className="flex items-baseline gap-1 mt-2">
+                <span className="text-3xl font-mono font-bold text-slate-800">{staffList.length}</span>
+                <span className="text-base font-sans font-medium text-slate-500 ml-1">នាក់</span>
+              </div>
+              <p className="text-[11px] font-medium text-slate-455 text-slate-400 mt-2.5">កំពុងបំពេញការងារប្រចាំថ្ងៃ</p>
             </div>
             <div className="bg-slate-100 p-4 rounded-xl text-slate-700">
               <Users className="w-6 h-6 stroke-[2.5]" />
@@ -475,14 +478,17 @@ export default function DashboardStats({
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md relative overflow-hidden">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">អត្រាវត្តមានសរុបថ្ងៃនេះ</p>
-              <h3 className="text-4xl font-black text-emerald-650 text-emerald-600 mt-2">{presentRate}%</h3>
-              <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-xs md:text-sm font-bold text-slate-600">
-                <span className="text-emerald-600">✓ {totalPresent} មក</span>
-                <span>•</span>
-                <span className="text-amber-600">{totalExcused} ច្បាប់</span>
-                <span>•</span>
-                <span className="text-red-650 text-rose-600">{totalAbsent} អត់ច្បាប់</span>
+              <p className="text-[11.5px] font-semibold text-slate-500 leading-snug">អត្រាវត្តមានសរុបថ្ងៃនេះ</p>
+              <div className="flex items-baseline gap-1 mt-2">
+                <span className="text-3xl font-mono font-bold text-emerald-600">{presentRate}</span>
+                <span className="text-xl font-sans font-medium text-emerald-500">%</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[11px] font-medium text-slate-500">
+                <span className="text-emerald-600 font-semibold">✓ <span className="font-mono">{totalPresent}</span> មក</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-amber-600 font-semibold"><span className="font-mono">{totalExcused}</span> ច្បាប់</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-rose-600 font-semibold"><span className="font-mono">{totalAbsent}</span> អត់ច្បាប់</span>
               </div>
             </div>
             <div className="bg-emerald-50 p-4 rounded-xl text-emerald-600">
@@ -495,11 +501,11 @@ export default function DashboardStats({
         {/* Card 3: Date Display Banner */}
         <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-md text-slate-100 relative overflow-hidden">
           <div>
-            <span className="bg-amber-500 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-full uppercase">កាលបរិច្ឆេទស្រង់</span>
-            <h4 className="text-xl font-extrabold text-white mt-2">{selectedDate}</h4>
-            <p className="text-xs md:text-sm font-semibold text-slate-400 mt-1">រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)</p>
-            <div className="flex items-center gap-1.5 text-xs md:text-sm font-bold text-amber-400/90 mt-2.5">
-              <Clock className="w-4 h-4" /> ស្រង់ដោយ៖ LOUNG Veasna
+            <span className="bg-amber-500 text-slate-950 font-moul font-normal text-[8.5px] px-2.5 py-1 rounded-full shadow-xs leading-none">កាលបរិច្ឆេទស្រង់</span>
+            <h4 className="text-xl font-bold font-mono text-white mt-2.5 tracking-tight">{selectedDate}</h4>
+            <p className="text-[11px] font-normal text-slate-400 mt-1 leading-normal">រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)</p>
+            <div className="flex items-center gap-1.5 text-[10.5px] font-medium text-amber-450 text-amber-400/95 mt-2.5">
+              <Clock className="w-3.5 h-3.5 animate-spin-slow" /> <span>ស្រង់ដោយ៖ LOUNG Veasna</span>
             </div>
           </div>
           <div className="absolute bottom-0 left-0 w-full h-1 bg-amber-400" />
@@ -512,8 +518,11 @@ export default function DashboardStats({
         
         {/* Department lists cards */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-lg p-6 space-y-4">
-          <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3">
-            ស្ថិតិបុគ្គលិកតាមផ្នែកនីមួយៗ (Department Resources & Status)
+          <h4 className="text-xs md:text-sm font-moul font-normal leading-relaxed text-[#073B3A] border-b border-slate-100 pb-3 flex flex-wrap items-center gap-1.5">
+            <span>ស្ថិតិបុគ្គលិកតាមផ្នែកនីមួយៗ</span>
+            <span className="text-[10px] font-sans font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
+              (Department Resources & Status)
+            </span>
           </h4>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -526,7 +535,7 @@ export default function DashboardStats({
               return (
                 <div key={dept} className={`p-4 rounded-xl border ${theme.bg} ${theme.border} flex flex-col justify-between min-h-[144px]`}>
                   <div className="flex items-start justify-between">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-wide">
+                    <span className="text-[9.5px] font-mono font-bold text-slate-400 uppercase tracking-wider">
                       {dept.toUpperCase()}
                     </span>
                     <div className={`${theme.iconBg} text-white p-2 rounded-lg`}>
@@ -534,14 +543,16 @@ export default function DashboardStats({
                     </div>
                   </div>
                   <div>
-                    <h5 className="text-[14px] sm:text-base font-black text-slate-900 mt-1 leading-snug">
+                    <h5 className="text-[13.5px] sm:text-[14.5px] font-moul font-normal text-slate-800 mt-1 leading-relaxed">
                       {DEPARTMENT_NAMES_KM[dept]}
                     </h5>
-                    <div className="flex items-center justify-between mt-2 text-xs font-bold text-slate-600">
-                      <div>បុគ្គលិក: <span className="font-extrabold text-slate-800">{count}</span></div>
+                    <div className="flex items-center justify-between mt-2.5 text-xs font-semibold text-slate-650">
+                      <div className="text-[11px] font-sans font-medium text-slate-500">
+                        បុគ្គលិក: <span className="font-mono font-bold text-slate-800 ml-0.5">{count}</span>
+                      </div>
                       {count > 0 && (
-                        <div className="bg-white/80 border border-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-700 font-extrabold">
-                          វត្តមាន: {att.rate}%
+                        <div className="bg-white/80 border border-slate-100 px-1.5 py-0.5 rounded text-[10px] text-slate-655 font-semibold font-sans">
+                          វត្តមាន: <span className="font-mono font-bold text-slate-800">{att.rate}%</span>
                         </div>
                       )}
                     </div>
@@ -555,8 +566,11 @@ export default function DashboardStats({
         {/* Presence breakdown visualization in standard geometric elements */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6 flex flex-col justify-between">
           <div>
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-3 mb-4">
-              របាយវត្តមានថ្ងៃនេះ ({totalPresent + totalExcused + totalAbsent} នាក់)
+            <h4 className="text-xs md:text-sm font-moul font-normal leading-relaxed text-[#073B3A] border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+              <span>របាយវត្តមានថ្ងៃនេះ</span>
+              <span className="text-[11px] font-sans font-bold text-slate-505 bg-slate-50 px-2.5 py-0.5 rounded-md border border-slate-100">
+                <span className="font-mono text-slate-700">{totalPresent + totalExcused + totalAbsent}</span> នាក់
+              </span>
             </h4>
 
             {staffList.length === 0 ? (
@@ -567,11 +581,16 @@ export default function DashboardStats({
               <div className="space-y-4">
                 {/* Present Bar */}
                 <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> មក (Present)</span>
-                    <span>{totalPresent} នាក់ ({Math.round((totalPresent / (staffList.length || 1)) * 100)}%)</span>
+                  <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="font-medium text-slate-700">មក (Present)</span>
+                    </span>
+                    <span>
+                      <span className="font-mono font-bold text-slate-800">{totalPresent}</span> <span className="text-[10px] text-slate-400">នាក់</span> <span className="text-[10px] text-slate-400 font-normal">({Math.round((totalPresent / (staffList.length || 1)) * 100)}%)</span>
+                    </span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                     <div 
                       className="bg-emerald-500 h-full rounded-full transition-all duration-500" 
                       style={{ width: `${(totalPresent / (staffList.length || 1)) * 100}%` }}
@@ -581,11 +600,16 @@ export default function DashboardStats({
 
                 {/* Excused Bar */}
                 <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> ច្បាប់ (Excused)</span>
-                    <span>{totalExcused} នាក់ ({Math.round((totalExcused / (staffList.length || 1)) * 100)}%)</span>
+                  <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span className="font-medium text-slate-700">ច្បាប់ (Excused)</span>
+                    </span>
+                    <span>
+                      <span className="font-mono font-bold text-slate-800">{totalExcused}</span> <span className="text-[10px] text-slate-400">នាក់</span> <span className="text-[10px] text-slate-400 font-normal">({Math.round((totalExcused / (staffList.length || 1)) * 100)}%)</span>
+                    </span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                     <div 
                       className="bg-amber-500 h-full rounded-full transition-all duration-500" 
                       style={{ width: `${(totalExcused / (staffList.length || 1)) * 100}%` }}
@@ -595,11 +619,16 @@ export default function DashboardStats({
 
                 {/* Absent Bar */}
                 <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-1.5">
-                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> អត់ច្បាប់ (Absent)</span>
-                    <span>{totalAbsent} នាក់ ({Math.round((totalAbsent / (staffList.length || 1)) * 100)}%)</span>
+                  <div className="flex justify-between text-[11px] font-medium text-slate-600 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-rose-500" />
+                      <span className="font-medium text-slate-700">អត់ច្បាប់ (Absent)</span>
+                    </span>
+                    <span>
+                      <span className="font-mono font-bold text-slate-800">{totalAbsent}</span> <span className="text-[10px] text-slate-400">នាក់</span> <span className="text-[10px] text-slate-400 font-normal">({Math.round((totalAbsent / (staffList.length || 1)) * 100)}%)</span>
+                    </span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                     <div 
                       className="bg-rose-500 h-full rounded-full transition-all duration-500" 
                       style={{ width: `${(totalAbsent / (staffList.length || 1)) * 100}%` }}
@@ -626,11 +655,14 @@ export default function DashboardStats({
       <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-indigo-600" />
-              <span>ប្រៀបធៀបចំណាយទឹក និងភ្លើងប្រចាំខែ (Electricity & Water Supply Trends)</span>
+            <h4 className="text-xs md:text-sm font-moul font-normal leading-relaxed text-[#073B3A] flex flex-wrap items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-indigo-600 shrink-0" />
+              <span>ប្រៀបធៀបចំណាយទឹក និងភ្លើងប្រចាំខែ</span>
+              <span className="text-[10px] font-sans font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
+                (Electricity & Water Supply Trends)
+              </span>
             </h4>
-            <p className="text-xs text-slate-500 font-semibold mt-1">
+            <p className="text-xs text-slate-400 font-medium mt-1">
               ក្រាហ្វបង្ហាញពីគម្លាតនៃការចំណាយរវាងខែមុន និងខែបច្ចុប្បន្ន ដើម្បីសិក្សាពីនិន្នាការប្រើប្រាស់ថាមពល
             </p>
           </div>
@@ -656,12 +688,15 @@ export default function DashboardStats({
           <div className="bg-slate-50/40 border border-slate-100 rounded-2xl p-5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="flex items-center gap-2 text-sm font-black text-slate-800 font-sans">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500/10" />
-                  <span>ថាមពលអគ្គិសនី (Electricity Expense)</span>
+                <span className="flex items-center gap-2 text-[12px] font-moul font-normal text-slate-800">
+                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500/10 shrink-0" />
+                  <span>ថាមពលអគ្គិសនី</span>
+                  <span className="text-[10px] font-sans font-semibold text-slate-400 hidden sm:inline">
+                    (Electricity Expense)
+                  </span>
                 </span>
-                <span className="text-[10px] bg-amber-50 text-amber-700 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  គិតជាដុល្លារ ($)
+                <span className="text-[9px] bg-amber-50 text-amber-705 border border-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full uppercase">
+                  USD ($)
                 </span>
               </div>
 
@@ -885,12 +920,15 @@ export default function DashboardStats({
           <div className="bg-slate-50/40 border border-slate-100 rounded-2xl p-5 flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="flex items-center gap-2 text-sm font-black text-slate-800 font-sans">
-                  <Droplet className="w-4 h-4 text-sky-500 fill-sky-500/10" />
-                  <span>ទឹកប្រើប្រាស់ (Water Supply Expense)</span>
+                <span className="flex items-center gap-2 text-[12px] font-moul font-normal text-slate-800">
+                  <Droplet className="w-4 h-4 text-sky-500 fill-sky-500/10 shrink-0" />
+                  <span>ទឹកប្រើប្រាស់</span>
+                  <span className="text-[10px] font-sans font-semibold text-slate-400 hidden sm:inline">
+                    (Water Supply Expense)
+                  </span>
                 </span>
-                <span className="text-[10px] bg-sky-50 text-sky-700 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  គិតជាដុល្លារ ($)
+                <span className="text-[9px] bg-sky-50 text-sky-705 border border-sky-100 text-sky-700 font-bold px-2 py-0.5 rounded-full uppercase">
+                  USD ($)
                 </span>
               </div>
 
@@ -1117,11 +1155,14 @@ export default function DashboardStats({
       <div id="google-sheets-sync-panel" className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-emerald-600 animate-pulse" />
-              <span>សមកាលកម្មទិន្នន័យទៅកាន់ Google Sheets (Google Sheets Sync)</span>
+            <h4 className="text-xs md:text-sm font-moul font-normal leading-relaxed text-[#073B3A] flex flex-wrap items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>សមកាលកម្មទិន្នន័យទៅកាន់ Google Sheets</span>
+              <span className="text-[10px] font-sans font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
+                (Google Sheets Sync)
+              </span>
             </h4>
-            <p className="text-xs text-slate-500 font-semibold mt-1">
+            <p className="text-xs text-slate-400 font-medium mt-1">
               ភ្ជាប់ប្រព័ន្ធគ្រប់គ្រងសាលាទៅកាន់បន្ទះការងារ Google Sheets ដើម្បីបម្រុងទុកទិន្នន័យបុគ្គលិក វត្តមាន និងការចំណាយដោយស្វ័យប្រវត្ត
             </p>
           </div>
@@ -1144,7 +1185,7 @@ export default function DashboardStats({
         ) : !googleToken ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             <div className="space-y-3">
-              <h5 className="text-sm font-extrabold text-slate-800">ហេតុអ្វីបានជាត្រូវប្រើការសមកាលកម្ម Google Sheets?</h5>
+              <h5 className="text-[11.5px] font-moul font-normal leading-relaxed text-[#073B3A]">ហេតុអ្វីបានជាត្រូវប្រើការសមកាលកម្ម Google Sheets?</h5>
               <ul className="text-xs text-slate-600 space-y-2 list-none">
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />

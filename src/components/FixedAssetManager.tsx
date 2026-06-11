@@ -346,12 +346,15 @@ export default function FixedAssetManager() {
               <HardDrive className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-lg md:text-xl font-moul tracking-normal text-slate-900 flex items-center gap-2">
-                បញ្ជីគ្រប់គ្រងទ្រព្យសម្បត្តិសាលា (Fixed Asset Tracking System)
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Auto Recorded ✔</span>
+              <h1 className="text-[#073B3A] flex flex-wrap items-center gap-2 leading-relaxed">
+                <span className="text-[14px] sm:text-[16px] font-moul font-normal">បញ្ជីគ្រប់គ្រងទ្រព្យសម្បត្តិសាលា</span>
+                <span className="text-[10px] sm:text-[11px] font-sans font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
+                  (Fixed Asset Tracking System)
+                </span>
+                <span className="text-[9px] bg-emerald-50 border border-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">Auto Recorded ✔</span>
               </h1>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                គ្រប់គ្រង ពិនិត្យ និងតាមដានរាល់សម្ភារៈឧបករណ៍បច្ចេកវិទ្យាទាំងអស់ (កុំព្យូទ័រ ឡេបថប ម៉ាស៊ីនបញ្ចាំង កាមេរ៉ា និងទូរទស្សន៍ស្មាត)។
+              <p className="text-xs text-slate-400 font-medium mt-1 leading-relaxed">
+                គ្រប់គ្រង ពិនិត្យ និងតាមដានរាល់សម្ភារៈឧបករណ៍បច្ចេកវិទ្យាទាំងអស់ (កុំព្យូទ័រ ឡេបថប ម៉ាស៊ីនបញ្ចាំង កាមេរ៉ា និងទូរទស្សន៍ស្មាត)
               </p>
             </div>
           </div>
@@ -360,17 +363,18 @@ export default function FixedAssetManager() {
             <button
               onClick={handleResetToDefaults}
               title="កំណត់ទិន្នន័យលំនាំដើមឡើងវិញ"
-              className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 font-bold text-xs px-3.5 py-2.5 rounded-xl transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-500 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>កំណត់ឡើងវិញ</span>
             </button>
             <button
               onClick={openAddAssetModal}
-              className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs px-4.5 py-2.5 rounded-xl transition cursor-pointer shadow-sm shadow-emerald-700/10 select-none"
+              className="inline-flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-sm shadow-emerald-700/10 select-none"
             >
-              <PlusCircle className="w-4.5 h-4.5" />
-              <span>បញ្ចូលឧបករណ៍ថ្មី (Add Asset)</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>បញ្ចូលឧបករណ៍ថ្មី</span>
+              <span className="text-[10px] font-sans font-medium opacity-80 hidden sm:inline">(Add Asset)</span>
             </button>
           </div>
         </div>
@@ -378,60 +382,70 @@ export default function FixedAssetManager() {
 
       {/* Stats Cards Dashboard with Emerald/Indigo Styling */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ឧបករណ៍សរុប (Total)</p>
-          <div className="flex items-baseline gap-2 mt-1">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+          <p className="text-[11px] font-semibold text-slate-400">
+            ឧបករណ៍សរុប <span className="text-[9.5px] font-sans font-semibold text-slate-350 tracking-wider hidden sm:inline">(Total)</span>
+          </p>
+          <div className="flex items-baseline gap-1.5 mt-2">
             <span className="text-2xl font-mono font-black text-slate-800">{totalAssetsNum}</span>
-            <span className="text-xs text-slate-400 font-extrabold font-mono">គ្រឿង</span>
+            <span className="text-xs text-slate-400 font-bold">គ្រឿង</span>
           </div>
-          <p className="text-[10px] text-slate-400 font-bold mt-1">រាល់សម្ភារៈក្នុងបញ្ជី</p>
+          <p className="text-[10px] text-slate-400 font-medium mt-2">រាល់សម្ភារៈក្នុងបញ្ជី</p>
         </div>
 
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
-          <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">ដំណើរការល្អ (Operational)</p>
-          <div className="flex items-baseline gap-2 mt-1">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+          <p className="text-[11px] font-semibold text-emerald-600">
+            ដំណើរការល្អ <span className="text-[9.5px] font-sans font-semibold text-emerald-400/80 tracking-wider hidden sm:inline">(Operational)</span>
+          </p>
+          <div className="flex items-baseline gap-1.5 mt-2">
             <span className="text-2xl font-mono font-black text-emerald-600">{operationalNum}</span>
-            <span className="text-xs text-emerald-400 font-extrabold font-mono">គ្រឿង</span>
+            <span className="text-xs text-emerald-450 font-bold">គ្រឿង</span>
           </div>
-          <span className="inline-block text-[9px] bg-emerald-50 text-emerald-700 font-extrabold px-1.5 py-0.5 rounded-md mt-1">
+          <span className="inline-block text-[9.5px] bg-emerald-50 border border-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded-lg mt-2">
             {totalAssetsNum > 0 ? Math.round((operationalNum/totalAssetsNum)*100) : 0}% នៃឧបករណ៍
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
-          <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">កំពុងថែទាំ (Maintenance)</p>
-          <div className="flex items-baseline gap-2 mt-1">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+          <p className="text-[11px] font-semibold text-amber-600">
+            កំពុងថែទាំ <span className="text-[9.5px] font-sans font-semibold text-amber-500/80 tracking-wider hidden sm:inline">(Maintenance)</span>
+          </p>
+          <div className="flex items-baseline gap-1.5 mt-2">
             <span className="text-2xl font-mono font-black text-amber-600">{maintenanceNum}</span>
-            <span className="text-xs text-amber-400 font-extrabold font-mono">គ្រឿង</span>
+            <span className="text-xs text-amber-450 font-bold">គ្រឿង</span>
           </div>
-          <span className="inline-block text-[9px] bg-amber-50 text-amber-700 font-extrabold px-1.5 py-0.5 rounded-md mt-1">
+          <span className="inline-block text-[9.5px] bg-amber-50 border border-amber-100 text-amber-700 font-semibold px-2 py-0.5 rounded-lg mt-2">
             កំពុងត្រួតពិនិត្យ
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs font-niroth">
-          <p className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">មិនដំណើរការ (Broken)</p>
-          <div className="flex items-baseline gap-2 mt-1">
+        <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
+          <p className="text-[11px] font-semibold text-rose-600">
+            មិនដំណើរការ <span className="text-[9.5px] font-sans font-semibold text-rose-455/80 tracking-wider hidden sm:inline">(Broken)</span>
+          </p>
+          <div className="flex items-baseline gap-1.5 mt-2">
             <span className="text-2xl font-mono font-black text-rose-600">{brokenNum}</span>
-            <span className="text-xs text-rose-400 font-extrabold font-mono">គ្រឿង</span>
+            <span className="text-xs text-rose-450 font-bold">គ្រឿង</span>
           </div>
-          <span className="inline-block text-[9px] bg-rose-50 text-rose-700 font-extrabold px-1.5 py-0.5 rounded-md mt-1">
+          <span className="inline-block text-[9.5px] bg-rose-50 border border-rose-100 text-rose-700 font-semibold px-2 py-0.5 rounded-lg mt-2">
             រង់ចាំការបោះចោល
           </span>
         </div>
 
-        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-slate-900 to-slate-950 p-4 rounded-2xl text-white shadow-xs font-niroth animate-fade-in-up">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-niroth">តម្លៃសរុប (Asset Cost)</p>
-          <div className="flex items-baseline gap-1 mt-1">
+        <div className="col-span-2 md:col-span-1 bg-gradient-to-br from-slate-900 to-slate-950 p-4 rounded-2xl text-white shadow-xs animate-fade-in-up border border-slate-800">
+          <p className="text-[11px] font-semibold text-slate-400">
+            តម្លៃសរុប <span className="text-[9.5px] font-sans font-semibold text-slate-500 tracking-wider hidden sm:inline">(Asset Cost)</span>
+          </p>
+          <div className="flex items-baseline gap-1 mt-2">
             <span className="text-xl sm:text-2xl font-mono font-black text-emerald-400">${totalValueUsd.toLocaleString()}</span>
-            <span className="text-[10px] text-slate-400 font-bold font-niroth">USD</span>
+            <span className="text-[10px] text-slate-400 font-bold">USD</span>
           </div>
-          <p className="text-[9px] text-slate-400 mt-2 font-mono">គិតជាមធ្យមគ្រប់គ្រឿង</p>
+          <p className="text-[9.5px] text-slate-400 mt-2 font-sans opacity-90">គិតជាមធ្យមគ្រប់គ្រឿង</p>
         </div>
       </div>
 
       {/* Tool Filter Bar and Search Controls */}
-      <div className="bg-white border border-slate-200/80 p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+      <div className="bg-white border border-slate-200/80 p-4 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-sm">
         
         {/* Search Input Control */}
         <div className="relative flex-1 max-w-md">
@@ -441,7 +455,7 @@ export default function FixedAssetManager() {
             placeholder="ស្វែងរកតាម៖ កូដសម្គាល់ ឈ្មោះ ម៉ាក ទីតាំង ឬអ្នកកាន់... (Search Assets)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs font-semibold text-slate-800 placeholder:text-slate-400/90 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
           />
           {searchQuery && (
             <button
@@ -455,13 +469,13 @@ export default function FixedAssetManager() {
 
         {/* Categories Dynamic Filters list */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] text-slate-400 font-extrabold pr-1">ប្រភេទ (Category):</span>
+          <span className="text-[11px] text-slate-400 font-semibold pr-1">ប្រភេទ (Category):</span>
           <button
             onClick={() => setSelectedCategory('All')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               selectedCategory === 'All'
                 ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'
             }`}
           >
             ទាំងអស់ ({totalAssetsNum})
@@ -473,10 +487,10 @@ export default function FixedAssetManager() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'
                 }`}
               >
                 {renderCategoryIcon(cat)}
@@ -488,11 +502,11 @@ export default function FixedAssetManager() {
 
         {/* Status Dropdown Quick Filter */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] text-slate-400 font-extrabold">ស្ថានភាព (Status):</span>
+          <span className="text-[11px] text-slate-400 font-semibold">ស្ថានភាព (Status):</span>
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as any)}
-            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-705 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+            className="bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
           >
             <option value="All">បង្ហាញទាំងអស់ (Show All)</option>
             <option value="Operational">ដំណើរការល្អ (Operational)</option>
@@ -503,12 +517,12 @@ export default function FixedAssetManager() {
       </div>
 
       {/* Auto Logging Notice Message */}
-      <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100/80 rounded-2xl px-5 py-3 flex items-center justify-between text-xs text-teal-900">
-        <div className="flex items-center gap-2 font-bold text-teal-950">
-          <Info className="w-4.5 h-4.5 text-teal-600 shrink-0" />
+      <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-100/70 rounded-2xl px-5 py-3 flex items-center justify-between text-xs text-teal-900 leading-relaxed">
+        <div className="flex items-center gap-2 font-medium text-teal-950">
+          <Info className="w-4 h-4 text-teal-600 shrink-0" />
           <span>រាល់កូនសោបញ្ចូល ព័ត៌មាន កែប្រែ ឬលុបសម្ភារៈឧបករណ៍ នឹងត្រូវបានកត់ត្រាស្វ័យប្រវត្តិ (Saved Auto ✔)</span>
         </div>
-        <span className="text-[10px] bg-teal-200/60 font-black text-teal-800 px-2 py-0.5 rounded-full select-none">
+        <span className="text-[9px] bg-teal-200/50 border border-teal-200/80 font-bold text-teal-850 px-2.5 py-0.5 rounded-full select-none font-sans tracking-wide">
           LOCAL SYNC PRE-RUNNING
         </span>
       </div>
@@ -518,21 +532,42 @@ export default function FixedAssetManager() {
         <div className="overflow-x-auto max-w-full">
           <table className="w-full border-collapse text-left text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-black">
-                <th className="px-4 py-3.5 text-center w-14 font-mono">№</th>
-                <th className="px-4 py-3.5">កូដសម្គាល់ឧបករណ៍ (Asset ID)</th>
-                <th className="px-5 py-3.5">ឈ្មោះឧបករណ៍ & ម៉ាក (Asset Details)</th>
-                <th className="px-4 py-3.5">ប្រភេទ (Category)</th>
-                <th className="px-4 py-3.5">ទីតាំង និងអ្នកកាន់ (Assigned Location)</th>
-                <th className="px-4 py-3.5">ការទិញយក (Purchase Details)</th>
-                <th className="px-4 py-3.5 text-center">ស្ថានភាព (Status)</th>
-                <th className="px-4 py-3.5 text-center w-28">សកម្មភាព (Action)</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-[11px] font-semibold leading-relaxed">
+                <th className="px-4 py-3 text-center w-14 font-mono font-bold">№</th>
+                <th className="px-4 py-3">
+                  <span>កូដសម្គាល់ឧបករណ៍</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Asset ID)</span>
+                </th>
+                <th className="px-5 py-3">
+                  <span>ឈ្មោះឧបករណ៍ & ម៉ាក</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Asset Details)</span>
+                </th>
+                <th className="px-4 py-3">
+                  <span>ប្រភេទ</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Category)</span>
+                </th>
+                <th className="px-4 py-3">
+                  <span>ទីតាំង និងអ្នកកាន់</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Assigned Location)</span>
+                </th>
+                <th className="px-4 py-3">
+                  <span>ការទិញយក</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Purchase Details)</span>
+                </th>
+                <th className="px-4 py-3 text-center">
+                  <span>ស្ថានភាព</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Status)</span>
+                </th>
+                <th className="px-4 py-3 text-center w-28">
+                  <span>សកម្មភាព</span>
+                  <span className="text-[9px] text-slate-400 font-sans block font-medium uppercase mt-0.5">(Action)</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {filteredAssetsList.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-slate-400 font-bold">
+                  <td colSpan={8} className="text-center py-10 text-slate-400 font-semibold">
                     <div className="max-w-xs mx-auto flex flex-col items-center">
                       <BarChart3 className="w-12 h-12 text-slate-200 animate-pulse mb-3" />
                       <p className="text-xs text-slate-500">គ្មានទិន្នន័យឧបករណ៍ត្រូវបានរកឃើញទេ (No Assets Found)</p>
@@ -542,7 +577,7 @@ export default function FixedAssetManager() {
                           setSelectedCategory('All');
                           setSelectedStatus('All');
                         }}
-                        className="mt-3 text-[11px] font-black text-emerald-700 hover:underline cursor-pointer"
+                        className="mt-3 text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer"
                       >
                         សម្អាតតម្រងស្វែងរកឡើងវិញ
                       </button>
@@ -555,10 +590,10 @@ export default function FixedAssetManager() {
                     key={asset.id} 
                     className="border-b border-slate-150 hover:bg-slate-50/50 transition-colors"
                   >
-                    <td className="px-4 py-3.5 text-center bg-slate-50/20 text-slate-400 font-mono font-bold select-none">{index + 1}</td>
+                    <td className="px-4 py-3.5 text-center bg-slate-50/20 text-slate-400 font-mono font-medium select-none">{index + 1}</td>
                     
                     {/* Asset code badge with full double-click select */}
-                    <td className="px-4 py-3.5 font-bold text-slate-900 select-all font-mono">
+                    <td className="px-4 py-3.5 font-semibold text-slate-900 select-all font-mono">
                       <span className="bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-[11px]">
                         {asset.id}
                       </span>
@@ -567,12 +602,12 @@ export default function FixedAssetManager() {
                     {/* Asset name, brand and serial number details */}
                     <td className="px-5 py-3.5">
                       <div>
-                        <p className="font-extrabold text-slate-800 text-[12.5px] line-clamp-1">{asset.name}</p>
-                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                          ម៉ាក៖ <span className="text-slate-700 font-bold">{asset.brand}</span> • ម៉ូដែល៖ <span className="text-slate-700 font-bold">{asset.model}</span>
+                        <p className="font-semibold text-slate-800 text-[12.5px] line-clamp-1">{asset.name}</p>
+                        <p className="text-[11px] text-slate-400 font-normal mt-1 leading-relaxed">
+                          ម៉ាក៖ <span className="text-slate-700 font-medium">{asset.brand}</span> • ម៉ូដែល៖ <span className="text-slate-700 font-medium">{asset.model}</span>
                         </p>
                         {asset.serialNumber && asset.serialNumber !== 'N/A' && (
-                          <p className="text-[10px] text-slate-400 font-mono mt-0.5 select-all">
+                          <p className="text-[10px] text-slate-400 font-mono mt-1 select-all">
                             S/N: {asset.serialNumber}
                           </p>
                         )}
@@ -581,7 +616,7 @@ export default function FixedAssetManager() {
 
                     {/* Category Label with decorative background color */}
                     <td className="px-4 py-3.5">
-                      <div className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-lg text-slate-700 font-black text-[11px]">
+                      <div className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-lg text-slate-600 font-semibold text-[11px]">
                         {renderCategoryIcon(asset.category)}
                         <span>{ASSET_CATEGORIES_KM[asset.category] ? ASSET_CATEGORIES_KM[asset.category].split(' (')[0] : asset.category}</span>
                       </div>
@@ -590,9 +625,9 @@ export default function FixedAssetManager() {
                     {/* Location and Supervisor */}
                     <td className="px-4 py-3.5">
                       <div>
-                        <p className="font-extrabold text-slate-700">{asset.location}</p>
-                        <p className="text-[10px] text-slate-500 font-bold mt-0.5">
-                          អ្នកគ្រប់គ្រង៖ <span className="text-emerald-700 font-black">{asset.assignedTo || 'មិនទាន់ចាត់តាំង'}</span>
+                        <p className="font-semibold text-slate-705 text-[11.5px]">{asset.location}</p>
+                        <p className="text-[10px] text-slate-450 font-normal mt-1.5 leading-relaxed">
+                          អ្នកគ្រប់គ្រង៖ <span className="text-emerald-800 font-semibold">{asset.assignedTo || 'មិនទាន់ចាត់តាំង'}</span>
                         </p>
                       </div>
                     </td>
@@ -600,8 +635,8 @@ export default function FixedAssetManager() {
                     {/* Purchase info */}
                     <td className="px-4 py-3.5">
                       <div>
-                        <p className="font-bold text-slate-800 font-mono text-[11px]">${asset.costUsd?.toLocaleString() || 0} USD</p>
-                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        <p className="font-semibold text-slate-800 font-mono text-[11px]">${asset.costUsd?.toLocaleString() || 0} USD</p>
+                        <p className="text-[10px] text-slate-400 font-mono mt-1">
                           {asset.purchaseDate || 'N/A'}
                         </p>
                       </div>
@@ -609,24 +644,24 @@ export default function FixedAssetManager() {
 
                     {/* Status badges */}
                     <td className="px-4 py-3.5 text-center">
-                      <span className={`inline-block px-2.5 py-1 text-[10.5px] font-black rounded-lg border ${ASSET_STATUSES_KM[asset.status]?.color || ''}`}>
+                      <span className={`inline-block px-2.5 py-1 text-[10.5px] font-semibold rounded-lg border ${ASSET_STATUSES_KM[asset.status]?.color || ''}`}>
                         {ASSET_STATUSES_KM[asset.status]?.label || asset.status}
                       </span>
                     </td>
 
                     {/* Edit Delete action options */}
                     <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => openEditAssetModal(asset)}
-                          className="p-1 px-2.5 rounded-lg bg-slate-130 border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition text-[11px] font-bold cursor-pointer inline-flex items-center gap-1"
+                          className="p-1 px-2.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition text-[11px] font-medium cursor-pointer inline-flex items-center gap-1"
                         >
                           <Edit2 className="w-3 h-3" />
                           <span>កែប្រែ</span>
                         </button>
                         <button
                           onClick={() => handleRemoveAsset(asset.id)}
-                          className="p-1 px-2 text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-500 hover:text-white hover:border-rose-400 rounded-lg transition text-[11px] font-bold cursor-pointer inline-flex items-center gap-0.5"
+                          className="p-1.5 text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-500 hover:text-white hover:border-rose-455 rounded-lg transition text-[11px] font-medium cursor-pointer inline-flex items-center"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -653,10 +688,22 @@ export default function FixedAssetManager() {
             
             {/* Modal Header */}
             <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-emerald-400">
+              <div className="flex items-center gap-2.5 text-emerald-400">
                 <HardDrive className="w-5 h-5" />
-                <h3 className="font-moul tracking-normal text-sm md:text-base">
-                  {editingAsset ? `កែប្រែឧបករណ៍៖ ${formId}` : 'បញ្ចូលព័ត៌មានឧបករណ៍ថ្មី (Add Fixed Asset)'}
+                <h3 className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-moul font-normal text-[12.5px] sm:text-[14px]">
+                    {editingAsset ? `កែប្រែព័ត៌មានឧបករណ៍` : 'បន្ថែមព័ត៌មានឧបករណ៍ថ្មី'}
+                  </span>
+                  {!editingAsset && (
+                    <span className="text-[10px] sm:text-[11px] font-sans font-medium text-emerald-450/85 uppercase tracking-wide">
+                      (Add Fixed Asset)
+                    </span>
+                  )}
+                  {editingAsset && (
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-emerald-400">
+                      [{formId}]
+                    </span>
+                  )}
                 </h3>
               </div>
               <button 
@@ -672,7 +719,9 @@ export default function FixedAssetManager() {
               
               {/* Asset ID */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">កូដសម្គាល់ឧបករណ៍ (Asset ID) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  កូដសម្គាល់ឧបករណ៍ <span className="text-[10px] font-sans font-medium text-slate-400">(Asset ID) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="text"
                   required
@@ -680,17 +729,19 @@ export default function FixedAssetManager() {
                   value={formId}
                   onChange={(e) => setFormId(e.target.value)}
                   disabled={!!editingAsset}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100 disabled:text-slate-400"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 disabled:bg-slate-100 disabled:text-slate-400"
                 />
               </div>
 
               {/* Category */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">ប្រភេទឧបករណ៍ (Category) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  ប្រភេទឧបករណ៍ <span className="text-[10px] font-sans font-medium text-slate-400">(Category) <span className="text-rose-500">*</span></span>
+                </label>
                 <select
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value as AssetCategory)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-bold"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-semibold"
                 >
                   <option value="Computer">កុំព្យូទ័រ (Desktop PC)</option>
                   <option value="Laptop">ឡេបថប (Laptop)</option>
@@ -703,7 +754,9 @@ export default function FixedAssetManager() {
 
               {/* Asset Name description */}
               <div className="sm:col-span-2">
-                <label className="block text-slate-500 font-extrabold mb-1">ឈ្មោះសម្ភារៈឧបករណ៍ (Asset Name / Description) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  ឈ្មោះសម្ភារៈឧបករណ៍ <span className="text-[10px] font-sans font-medium text-slate-400">(Asset Name / Description) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="text"
                   required
@@ -716,44 +769,52 @@ export default function FixedAssetManager() {
 
               {/* Brand name */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">ម៉ាក (Brand) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  ម៉ាក <span className="text-[10px] font-sans font-medium text-slate-400">(Brand) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="ឧ. Apple, Epson, Dell, Lenovo"
                   value={formBrand}
                   onChange={(e) => setFormBrand(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Model */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">ម៉ូដែល (Model) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  ម៉ូដែល <span className="text-[10px] font-sans font-medium text-slate-400">(Model) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="text"
                   placeholder="ឧ. ThinkPad E14 Gen 5"
                   value={formModel}
                   onChange={(e) => setFormModel(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Serial Number */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">លេខស៊េរីម៉ាស៊ីន (S/N Serial Number)</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  លេខស៊េរីម៉ាស៊ីន <span className="text-[10px] font-sans font-medium text-slate-400">(S/N Serial Number)</span>
+                </label>
                 <input
                   type="text"
                   placeholder="S/N: XXXXXXXXXXXX"
                   value={formSerialNumber}
                   onChange={(e) => setFormSerialNumber(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Cost in USD */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">តម្លៃទិញចូល (Purchase Cost USD) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  តម្លៃទិញចូល <span className="text-[10px] font-sans font-medium text-slate-400">(Purchase Cost USD) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="number"
                   min="0"
@@ -762,52 +823,60 @@ export default function FixedAssetManager() {
                   placeholder="ឧ. 750"
                   value={formCostUsd}
                   onChange={(e) => setFormCostUsd(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-805 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Location Room */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">ទីតាំងដំឡើង (Room / Location) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  ទីតាំងដំឡើង <span className="text-[10px] font-sans font-medium text-slate-400">(Room / Location) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="text"
                   placeholder="ឧ. Lab Room, Room 102, Main Gate"
                   value={formLocation}
                   onChange={(e) => setFormLocation(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Assigned User Staff */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">អ្នកកាន់ប្រើប្រាស់ (Assigned User) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  អ្នកកាន់ប្រើប្រាស់ <span className="text-[10px] font-sans font-medium text-slate-400">(Assigned User) <span className="text-rose-500">*</span></span>
+                </label>
                 <input
                   type="text"
                   placeholder="ឧ. LOUNG Veasna... "
                   value={formAssignedTo}
                   onChange={(e) => setFormAssignedTo(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Purchase Date */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">ថ្ងៃទិញចូល (Purchase Date)</label>
+                <label className="block text-slate-605 font-semibold mb-1">
+                  ថ្ងៃទិញចូល <span className="text-[10px] font-sans font-medium text-slate-400">(Purchase Date)</span>
+                </label>
                 <input
                   type="date"
                   value={formPurchaseDate}
                   onChange={(e) => setFormPurchaseDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-850 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 font-mono focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 />
               </div>
 
               {/* Status Selector */}
               <div>
-                <label className="block text-slate-500 font-extrabold mb-1">ស្ថានភាពឧបករណ៍ (Status) *</label>
+                <label className="block text-slate-600 font-semibold mb-1">
+                  ស្ថានភាពឧបករណ៍ <span className="text-[10px] font-sans font-medium text-slate-400">(Status) *</span>
+                </label>
                 <select
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as AssetStatus)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-bold"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-semibold"
                 >
                   <option value="Operational">ដំណើរការធម្មតា (Operational)</option>
                   <option value="Maintenance">កំពុងថែទាំ/ជួសជុល (Maintenance)</option>
@@ -817,31 +886,34 @@ export default function FixedAssetManager() {
 
               {/* Special Remarks / comments */}
               <div className="sm:col-span-2">
-                <label className="block text-slate-500 font-extrabold mb-1">ចំណាំបន្ថែម (Remarks / Notes)</label>
+                <label className="block text-slate-605 font-semibold mb-1">
+                  ចំណាំបន្ថែម <span className="text-[10px] font-sans font-medium text-slate-400">(Remarks / Notes)</span>
+                </label>
                 <textarea
                   rows={3}
                   placeholder="ព័ត៌មានបន្ថែមទាក់ទងនឹងការធានា លក្ខណៈបច្ចេកទេស..."
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-semibold"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-medium"
                 />
               </div>
 
               {/* Form buttons container */}
-              <div className="sm:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <div className="sm:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-slate-150">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl text-slate-550 border border-slate-200 hover:bg-slate-50 font-bold transition cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl text-slate-500 border border-slate-200 hover:bg-slate-50 font-semibold transition cursor-pointer"
                 >
                   បោះបង់ (Cancel)
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold transition cursor-pointer select-none"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-semibold transition cursor-pointer select-none"
                 >
                   <Check className="w-4 h-4" />
-                  <span>រក្សាទុកឧបករណ៍ (Save Asset)</span>
+                  <span>រក្សាទុកឧបករណ៍</span>
+                  <span className="text-[10px] opacity-80 hidden sm:inline">(Save Asset)</span>
                 </button>
               </div>
             </form>
@@ -852,7 +924,7 @@ export default function FixedAssetManager() {
       {/* Embedded Floating Toast notification container */}
       {toast && (
         <div className="fixed bottom-5 right-5 z-50 animate-bounce duration-300">
-          <div className={`px-5 py-4.5 rounded-2xl shadow-2xl flex items-center gap-2.5 border text-xs font-extrabold text-white ${
+          <div className={`px-5 py-4.5 rounded-2xl shadow-2xl flex items-center gap-2.5 border text-xs font-semibold text-white ${
             toast.type === 'success' ? 'bg-emerald-900 border-emerald-700 shadow-emerald-950/20' : 
             toast.type === 'danger' ? 'bg-rose-900 border-rose-700 shadow-rose-950/20' : 
             'bg-slate-900 border-slate-700 shadow-slate-950/20'

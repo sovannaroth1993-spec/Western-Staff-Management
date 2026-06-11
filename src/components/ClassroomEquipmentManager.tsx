@@ -319,6 +319,10 @@ export default function ClassroomEquipmentManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoom, setEditingRoom] = useState<ClassroomRecord | null>(null);
 
+  // Confirmation states to handle iframe window.confirm restriction issues
+  const [deleteRoomTarget, setDeleteRoomTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLogTarget, setDeleteLogTarget] = useState<{ id: string } | null>(null);
+
   // Form states (Add/Edit Room Profile)
   const [roomNumber, setRoomNumber] = useState('');
   const [location, setLocation] = useState('');
@@ -870,22 +874,27 @@ export default function ClassroomEquipmentManager() {
   // Delete specific maintenance record
   const handleDeleteMaintenanceLog = (logId: string) => {
     if (!selectedRoom) return;
-    if (window.confirm('តើអ្នកពិតជាចង់លុបចោលកំណត់ត្រាស្ថានភាព/ការជួសជុលនេះមែនទេ?')) {
-      const currentLogs = selectedRoom.maintenanceLogs || [];
-      const updatedLogs = currentLogs.filter(l => l.id !== logId);
+    setDeleteLogTarget({ id: logId });
+  };
 
-      const updatedRooms = rooms.map(r => r.id === selectedRoom.id ? {
-        ...r,
-        maintenanceLogs: updatedLogs
-      } : r);
+  const confirmDeleteLog = () => {
+    if (!selectedRoom || !deleteLogTarget) return;
+    const { id: logId } = deleteLogTarget;
+    const currentLogs = selectedRoom.maintenanceLogs || [];
+    const updatedLogs = currentLogs.filter(l => l.id !== logId);
 
-      setRooms(updatedRooms);
-      
-      const matched = updatedRooms.find(r => r.id === selectedRoom.id);
-      if (matched) setSelectedRoom(matched);
+    const updatedRooms = rooms.map(r => r.id === selectedRoom.id ? {
+      ...r,
+      maintenanceLogs: updatedLogs
+    } : r);
 
-      showToast('បានលុបចោលកំណត់ត្រាជោគជ័យ!', 'info');
-    }
+    setRooms(updatedRooms);
+    
+    const matched = updatedRooms.find(r => r.id === selectedRoom.id);
+    if (matched) setSelectedRoom(matched);
+
+    showToast('បានលុបចោលកំណត់ត្រាជោគជ័យ!', 'info');
+    setDeleteLogTarget(null);
   };
 
   // Start camera stream
@@ -1047,18 +1056,23 @@ export default function ClassroomEquipmentManager() {
 
   // Delete Room Record
   const handleDeleteRoom = (roomId: string, name: string) => {
-    if (window.confirm(`តើអ្នកពិតជាចង់លុបចោលបន្ទប់រៀន "${name}" និងរាល់បញ្ជីសម្ភារៈទាំងអស់មែនទេ?`)) {
-      const nextRooms = rooms.filter(r => r.id !== roomId);
-      setRooms(nextRooms);
-      
-      // select next available room
-      if (nextRooms.length > 0) {
-        setSelectedRoom(nextRooms[0]);
-      } else {
-        setSelectedRoom(null);
-      }
-      showToast(`បានលុបបន្ទប់រៀន "${name}" រួចរាល់`, 'info');
+    setDeleteRoomTarget({ id: roomId, name });
+  };
+
+  const confirmDeleteRoom = () => {
+    if (!deleteRoomTarget) return;
+    const { id: roomId, name } = deleteRoomTarget;
+    const nextRooms = rooms.filter(r => r.id !== roomId);
+    setRooms(nextRooms);
+    
+    // select next available room
+    if (nextRooms.length > 0) {
+      setSelectedRoom(nextRooms[0]);
+    } else {
+      setSelectedRoom(null);
     }
+    showToast(`បានលុបបន្ទប់រៀន "${name}" រួចរាល់`, 'info');
+    setDeleteRoomTarget(null);
   };
 
   // Room search filtering
@@ -1101,10 +1115,10 @@ export default function ClassroomEquipmentManager() {
             <School className="w-7 h-7" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-slate-800 flex items-center gap-1.5 leading-snug">
-              ការគ្រប់គ្រងសម្ភារៈនៅក្នុងបន្ទប់រៀន (Classroom Equipment & Inventory)
+            <h2 className="text-[17px] font-moul text-slate-800 leading-relaxed tracking-wide">
+              ការគ្រប់គ្រងសម្ភារៈនៅក្នុងបន្ទប់រៀន <span className="font-sans text-xs text-slate-400 font-bold uppercase tracking-wider block sm:inline sm:ml-2">| Classroom Equipment & Inventory</span>
             </h2>
-            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+            <p className="text-xs text-slate-500 font-medium mt-1">
               សវនកម្មទ្រព្យសម្បត្តិសាលា តុ កៅអី ម៉ាស៊ីនត្រជាក់ ស្ប៉ីគឃ័រ លុកឃ័រ និងឧបករណ៍បង្រៀននានាក្នុងគ្រប់បន្ទប់ថ្នាក់រៀន
             </p>
           </div>
@@ -1125,18 +1139,19 @@ export default function ClassroomEquipmentManager() {
           <School className="w-56 h-56" />
         </div>
 
-        <h4 className="text-[11px] uppercase tracking-wider font-extrabold text-amber-300 flex items-center gap-1.5 mb-3.5">
-          <Layers className="w-4 h-4 animate-pulse" />
-          <span>ចំនួនសម្ភារៈ-ឧបករណ៍សរុបប្រចាំសាលា (School-wide Inventory Summary)</span>
+        <h4 className="flex items-center gap-2 mb-4 flex-wrap">
+          <Layers className="w-4.5 h-4.5 animate-pulse text-amber-300 shrink-0" />
+          <span className="font-moul text-[11px] text-amber-300 tracking-wide font-normal">ចំនួនសម្ភារៈ-ឧបករណ៍សរុបប្រចាំសាលា</span>
+          <span className="text-[9px] text-[#2ba8a5] font-sans font-extrabold uppercase tracking-wider">| School-wide Inventory Summary</span>
         </h4>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-3.5 text-center">
           {equipmentTypes.map(it => {
             const labelShort = it.label.split('(')[0].trim();
             return (
-              <div key={it.key} className="border border-slate-750/30 rounded-xl p-2 flex flex-col justify-between bg-slate-900/40">
-                <span className="text-[10px] text-slate-300 font-bold truncate" title={it.label}>{labelShort}</span>
-                <span className="text-sm font-black font-mono text-amber-300 block mt-1">{grandTotals[it.key] || 0}</span>
+              <div key={it.key} className="border border-[#0c4e4c] rounded-xl p-3 flex flex-col justify-between bg-slate-950/20 hover:bg-[#052e2c]/30 transition-all duration-200">
+                <span className="text-[10px] text-emerald-100/90 font-semibold tracking-wide truncate" title={it.label}>{labelShort}</span>
+                <span className="text-sm sm:text-base font-extrabold font-mono text-amber-300 block mt-1">{grandTotals[it.key] || 0}</span>
               </div>
             );
           })}
@@ -1154,18 +1169,19 @@ export default function ClassroomEquipmentManager() {
               <RefreshCw className={`w-5 h-5 shrink-0 ${isTelegramEnabled && telegramBotToken && telegramChatId ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '8s' }} />
             </div>
             <div>
-              <h4 className="text-sm font-black text-slate-800 flex items-center flex-wrap gap-2 leading-none">
-                <span>🤖 ប្រព័ន្ធតភ្ជាប់ស្វ័យប្រវត្តិតាម Telegram (Automated Telegram Notifications)</span>
-                <span className={`text-[9.5px] font-black px-2 py-0.5 rounded-full leading-none ${
+              <h4 className="text-sm font-bold text-slate-800 flex items-center flex-wrap gap-2 leading-relaxed">
+                <span className="font-moul text-[11px] font-normal tracking-wide text-emerald-950">🤖 ប្រព័ន្ធតភ្ជាប់ស្វ័យប្រវត្តិតាម Telegram</span>
+                <span className="text-[10px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Automated Telegram Notifications)</span>
+                <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full leading-none shadow-3xs tracking-wide uppercase font-sans ${
                   isTelegramEnabled && telegramBotToken && telegramChatId 
-                    ? 'bg-emerald-500 text-white animate-pulse' 
-                    : 'bg-slate-300 text-slate-700'
+                    ? 'bg-emerald-600 text-white animate-pulse' 
+                    : 'bg-slate-300 text-slate-600'
                 }`}>
                   {isTelegramEnabled && telegramBotToken && telegramChatId ? 'បើកដំណើរការ (Active)' : 'មិនទាន់តភ្ជាប់ (Not Configured)'}
                 </span>
               </h4>
-              <p className="text-[11px] text-slate-500 font-semibold mt-1.5 leading-normal">
-                បញ្ជូនរបាយការណ៍ស្វ័យប្រវត្តិទៅកាន់គ្រុបការងារភ្លាមៗ រាល់ពេលកត់ត្រាសម្ភារៈខូចខាត ឬត្រូវការជួសជុល (Send alerts to Telegram when items are marked 'Damaged' or 'Need Repair')
+              <p className="text-[11.5px] text-slate-500 font-medium mt-1 leading-relaxed">
+                បញ្ជូនរបាយការណ៍ស្វ័យប្រវត្តិទៅកាន់គ្រុបការងារភ្លាមៗ រាល់ពេលកត់ត្រាសម្ភារៈខូចខាត ឬត្រូវការជួសជុល <span className="text-slate-400 font-sans">| Send alerts to Telegram when items are marked 'Damaged' or 'Need Repair'</span>
               </p>
             </div>
           </div>
@@ -1294,19 +1310,21 @@ export default function ClassroomEquipmentManager() {
                 <AlertTriangle className="w-5 h-5 shrink-0" />
               </div>
               <div>
-                <h4 className="text-sm font-black text-slate-800 flex items-center flex-wrap gap-2 leading-none">
-                  <span>🔔 ប្រព័ន្ធជូនដំណឹងស្ថានភាពឧបករណ៍បន្ទាន់ (Urgent Technical Alerts)</span>
+                <h4 className="text-sm font-bold text-slate-800 flex items-center flex-wrap gap-2 leading-relaxed">
+                  <span className="font-moul text-[11px] font-normal tracking-wide text-rose-950">🔔 ប្រព័ន្ធជូនដំណឹងស្ថានភាពឧបករណ៍បន្ទាន់</span>
+                  <span className="text-[10px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Urgent Technical Alerts)</span>
                   {urgentLogs.length > 0 && (
-                    <span className="bg-rose-600 text-white font-mono text-[10.5px] font-black px-2 py-0.5 rounded-full leading-none">
+                    <span className="bg-rose-600 text-white font-sans text-[10px] font-extrabold px-2.5 py-0.5 rounded-full leading-none shadow-3xs">
                       {urgentLogs.length} បញ្ហា
                     </span>
                   )}
                 </h4>
-                <p className="text-[11px] text-slate-500 font-semibold mt-1 leading-normal">
+                <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
                   {urgentLogs.length > 0 
                     ? `មានឧបករណ៍ចំនួន ${urgentLogs.length} គ្រឿងត្រូវបានរាយការណ៍ថាខូច ឬត្រូវការជួសជុលលើសពី ៧ ថ្ងៃដោយគ្មានការដោះស្រាយ`
-                    : 'ឧបករណ៍សម្ភារៈទាំងអស់កំពុងស្ថិតក្នុងស្ថានភាពធម្មតា ឬបានដោះស្រាយទាន់ពេលក្នុងរយៈពេល ៧ ថ្ងៃ (No unaddressed critical repairs older than 7 days)'
+                    : 'ឧបករណ៍សម្ភារៈទាំងអស់កំពុងស្ថិតក្នុងស្ថានភាពធម្មតា ឬបានដោះស្រាយទាន់ពេលក្នុងរយៈពេល ៧ ថ្ងៃ'
                   }
+                  <span className="text-slate-400 font-sans"> | No unaddressed critical repairs older than 7 days</span>
                 </p>
               </div>
             </div>
@@ -1418,16 +1436,17 @@ export default function ClassroomEquipmentManager() {
                 <Wrench className="w-5 h-5 shrink-0" />
               </div>
               <div>
-                <h4 className="text-sm font-black text-slate-800 flex items-center flex-wrap gap-2 leading-none">
-                  <span>📋 របាយការណ៍សង្ខេបសម្ភារៈខូចខាត និងត្រូវការជួសជុល (Damaged & Need Repair Equipment Summary)</span>
+                <h4 className="text-sm font-bold text-slate-800 flex items-center flex-wrap gap-2 leading-relaxed">
+                  <span className="font-moul text-[11px] font-normal tracking-wide text-amber-955">📋 របាយការណ៍សង្ខេបសម្ភារៈខូចខាត និងត្រូវការជួសជុល</span>
+                  <span className="text-[10px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Damaged & Need Repair Equipment Summary)</span>
                   {summaryDamagedLogs.length > 0 && (
-                    <span className="bg-amber-500 text-white font-mono text-[10.5px] font-black px-2 py-0.5 rounded-full leading-none">
-                      {summaryDamagedLogs.length} របាយការណ៍
+                    <span className="bg-amber-500 text-white font-sans text-[10px] font-bold px-2.5 py-0.5 rounded-full leading-none shadow-3xs">
+                      {summaryDamagedLogs.length}
                     </span>
                   )}
                 </h4>
-                <p className="text-[11px] text-slate-500 font-semibold mt-1 leading-normal">
-                  បញ្ជីវាយតម្លៃរួមនៃសម្ភារៈដែលខូច ឬត្រូវការថែទាំគ្រប់បន្ទប់សិក្សា តម្រៀបតាមរយៈពេលរង់ចាំ (All classroom items reported as faulty, sorted by report date)
+                <p className="text-[11.5px] text-slate-500 font-medium mt-1 leading-relaxed">
+                  បញ្ជីវាយតម្លៃរួមនៃសម្ភារៈដែលខូច ឬត្រូវការថែទាំគ្រប់បន្ទប់សិក្សា តម្រៀបតាមរយៈពេលរង់ចាំ <span className="text-slate-400 font-sans">| All classroom items reported as faulty, sorted by report date</span>
                 </p>
               </div>
             </div>
@@ -1625,8 +1644,11 @@ export default function ClassroomEquipmentManager() {
         <div className="lg:col-span-5 space-y-4">
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-slate-600 block">បញ្ជីបន្ទប់ទិន្នន័យ (Classrooms List)</span>
-              <span className="text-[10px] font-mono text-slate-450 font-bold bg-slate-200/60 px-2 py-0.5 rounded-md">{filteredRooms.length} បន្ទប់</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[11.5px] font-moul text-emerald-950 block tracking-wide font-normal">បញ្ជីបន្ទប់សិក្សា</span>
+                <span className="text-[9.5px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Classrooms List)</span>
+              </div>
+              <span className="text-[10.5px] font-sans text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">{filteredRooms.length} បន្ទប់</span>
             </div>
 
             {/* Quick Filter */}
@@ -1749,30 +1771,32 @@ export default function ClassroomEquipmentManager() {
               </div>
 
               {/* Tab Selector: Quantities vs Maintenance logs */}
-              <div className="flex border-b border-slate-200 text-xs font-black gap-2">
+              <div className="flex border-b border-slate-200 text-xs font-bold gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setDetailTab('items')}
-                  className={`px-4 py-2.5 border-b-2 transition cursor-pointer ${
+                  className={`px-4 py-2.5 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
                     detailTab === 'items'
-                      ? 'border-[#073B3A] text-[#073B3A] font-extrabold'
-                      : 'border-transparent text-slate-400 hover:text-slate-600'
+                      ? 'border-[#073B3A]' + ' text-[#073B3A] font-bold'
+                      : 'border-transparent text-slate-400 hover:text-slate-750'
                   }`}
                 >
-                  📦 បរិមាណសម្ភារៈ (Inventory)
+                  <span>📦 បរិមាណសម្ភារៈ</span>
+                  <span className="text-[9.5px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Inventory)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setDetailTab('maintenance')}
                   className={`px-4 py-2.5 border-b-2 transition flex items-center gap-1.5 cursor-pointer ${
                     detailTab === 'maintenance'
-                      ? 'border-[#073B3A] text-[#073B3A] font-extrabold'
-                      : 'border-transparent text-slate-400 hover:text-slate-600'
+                      ? 'border-[#073B3A]' + ' text-[#073B3A] font-bold'
+                      : 'border-transparent text-slate-400 hover:text-slate-750'
                   }`}
                 >
-                  🛠️ ត្រួតពិនិត្យស្ថានភាព & ជួសជុល (Inspections & Repairs)
+                  <span>🛠️ ត្រួតពិនិត្យស្ថានភាព</span>
+                  <span className="text-[9.5px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Inspections)</span>
                   {(selectedRoom.maintenanceLogs || []).filter(l => l.repairStatus !== 'Repaired' && l.repairStatus !== 'Replaced').length > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-rose-500 inline-block animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-rose-500 inline-block animate-pulse shrink-0" />
                   )}
                 </button>
               </div>
@@ -2108,8 +2132,8 @@ export default function ClassroomEquipmentManager() {
             >
               <div className="bg-[#073B3A] text-white p-4.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <School className="w-5 h-5 text-amber-300 animate-pulse" />
-                  <span className="text-sm font-black text-rose-50 font-sans">
+                  <School className="w-5 h-5 text-amber-300 animate-pulse shrink-0" />
+                  <span className="font-moul text-[11px] font-normal tracking-wide text-rose-50">
                     {editingRoom ? 'កែសម្រួលទម្រង់និងសម្ភារៈថ្នាក់រៀន' : 'បង្កើតបន្ទប់សិក្សាថ្មី & កំណត់សម្ភារៈជម្រើសដើម'}
                   </span>
                 </div>
@@ -2245,9 +2269,9 @@ export default function ClassroomEquipmentManager() {
             >
               <div className="bg-[#073B3A] text-white p-4.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <PlusCircle className="w-5 h-5 text-amber-300" />
-                  <span className="text-sm font-black font-sans">
-                    បន្ថែមប្រភេទសម្ភារៈថ្មី (Add New Equipment Type)
+                  <PlusCircle className="w-5 h-5 text-amber-300 shrink-0" />
+                  <span className="font-moul text-[11px] font-normal tracking-wide text-white">
+                    បន្ថែមប្រភេទសម្ភារៈថ្មី <span className="font-sans text-[9px] text-[#2ba8a5] tracking-wider uppercase font-extrabold ml-1">| Add New Equipment Type</span>
                   </span>
                 </div>
                 <button
@@ -2405,11 +2429,14 @@ export default function ClassroomEquipmentManager() {
             >
               <div className="bg-[#073B3A] text-white p-4.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Wrench className="w-5 h-5 text-amber-300" />
-                  <span className="text-sm font-black font-sans">
+                  <Wrench className="w-5 h-5 text-amber-300 shrink-0" />
+                  <span className="font-moul text-[11px] font-normal tracking-wide text-white">
                     {editingLog 
-                      ? 'កែសម្រួលស្ថានភាព និងការជួសជុល (Edit Condition/Repair Record)' 
-                      : 'កត់ត្រាស្ថានភាព ឬរាយការណ៍ជួសជុល (New Condition & Maintenance Log)'}
+                      ? 'កែសម្រួលស្ថានភាព និងការជួសជុល' 
+                      : 'កត់ត្រាស្ថានភាព ឬរាយការណ៍ជួសជុល'}
+                    <span className="font-sans text-[9px] text-[#2ba8a5] tracking-wider uppercase font-extrabold block sm:inline sm:ml-1.5 mt-0.5 sm:mt-0">
+                      {editingLog ? '| Edit' : '| Create New'}
+                    </span>
                   </span>
                 </div>
                 <button
@@ -2732,6 +2759,126 @@ export default function ClassroomEquipmentManager() {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Room Custom Confirmation Modal */}
+      <AnimatePresence>
+        {deleteRoomTarget && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[150] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-slate-200 shadow-2xl rounded-3xl w-full max-w-md overflow-hidden relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header with high contrast red accent */}
+              <div className="bg-rose-50 p-5 border-b border-rose-100 flex items-center gap-3">
+                <div className="p-2.5 bg-rose-600 text-white rounded-2xl shadow-sm shrink-0">
+                  <Trash2 className="w-5 h-5 text-rose-100" />
+                </div>
+                <div>
+                  <h3 className="font-moul text-[10px] sm:text-[11px] text-rose-900 leading-normal">
+                    លុបបន្ទប់រៀន (Confirm Delete Room)
+                  </h3>
+                  <p className="text-[9px] text-rose-600 font-bold font-sans uppercase tracking-wider">
+                    Danger Zone: Irreversible Action
+                  </p>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-3.5">
+                <p className="text-slate-700 text-xs leading-relaxed font-bold">
+                  តើអ្នកពិតជាចង់លុបចោលបន្ទប់រៀន <span className="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100 font-extrabold">"{deleteRoomTarget.name}"</span> និងរាល់បញ្ជីសម្ភារៈទាំងអស់នៅក្នុងបន្ទប់នេះមែនទេ?
+                </p>
+                <div className="bg-slate-50 border border-slate-150 p-3 rounded-2xl text-[10px] text-slate-500 font-medium space-y-1">
+                  <p className="font-black text-slate-750">⚠️ សេចក្តីបញ្ជាក់៖</p>
+                  <p>• ទិន្នន័យបន្ទប់រៀន និងឧបករណ៍ទាំងអស់នឹងត្រូវលុបចោលជាអចិន្ត្រៃយ៍។</p>
+                  <p>• អ្នកមិនអាចទាញយកទិន្នន័យដែលបានលុបត្រឡប់មកវិញឡើយ។</p>
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="bg-slate-50 px-6 py-4 border-t border-slate-150 flex items-center justify-end gap-2 text-xs font-black">
+                <button
+                  type="button"
+                  onClick={() => setDeleteRoomTarget(null)}
+                  className="px-4 py-2 hover:bg-slate-150 text-slate-550 border border-slate-200 bg-white rounded-xl cursor-pointer transition active:scale-95"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteRoom}
+                  className="px-4 py-2 bg-rose-650 hover:bg-rose-700 text-white rounded-xl cursor-pointer transition active:scale-95 shadow-md shadow-rose-300/40 flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>យល់ព្រមលុប (Yes, Delete)</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Maintenance Record Custom Confirmation Modal */}
+      <AnimatePresence>
+        {deleteLogTarget && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[150] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-slate-200 shadow-2xl rounded-3xl w-full max-w-md overflow-hidden relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-rose-50 p-5 border-b border-rose-100 flex items-center gap-3">
+                <div className="p-2.5 bg-rose-600 text-white rounded-2xl shadow-sm shrink-0">
+                  <Trash2 className="w-5 h-5 text-rose-100" />
+                </div>
+                <div>
+                  <h3 className="font-moul text-[10px] sm:text-[11px] text-rose-900 leading-normal">
+                    លុបកំណត់ត្រា (Confirm Delete Log)
+                  </h3>
+                  <p className="text-[9px] text-rose-600 font-bold font-sans uppercase tracking-wider">
+                    Irreversible Action
+                  </p>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-3.5">
+                <p className="text-slate-700 text-xs leading-relaxed font-bold">
+                  តើអ្នកពិតជាចង់លុបចោលកំណត់ត្រាស្ថានភាព/ការជួសជុលនេះមែនទេ?
+                </p>
+                <div className="bg-slate-50 border border-slate-150 p-3 rounded-2xl text-[10px] text-slate-500 font-medium space-y-1">
+                  <p className="font-black text-slate-750">⚠️ សេចក្តីបញ្ជាក់៖</p>
+                  <p>• កំណត់ត្រាសហការជួសជុល ឬដំណើរការឧបករណ៍នេះនឹងត្រូវលុបចោលជាអចិន្ត្រៃយ៍។</p>
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="bg-slate-50 px-6 py-4 border-t border-slate-150 flex items-center justify-end gap-2 text-xs font-black">
+                <button
+                  type="button"
+                  onClick={() => setDeleteLogTarget(null)}
+                  className="px-4 py-2 hover:bg-slate-150 text-slate-550 border border-slate-250 bg-white rounded-xl cursor-pointer transition active:scale-95"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteLog}
+                  className="px-4 py-2 bg-rose-650 hover:bg-rose-700 text-white rounded-xl cursor-pointer transition active:scale-95 shadow-md shadow-rose-300/40 flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>យល់ព្រមលុប (Yes, Delete)</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

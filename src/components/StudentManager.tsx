@@ -1958,8 +1958,8 @@ export default function StudentManager({ studentList, setStudentList, lang }: St
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] px-5 py-3.5 rounded-2xl shadow-xl border text-xs font-extrabold flex items-center gap-3 backdrop-blur-md ${
               toast.type === 'success'
-                ? 'bg-slate-900/95 border-slate-800 text-emerald-400 font-tapenh shadow-black/10'
-                : 'bg-rose-600/95 border-rose-500 text-white font-tapenh shadow-rose-900/10'
+                ? 'bg-slate-900/95 border-slate-800 text-emerald-400 shadow-black/10'
+                : 'bg-rose-600/95 border-rose-500 text-white shadow-rose-900/10'
             }`}
           >
             <div className={`w-2.5 h-2.5 rounded-full ${toast.type === 'success' ? 'bg-emerald-400 animate-ping' : 'bg-white animate-pulse'}`} />

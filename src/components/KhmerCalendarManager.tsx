@@ -100,7 +100,11 @@ const NOTE_CATEGORIES = [
   { id: 'duty', labelKh: 'កាតព្វកិច្ច / Duty Work', colorClass: 'bg-amber-50 text-amber-805 border-amber-200' },
 ];
 
-export default function KhmerCalendarManager() {
+interface KhmerCalendarManagerProps {
+  onNavigateToDailyReport?: (date: string) => void;
+}
+
+export default function KhmerCalendarManager({ onNavigateToDailyReport }: KhmerCalendarManagerProps = {}) {
   const [currentDate, setCurrentDate] = useState(() => new Date(2026, 5, 8)); // June 2026 as starting base
   const [selectedDateStr, setSelectedDateStr] = useState('2026-06-08');
   
@@ -292,10 +296,10 @@ export default function KhmerCalendarManager() {
               <Calendar className="w-6 h-6 animate-pulse" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-niroth text-rose-600">
+              <h1 className="text-sm sm:text-base font-normal text-slate-800 font-moul leading-relaxed">
                 ប្រតិទិនកម្ពុជា & កំណត់ត្រាសាលារៀន (Cambodian Calendar & Memos)
               </h1>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-500 font-medium mt-1">
                 ត្រួតពិនិត្យថ្ងៃឈប់សម្រាកបុណ្យជាតិប្រពៃណីខ្មែរ និងកត់ត្រាកាលវិភាគការងារ គ្រូ និងសិស្សសាលា
               </p>
             </div>
@@ -338,7 +342,7 @@ export default function KhmerCalendarManager() {
             </button>
 
             <div className="text-center">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-wide font-nitean text-indigo-600">
+              <h2 className="text-base sm:text-lg font-extrabold text-[#073B3A] tracking-normal">
                 ខែ {KHMER_MONTHS[month]} ( {EN_MONTHS[month]} ) {useKhmerNums ? toKhmerNumStr(year) : year}
               </h2>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hidden sm:block">
@@ -492,12 +496,22 @@ export default function KhmerCalendarManager() {
               <span className="text-[10px] font-black tracking-widest text-[#d97706] uppercase bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full inline-block">
                 កាលបរិច្ឆេទជ្រើសរើស (Selected Date)
               </span>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 mt-2 font-nitean text-slate-800 leading-snug">
+              <h3 className="text-base sm:text-lg font-extrabold text-slate-800 mt-2 leading-snug">
                 {formatSelectedKhmerDate()}
               </h3>
               <p className="text-xs font-mono text-slate-400 mt-0.5">
                 {selectedDateStr}
               </p>
+              
+              {/* Daily Report Integration Shortcut */}
+              <button
+                type="button"
+                onClick={() => onNavigateToDailyReport?.(selectedDateStr)}
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer hover:scale-[1.01] active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-100" />
+                <span>📝 កត់ត្រារបាយការណ៍ថ្ងៃនេះ (Log Daily Report)</span>
+              </button>
             </div>
 
             {/* If focused day is holiday, show a glamorous card info block */}
@@ -665,7 +679,7 @@ export default function KhmerCalendarManager() {
       <div className="mt-8 border-t border-slate-100 pt-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-4">
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 font-nitean text-slate-850 flex items-center gap-1.5">
+            <h3 className="text-base sm:text-lg font-extrabold text-slate-800 flex items-center gap-1.5">
               <span>សរុបរបៀបវារៈកំណត់ត្រាប្រចាំខែ (Monthly consolidated Memos)</span>
               <span className="text-xs bg-indigo-50 text-indigo-700 px-2 rounded-md font-bold font-sans">
                 {useKhmerNums ? toKhmerNumStr(monthlyNotes.length) : monthlyNotes.length} ភារកិច្ច
@@ -793,7 +807,7 @@ export default function KhmerCalendarManager() {
 
       {/* Consolidated Cambodian Public Holidays list for active Month view */}
       <div className="mt-8 bg-slate-50 p-5 rounded-3xl border border-slate-150">
-        <h4 className="text-sm font-bold text-slate-800 font-nitean tracking-wider border-b border-slate-200 pb-2 mb-3">
+        <h4 className="text-sm font-extrabold text-slate-800 tracking-wide border-b border-slate-200 pb-2 mb-3">
           🗓️ ថ្ងៃឈប់សម្រាកជាតិប្រចាំខែនេះ (Cambodian Holidays for {EN_MONTHS[month]}):
         </h4>
 
@@ -808,7 +822,7 @@ export default function KhmerCalendarManager() {
                 <div key={idx} className="flex gap-3 bg-white p-3 rounded-2xl border border-slate-150 text-left">
                   <div className="w-10 h-10 shrink-0 rounded-xl bg-rose-50 text-rose-505 flex flex-col items-center justify-center border border-rose-100 font-bold">
                     <span className="text-xs uppercase leading-none font-sans font-black tracking-tighter text-slate-400">{EN_MONTHS[month].substring(0,3)}</span>
-                    <span className="text-base leading-none tracking-tight font-nitean mt-0.5">{dKh}</span>
+                    <span className="text-base leading-none tracking-tight font-extrabold mt-0.5">{dKh}</span>
                   </div>
                   <div>
                     <h5 className="text-xs font-bold text-rose-700 leading-tight">

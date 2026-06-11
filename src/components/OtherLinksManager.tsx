@@ -270,18 +270,21 @@ export default function OtherLinksManager() {
       {/* Search Header and Action Deck */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4 select-none">
         <div>
-          <h2 className="text-xl font-black font-moul text-indigo-950 flex items-center gap-2.5">
-            <Link2 className="w-6 h-6 text-indigo-600" />
-            ប្រព័ន្ធគ្រប់គ្រងតំណភ្ជាប់ផ្សេងៗ (Web Links Manager)
+          <h2 className="text-[#073B3A] flex flex-wrap items-center gap-2">
+            <Link2 className="w-5 h-5 text-indigo-600 shrink-0" />
+            <span className="text-[14px] sm:text-[16px] font-moul font-normal">ប្រព័ន្ធគ្រប់គ្រងតំណភ្ជាប់ផ្សេងៗ</span>
+            <span className="text-[10px] sm:text-[11px] font-sans font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
+              (Web Links Manager)
+            </span>
           </h2>
-          <p className="text-xs text-slate-500 font-bold font-sans mt-1">
+          <p className="text-xs text-slate-400 font-medium font-sans mt-1 leading-relaxed">
             គ្រប់គ្រងតំណភ្ជាប់ឯកសារ Google Sheets, Telegram Chat, Drive Folders ឬតំណភ្ជាប់គេហទំព័រសាលាផ្សេងៗ
           </p>
         </div>
 
         <button 
           onClick={openCreateModal}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5 shrink-0"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>បន្ថែមតំណភ្ជាប់ថ្មី (Add New Web Link)</span>
@@ -294,9 +297,9 @@ export default function OtherLinksManager() {
         {/* Left Side: Filter Options Pane */}
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200/80 p-4 select-none">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+            <h3 className="text-[11px] font-bold text-[#073B3A] uppercase tracking-wider flex items-center gap-1.5 mb-3">
               <Filter className="w-3.5 h-3.5 text-indigo-500" />
-              តម្រងប្រភេទឯកសារ
+              <span>តម្រងប្រភេទឯកសារ</span>
             </h3>
 
             <div className="flex flex-wrap lg:flex-col gap-1.5">
@@ -306,9 +309,9 @@ export default function OtherLinksManager() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-2.5 rounded-xl text-left text-xs font-black transition-all w-full ${
+                    className={`px-3 py-2.5 rounded-xl text-left text-xs font-semibold transition-all w-full cursor-pointer ${
                       selectedCategory === cat 
-                        ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 font-black shadow-xs'
+                        ? 'bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold shadow-xs'
                         : 'border border-transparent text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -324,12 +327,12 @@ export default function OtherLinksManager() {
             </div>
           </div>
 
-          <div className="bg-sky-50/70 border border-sky-100 rounded-2xl p-4 text-xs font-bold font-sans text-sky-850 space-y-2 select-none">
-            <div className="flex items-center gap-1.5 text-sky-900 font-extrabold uppercase text-[10px] tracking-wider">
-              <Sparkles className="w-4 h-4 text-sky-500" />
+          <div className="bg-sky-50/70 border border-sky-100 rounded-2xl p-4 text-xs font-medium font-sans text-sky-850 space-y-2 select-none">
+            <div className="flex items-center gap-1.5 text-sky-900 font-bold uppercase text-[10px] tracking-wider">
+              <Sparkles className="w-4 h-4 text-sky-500 animate-pulse" />
               ប្រអប់ជំនួយរហ័ស
             </div>
-            <p className="leading-relaxed text-slate-600">
+            <p className="leading-relaxed text-slate-500">
               លោកអ្នកអាចដាក់ URL ដែលបំប្លែងចេញពី Google Drive, Google Sheets, OneDrive ឬ Telegram Group របស់សាលា ដើម្បីឲ្យគណៈគ្រប់គ្រងងាយស្រួលចុចបើក និងចែករំលែកដោយផ្ទាល់។
             </p>
           </div>
@@ -345,12 +348,12 @@ export default function OtherLinksManager() {
               placeholder="ស្វែងរកចំណងជើងតំណភ្ជាប់... (Search link title, url, description...)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-bold leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-400/90 shadow-2xs"
+              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-semibold leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-400/90 shadow-2xs transition-shadow"
             />
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm('')} 
-                className="absolute right-4 top-3 text-slate-400 hover:text-slate-600 p-0.5 rounded-md hover:bg-slate-50"
+                className="absolute right-4 top-3 text-slate-400 hover:text-slate-600 p-0.5 rounded-md hover:bg-slate-50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -361,7 +364,7 @@ export default function OtherLinksManager() {
           {filteredLinks.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200/80 text-center py-16 p-6">
               <Globe className="w-12 h-12 text-slate-300 mx-auto mb-3 opacity-60 animate-pulse" />
-              <p className="text-sm font-black text-slate-500">រកមិនឃើញតំណភ្ជាប់ដែលអ្នកចង់ស្វែងរកឡើយ</p>
+              <p className="text-sm font-semibold text-slate-700">រកមិនឃើញតំណភ្ជាប់ដែលអ្នកចង់ស្វែងរកឡើយ</p>
               <p className="text-xs text-slate-400 mt-1">សូមសាកល្បងស្វែងរកម្ដងទៀត ឬចុចប៊ូតុងខាងលើដើម្បីបន្ថែមថ្មី។</p>
             </div>
           ) : (
@@ -379,7 +382,7 @@ export default function OtherLinksManager() {
                     <div>
                       {/* Category Label */}
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`text-[10px] font-black font-sans px-2.5 py-1 ${
+                        <span className={`text-[9.5px] font-bold font-sans px-2.5 py-1 ${
                           link.category === 'PR-System' 
                             ? 'bg-rose-50 border border-rose-100 text-rose-700' 
                             : 'bg-indigo-50 border border-indigo-100 text-indigo-700'
@@ -387,26 +390,26 @@ export default function OtherLinksManager() {
                           <Tag className="w-3 h-3" />
                           {link.category}
                         </span>
-                        <span className="text-[9px] font-sans text-slate-400 font-bold block shrink-0">
+                        <span className="text-[9px] font-sans text-slate-400 font-medium block shrink-0">
                           {new Date(link.createdAt).toLocaleDateString('kh-KH')}
                         </span>
                       </div>
 
                       {/* Title & icon display */}
-                      <h3 className="text-xs sm:text-sm font-black text-slate-900 leading-snug mt-1.5 flex items-start gap-2.5 line-clamp-2">
-                        <div className="p-1 px-1.5 bg-slate-100 text-indigo-600 rounded-lg shrink-0 border border-slate-200/60 mt-0.5">
-                          <LinkIcon className="w-4 h-4" />
+                      <h3 className="text-xs sm:text-[13px] font-semibold text-slate-800 leading-relaxed mt-1.5 flex items-start gap-2.5 line-clamp-2">
+                        <div className="p-1 px-1.5 bg-slate-50 text-indigo-650 rounded-lg shrink-0 border border-slate-200/60 mt-0.5">
+                          <LinkIcon className="w-3.5 h-3.5" />
                         </div>
                         <span className="mt-0.5">{link.title}</span>
                       </h3>
 
                       {/* Description */}
                       {link.description ? (
-                        <p className="text-xs font-semibold text-slate-500 leading-relaxed mt-2.5 line-clamp-3 select-text">
+                        <p className="text-xs font-normal text-slate-500 leading-relaxed mt-2.5 line-clamp-3 select-text">
                           {link.description}
                         </p>
                       ) : (
-                        <p className="text-xs font-semibold text-slate-400 italic leading-relaxed mt-2">
+                        <p className="text-xs font-normal text-slate-400 italic leading-relaxed mt-2">
                           មិនបានដាក់ការពិពណ៌នា...
                         </p>
                       )}
@@ -418,7 +421,7 @@ export default function OtherLinksManager() {
                         </span>
                         <button
                           onClick={() => copyToClipboard(link.url)}
-                          className="p-1 hover:bg-slate-200/70 text-slate-400 hover:text-slate-700 transition rounded-md shrink-0 block"
+                          className="p-1 hover:bg-slate-200/70 text-slate-400 hover:text-slate-700 transition rounded-md shrink-0 block cursor-pointer"
                           title="ចម្លងតំណភ្ជាប់ (Copy URL)"
                         >
                           <Copy className="w-3 h-3" />
@@ -431,14 +434,14 @@ export default function OtherLinksManager() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => openEditModal(link)}
-                          className="p-2 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 border border-slate-200/60 rounded-xl transition-all"
+                          className="p-2 text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 border border-slate-200/60 rounded-xl transition-all cursor-pointer"
                           title="កែសម្រួលព័ត៌មាន (Edit Link)"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(link)}
-                          className="p-2 text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 border border-slate-200/60 rounded-xl transition-all"
+                          className="p-2 text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 border border-slate-200/60 rounded-xl transition-all cursor-pointer"
                           title="លុបតំណភ្ជាប់ (Delete Link)"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -449,7 +452,7 @@ export default function OtherLinksManager() {
                         href={link.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-850 text-white rounded-xl transition text-[11px] font-black"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white rounded-xl transition text-[11px] font-semibold cursor-pointer"
                       >
                         <span>បើកមើល (Browse Link)</span>
                         <ExternalLink className="w-3 h-3 text-slate-300" />
@@ -480,7 +483,7 @@ export default function OtherLinksManager() {
                 <div className="flex items-center gap-2">
                   <Link2 className="w-5 h-5 text-indigo-400" />
                   <div>
-                    <h3 className="text-sm font-black font-moul leading-snug">
+                    <h3 className="text-sm font-moul font-normal leading-snug">
                       {editingLink ? 'កែសម្រួលតំណភ្ជាប់គេហទំព័រ' : 'បន្ថែមតំណភ្ជាប់ថ្មី'}
                     </h3>
                     <p className="text-[10px] text-slate-400 font-bold font-sans mt-0.5">
@@ -493,7 +496,7 @@ export default function OtherLinksManager() {
                     setIsFormOpen(false);
                     setEditingLink(null);
                   }} 
-                  className="text-slate-400 hover:text-white transition p-1 rounded-lg"
+                  className="text-slate-400 hover:text-white transition p-1 rounded-lg cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -504,7 +507,7 @@ export default function OtherLinksManager() {
                 
                 {/* Title */}
                 <div className="space-y-1">
-                  <label htmlFor="form_title" className="text-xs font-bold text-slate-700 block">ចំណងជើងតំណភ្ជាប់ (Link Title) *</label>
+                  <label htmlFor="form_title" className="text-xs font-semibold text-slate-700 block">ចំណងជើងតំណភ្ជាប់ (Link Title) *</label>
                   <input
                     id="form_title"
                     type="text"
@@ -518,7 +521,7 @@ export default function OtherLinksManager() {
 
                 {/* URL */}
                 <div className="space-y-1">
-                  <label htmlFor="form_url" className="text-xs font-bold text-slate-700 block">តំណភ្ជាប់ URL (Link URL / IP address) *</label>
+                  <label htmlFor="form_url" className="text-xs font-semibold text-slate-700 block">តំណភ្ជាប់ URL (Link URL / IP address) *</label>
                   <input
                     id="form_url"
                     type="text"
@@ -533,7 +536,7 @@ export default function OtherLinksManager() {
                 {/* Category and AddedBy Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label htmlFor="form_cat" className="text-xs font-bold text-slate-700 block">ប្រភេទព័ត៌មាន (Category)</label>
+                    <label htmlFor="form_cat" className="text-xs font-semibold text-slate-700 block">ប្រភេទព័ត៌មាន (Category)</label>
                     <select
                       id="form_cat"
                       value={category}
@@ -549,7 +552,7 @@ export default function OtherLinksManager() {
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="form_builder" className="text-xs font-bold text-slate-700 block">អ្នកបញ្ចូល (Added By)</label>
+                    <label htmlFor="form_builder" className="text-xs font-semibold text-slate-700 block">អ្នកបញ្ចូល (Added By)</label>
                     <input
                       id="form_builder"
                       type="text"
@@ -564,7 +567,7 @@ export default function OtherLinksManager() {
 
                 {/* Integrated Icon Selector Grid */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold text-slate-700 block">ជ្រើសរើសរូបតំណាងឯកសារ (Select File Icon) *</label>
+                  <label className="text-xs font-bold text-slate-700 block">ជ្រើសរើសរូបតំណាងឯកសារ (Select File Icon) *</label>
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                     {ICON_OPTIONS.map((opt) => {
                       const IconComponent = opt.icon;
@@ -575,7 +578,7 @@ export default function OtherLinksManager() {
                           key={opt.key}
                           type="button"
                           onClick={() => setSelectedIcon(opt.key)}
-                          className={`p-2 flex flex-col items-center justify-center gap-1 rounded-xl transition border text-center ${
+                          className={`p-2 flex flex-col items-center justify-center gap-1 rounded-xl transition border text-center cursor-pointer ${
                             isSelected 
                               ? 'bg-indigo-600 text-white border-indigo-700 shadow-md scale-102' 
                               : 'bg-white hover:bg-slate-100 text-slate-500 border-slate-200'
@@ -592,7 +595,7 @@ export default function OtherLinksManager() {
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <label htmlFor="form_desc" className="text-xs font-bold text-slate-700 block">បរិយាយព័ត៌មានបន្ថែម (Description/Notes)</label>
+                  <label htmlFor="form_desc" className="text-xs font-semibold text-slate-700 block">បរិយាយព័ត៌មានបន្ថែម (Description/Notes)</label>
                   <textarea
                     id="form_desc"
                     value={description}
@@ -611,13 +614,13 @@ export default function OtherLinksManager() {
                       setIsFormOpen(false);
                       setEditingLink(null);
                     }}
-                    className="bg-white hover:bg-slate-150 text-slate-700 text-xs font-black px-4 py-2.5 rounded-xl border border-slate-200 transition"
+                    className="bg-white hover:bg-slate-150 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-200 transition cursor-pointer"
                   >
                     បោះបង់ (Cancel)
                   </button>
                   <button
                     type="submit"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition shadow-md shadow-indigo-100"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition shadow-md shadow-indigo-100 cursor-pointer"
                   >
                     {editingLink ? 'រក្សាទុកការកែប្រែ' : 'បញ្ចូលតំណភ្ជាប់'}
                   </button>
@@ -642,11 +645,11 @@ export default function OtherLinksManager() {
             >
               {/* Header */}
               <div className="bg-rose-600 text-white p-4 flex items-center justify-between">
-                <h3 className="text-sm font-black flex items-center gap-2">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-white" />
                   បញ្ជាក់ការលុបតំណភ្ជាប់
                 </h3>
-                <button onClick={() => setDeleteTarget(null)} className="text-white/80 hover:text-white transition">
+                <button onClick={() => setDeleteTarget(null)} className="text-white/80 hover:text-white transition cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -667,14 +670,14 @@ export default function OtherLinksManager() {
                 <button
                   type="button"
                   onClick={() => setDeleteTarget(null)}
-                  className="bg-white hover:bg-slate-100 text-slate-700 text-xs font-black px-4 py-2.5 rounded-xl border border-slate-200 transition"
+                  className="bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl border border-slate-200 transition cursor-pointer"
                 >
                   បោះបង់ (Cancel)
                 </button>
                 <button
                   type="button"
                   onClick={confirmDelete}
-                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-black px-5 py-2.5 rounded-xl transition shadow-md shadow-rose-100"
+                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition shadow-md shadow-rose-100 cursor-pointer"
                 >
                   យល់ព្រមលុប (Delete Link)
                 </button>

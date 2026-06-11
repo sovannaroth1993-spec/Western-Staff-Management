@@ -135,7 +135,12 @@ const INITIAL_REPORTS_MOCK: DailyReport[] = [
   }
 ];
 
-export default function DailyReportManager() {
+interface DailyReportManagerProps {
+  initialDate?: string | null;
+  onClearInitialDate?: () => void;
+}
+
+export default function DailyReportManager({ initialDate, onClearInitialDate }: DailyReportManagerProps = {}) {
   const [reports, setReports] = useState<DailyReport[]>(() => {
     const saved = localStorage.getItem('wis_daily_reports');
     if (saved) {
@@ -153,6 +158,27 @@ export default function DailyReportManager() {
   const [selectedReport, setSelectedReport] = useState<DailyReport | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<DailyReport | null>(null);
+  const [viewMode, setViewMode] = useState<'timeline' | 'a4'>('a4'); // Default to beautiful A4 view
+  const [showStamp, setShowStamp] = useState(true);
+  
+  // Inline editing states for the A4 paper
+  const [inlineEditingField, setInlineEditingField] = useState<string | null>(null);
+  const [inlineEditValue, setInlineEditValue] = useState('');
+
+  // Inline updater
+  const handleUpdateInlineField = (reportId: string, field: string, value: string) => {
+    setReports(prev => prev.map(r => {
+      if (r.id === reportId) {
+        const updated = { ...r, [field]: value };
+        if (selectedReport && selectedReport.id === reportId) {
+          setSelectedReport(updated);
+        }
+        return updated;
+      }
+      return r;
+    }));
+    setInlineEditingField(null);
+  };
 
   // Form Fields
   const [formDate, setFormDate] = useState('2026-06-10');
@@ -183,6 +209,32 @@ export default function DailyReportManager() {
     const formatted = today.toISOString().substring(0, 10);
     setFormDate(formatted);
   }, []);
+
+  // Listen for navigation requests from other custom views (such as Khmer Calendar)
+  useEffect(() => {
+    if (initialDate) {
+      const existing = reports.find(r => r.date === initialDate);
+      if (existing) {
+        setSelectedReport(existing);
+        setEditingReport(null);
+        setIsFormOpen(false);
+      } else {
+        // Create new form with details prefilled for initialDate
+        setEditingReport(null);
+        setFormDate(initialDate);
+        setFormCheckIn('07:30');
+        setFormCheckOut('17:30');
+        setFormReporter('LOUNG Veasna (Admin Supervisor)');
+        setFormSummary('');
+        setFormHourlyLogs([...DEFAULT_HOURLY_LOGS_DEMO.map(l => ({ ...l, id: Math.random().toString() }))]);
+        setIsFormOpen(true);
+        setSelectedReport(null);
+      }
+      if (onClearInitialDate) {
+        onClearInitialDate();
+      }
+    }
+  }, [initialDate, reports, onClearInitialDate]);
 
   const handleOpenNewForm = () => {
     setEditingReport(null);
@@ -330,6 +382,77 @@ export default function DailyReportManager() {
     window.print();
   };
 
+  const renderEditableField = (
+    field: string,
+    label: string,
+    currentValue: string,
+    type: 'input' | 'textarea' = 'input',
+    customSave?: (newValue: string) => void
+  ) => {
+    const isEditing = inlineEditingField === field;
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-1.5 no-print bg-amber-50 p-1.5 rounded-xl border border-amber-300 w-full">
+          {type === 'textarea' ? (
+            <textarea
+              value={inlineEditValue}
+              onChange={(e) => setInlineEditValue(e.target.value)}
+              className="text-xs font-bold bg-white border border-slate-300 p-2 rounded-xl w-full outline-none focus:ring-1 focus:ring-emerald-500 shadow-3xs"
+              rows={3}
+              autoFocus
+            />
+          ) : (
+            <input
+              type="text"
+              value={inlineEditValue}
+              onChange={(e) => setInlineEditValue(e.target.value)}
+              className="text-xs font-black bg-white border border-slate-300 p-1.5 rounded-xl w-full outline-none focus:ring-1 focus:ring-emerald-500 shadow-3xs"
+              autoFocus
+            />
+          )}
+          <div className="flex flex-col gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (customSave) {
+                  customSave(inlineEditValue);
+                  setInlineEditingField(null);
+                } else if (selectedReport) {
+                  handleUpdateInlineField(selectedReport.id, field, inlineEditValue);
+                }
+              }}
+              className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-3xs cursor-pointer"
+              title="Save"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setInlineEditingField(null)}
+              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition cursor-pointer"
+              title="Cancel"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div 
+        onClick={() => {
+          setInlineEditingField(field);
+          setInlineEditValue(currentValue || '');
+        }}
+        className="group/edit cursor-pointer hover:bg-amber-50/70 px-2 py-1 rounded-xl transition border border-transparent hover:border-amber-200/50 flex items-center justify-between gap-1.5 min-h-[1.5rem]"
+        title={`ចុចទីនេះដើម្បីកែសម្រួល ${label}`}
+      >
+        <span className="font-medium text-slate-700">{currentValue || <span className="text-slate-400 font-light italic text-[10px]">សូមបំពេញ...</span>}</span>
+        <Edit3 className="w-3.5 h-3.5 text-emerald-600 opacity-0 group-hover/edit:opacity-100 transition shrink-0 no-print" />
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden font-sans text-slate-800">
       
@@ -428,7 +551,7 @@ export default function DailyReportManager() {
                             e.stopPropagation();
                             handleOpenEditForm(report);
                           }}
-                          className="p-1 hover:bg-slate-100 hover:text-blue-600 rounded-md transition text-slate-450"
+                          className="p-1 hover:bg-slate-100 hover:text-[#073B3A] rounded-md transition text-slate-450"
                           title="កែសម្រួល"
                         >
                           <Edit3 className="w-3 h-3" />
@@ -444,11 +567,11 @@ export default function DailyReportManager() {
                       </div>
                     </div>
 
-                    <p className="text-[10.5px] font-bold text-slate-450 mt-1 lines-clamp-1 italic">
+                    <p className="text-[10.5px] font-bold text-slate-450 mt-1 line-clamp-1 italic">
                       👤 {report.reporterName}
                     </p>
 
-                    <p className="text-[11px] text-slate-500 font-medium mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-slate-510 font-medium mt-1 line-clamp-2 leading-relaxed">
                       {report.overallSummary}
                     </p>
 
@@ -475,7 +598,7 @@ export default function DailyReportManager() {
           </div>
 
           {/* Quick Stats Helper */}
-          <div className="mt-4 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 leading-relaxed font-medium bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
+          <div className="mt-4 pt-4 border-t border-slate-200/60 text-[11px] text-slate-500 leading-relaxed font-medium bg-[#073B3A]/5 p-3 rounded-2xl border border-emerald-100">
             💡 <b>ការណែនាំ៖</b> រាល់កំណត់ត្រានឹងត្រូវរក្សាទុកស្វ័យប្រវត្តក្នុងកម្មវិធីរុករក (Browser Index/Storage)។ អ្នកអាចបន្ថែមសកម្មភាពការងារលម្អិតតាមម៉ោងនីមួយៗបានយ៉ាងងាយស្រួល។
           </div>
 
@@ -492,10 +615,10 @@ export default function DailyReportManager() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center text-center py-20 min-h-[450px]"
               >
-                <div className="p-4 bg-slate-100 rounded-full text-slate-350 mb-3 animate-bounce" style={{ animationDuration: '3s' }}>
+                <div className="p-4 bg-slate-100 rounded-full text-slate-355 mb-3 animate-bounce" style={{ animationDuration: '3s' }}>
                   <ClipboardList className="w-12 h-12" />
                 </div>
-                <h4 className="text-sm font-black text-slate-700">សូមជ្រើសរើសរបាយការណ៍ប្រចាំថ្ងៃមួយ</h4>
+                <h4 className="text-sm font-black text-slate-705">សូមជ្រើសរើសរបាយការណ៍ប្រចាំថ្ងៃមួយ</h4>
                 <p className="text-xs text-slate-400 mt-1 max-w-sm">
                   ចុចលើបញ្ជីរបាយការណ៍ខាងឆ្វេង ដើម្បីមើលរំហូរការងារលម្អិតតាមម៉ោង ឬចុច "កត់ត្រាថ្មី" បង្កើតថ្មី។
                 </p>
@@ -515,165 +638,472 @@ export default function DailyReportManager() {
                 className="space-y-6 text-left"
                 id="printable-report-area"
               >
-                {/* Print/Control Headers */}
-                <div id="no-print-controls" className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200/80 p-3 rounded-2xl">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-extrabold">
-                    <span>សកម្មភាពរបាយការណ៍៖</span>
-                    <span className="font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
-                      {selectedReport.date}
-                    </span>
+                {/* Print Stylesheet injection for exact A4 paper isolation */}
+                <style dangerouslySetInnerHTML={{ __html: `
+                  @media print {
+                    @page {
+                      size: A4;
+                      margin: 0.8cm;
+                    }
+                    body * {
+                      visibility: hidden !important;
+                    }
+                    #printable-report-area, 
+                    #report-sheet, 
+                    #report-sheet * {
+                      visibility: visible !important;
+                    }
+                    #printable-report-area {
+                      position: absolute;
+                      left: 0;
+                      top: 0;
+                      width: 100% !important;
+                      margin: 0 !important;
+                      padding: 0 !important;
+                    }
+                    #report-sheet {
+                      border: none !important;
+                      box-shadow: none !important;
+                      width: 100% !important;
+                      max-width: 100% !important;
+                      min-height: 100% !important;
+                      margin: 0 !important;
+                      padding: 0.5cm 1cm !important;
+                      background: white !important;
+                    }
+                    .no-print, #no-print-controls, button, .lucide {
+                      display: none !important;
+                    }
+                  }
+                `}} />
+
+                {/* Print/Control Headers Dashboard */}
+                <div id="no-print-controls" className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl no-print shadow-2xs">
+                  
+                  {/* Segmented Control for Layout Formats */}
+                  <div className="flex bg-slate-200/70 p-1 rounded-xl self-start gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('a4')}
+                      className={`px-3 py-1.5 text-[11px] font-black rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                        viewMode === 'a4' 
+                          ? 'bg-[#073B3A] text-white shadow-sm' 
+                          : 'text-slate-650 hover:text-slate-900'
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span className="font-moul text-[9.5px] font-normal">ទម្រង់ក្រដាស A4 (Official)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('timeline')}
+                      className={`px-3 py-1.5 text-[11px] font-black rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                        viewMode === 'timeline' 
+                          ? 'bg-[#073B3A] text-white shadow-sm' 
+                          : 'text-slate-650 hover:text-slate-900'
+                      }`}
+                    >
+                      <Activity className="w-3.5 h-3.5" />
+                      <span className="font-moul text-[9.5px] font-normal">លំហូរការងារទូទៅ (Timeline)</span>
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2">
+
+                  {/* Operational Settings Options */}
+                  <div className="flex flex-wrap items-center gap-2 sm:self-center">
+                    
+                    {/* Stamp Toggle option only displayed for A4 */}
+                    {viewMode === 'a4' && (
+                      <label className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-600 transition cursor-pointer select-none hover:bg-slate-550">
+                        <input
+                          type="checkbox"
+                          checked={showStamp}
+                          onChange={(e) => setShowStamp(e.target.checked)}
+                          className="rounded text-rose-600 focus:ring-rose-500 w-3.5 h-3.5 cursor-pointer"
+                        />
+                        <span className="font-moul text-[9px] font-normal text-rose-700">បោះត្រាផ្លូវការ (Official Stamp)</span>
+                      </label>
+                    )}
+
                     <button
                       onClick={() => handleOpenEditForm(selectedReport)}
                       className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-750 font-black text-xs rounded-xl flex items-center gap-1 transition cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
-                      <span>កែសម្រួល (Edit)</span>
+                      <span>កែទម្រង់រួម (Form Edit)</span>
                     </button>
+                    
                     <button
                       onClick={handlePrint}
-                      className="px-3.5 py-2 bg-indigo-500 hover:bg-indigo-650 text-white font-black text-xs rounded-xl flex items-center gap-1 transition cursor-pointer shadow-2xs"
+                      className="px-4 py-2 bg-indigo-650 hover:bg-indigo-750 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-sm shadow-indigo-200 active:scale-95"
                     >
                       <Printer className="w-3.5 h-3.5" />
-                      <span>បោះពុម្ព (Print)</span>
+                      <span>បោះពុម្ពក្រដាស (Print Report)</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Main Printable Layout */}
-                <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-3xs relative overflow-hidden" id="report-sheet">
-                  
-                  {/* Watermark/Layout Brand for Print accuracy */}
-                  <div className="absolute right-6 top-6 opacity-5 border-slate-800 select-none pointer-events-none">
-                    <Clock className="w-36 h-36" />
-                  </div>
+                {/* Live Helper Tooltip */}
+                <div className="no-print bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-900 font-medium flex items-center gap-2">
+                  <span className="animate-pulse">✍️</span>
+                  <span>
+                    <b>ការកត់ត្រាបែបក្រដាស A4៖</b> អ្នកអាច <b>ចុចផ្ទាល់ (Click)</b> លើឈ្មោះ សេចក្ដីសង្ខេប កាលបរិច្ឆេទ ម៉ោង ឬសកម្មភាពនានានៅលើក្រដាស A4 ខាងក្រោម ដើម្បីកែសម្រួល ឬវាយបញ្ចូលភ្លាមៗ!
+                  </span>
+                </div>
 
-                  {/* Header Letterhead */}
-                  <div className="pb-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                      <h2 className="text-base font-black text-[#073B3A] font-moul">
-                        សាលាវេស្ទើនអន្តរជាតិ (Western International School)
-                      </h2>
-                      <p className="text-[10px] text-slate-500 font-extrabold tracking-wider uppercase mt-0.5">
-                        Chamkar Doung Branch • School Administration Department
+                {/* Main Rendition Blocks */}
+                {viewMode === 'timeline' ? (
+                  /* Format A: Modern Dashboard Timeline */
+                  <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-3xs relative overflow-hidden" id="report-sheet">
+                    {/* Watermark/Layout Brand for Print accuracy */}
+                    <div className="absolute right-6 top-6 opacity-5 border-slate-800 select-none pointer-events-none">
+                      <Clock className="w-36 h-36" />
+                    </div>
+
+                    {/* Header Letterhead */}
+                    <div className="pb-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                      <div>
+                        <h2 className="text-base font-black text-[#073B3A] font-moul">
+                          សាលាវេស្ទើនអន្តរជាតិ (Western International School)
+                        </h2>
+                        <p className="text-[10px] text-slate-500 font-extrabold tracking-wider uppercase mt-0.5">
+                          Chamkar Doung Branch • School Administration Department
+                        </p>
+                      </div>
+                      <div className="bg-slate-100/80 border border-slate-200 text-right px-4 py-2.5 rounded-2xl">
+                        <p className="text-[10px] text-slate-550 font-black">កាលបរិច្ឆេទរបាយការណ៍ / REPORT DATE</p>
+                        <p className="text-sm font-extrabold text-slate-800 font-mono mt-0.5">{selectedReport.date}</p>
+                      </div>
+                    </div>
+
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 py-4 bg-slate-50/60 p-4 rounded-2xl border border-slate-150 my-4">
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-black">អ្នករាយការណ៍ / REPORTER</span>
+                        <span className="text-xs font-black text-slate-800">{selectedReport.reporterName}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-black">ម៉ោងចូល / CHECK-IN TIME</span>
+                        <span className="text-xs font-black text-emerald-700 font-mono flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{selectedReport.checkInTime} AM</span>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-black">ម៉ោងចេញ / CHECK-OUT TIME</span>
+                        <span className="text-xs font-black text-amber-700 font-mono flex items-center gap-1 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-amber-600" />
+                          <span>{selectedReport.checkOutTime} PM</span>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-400 font-black">សរុបម៉ោងបំពេញការងារ / HOURS</span>
+                        <span className="text-xs font-black text-indigo-750 font-mono flex items-center gap-1 mt-0.5">
+                          <span className="px-2 py-0.5 bg-indigo-100 rounded">
+                            {calculateHours(selectedReport.checkInTime, selectedReport.checkOutTime)} ម៉ោង
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Executive Summary Section */}
+                    <div className="mb-6">
+                      <h3 className="text-xs font-black text-[#073B3A] border-b border-slate-150 pb-2 mb-2 flex items-center gap-1.5 uppercase">
+                        <ClipboardList className="w-4 h-4 text-emerald-600" />
+                        <span>សេចក្តីសង្ខេបសកម្មភាពរួមប្រចាំថ្ងៃ (Executive Summary of Today's Flow)</span>
+                      </h3>
+                      <p className="text-xs text-slate-650 font-bold leading-relaxed bg-amber-50/30 p-3.5 rounded-2xl border border-amber-900/10 whitespace-pre-line italic">
+                        " {selectedReport.overallSummary} "
                       </p>
                     </div>
-                    <div className="bg-slate-100/80 border border-slate-200 text-right px-4 py-2.5 rounded-2xl">
-                      <p className="text-[10px] text-slate-550 font-black">កាលបរិច្ឆេទរបាយការណ៍ / REPORT DATE</p>
-                      <p className="text-sm font-extrabold text-slate-800 font-mono mt-0.5">{selectedReport.date}</p>
-                    </div>
-                  </div>
 
-                  {/* Metadata Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 py-4 bg-slate-50/60 p-4 rounded-2xl border border-slate-150 my-4">
+                    {/* Hourly Logs Timeline */}
                     <div>
-                      <span className="block text-[10px] text-slate-400 font-black">អ្នករាយការណ៍ / REPORTER</span>
-                      <span className="text-xs font-black text-slate-800">{selectedReport.reporterName}</span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-slate-400 font-black">ម៉ោងចូល / CHECK-IN TIME</span>
-                      <span className="text-xs font-black text-emerald-700 font-mono flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{selectedReport.checkInTime} AM</span>
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-slate-400 font-black">ម៉ោងចេញ / CHECK-OUT TIME</span>
-                      <span className="text-xs font-black text-amber-700 font-mono flex items-center gap-1 mt-0.5">
-                        <Clock className="w-3.5 h-3.5 text-amber-600" />
-                        <span>{selectedReport.checkOutTime} PM</span>
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-[10px] text-slate-400 font-black">សរុបម៉ោងបំពេញការងារ / HOURS</span>
-                      <span className="text-xs font-black text-indigo-750 font-mono flex items-center gap-1 mt-0.5">
-                        <span className="px-2 py-0.5 bg-indigo-100 rounded">
-                          {calculateHours(selectedReport.checkInTime, selectedReport.checkOutTime)} ម៉ោង
-                        </span>
-                      </span>
-                    </div>
-                  </div>
+                      <h3 className="text-xs font-black text-[#073B3A] border-b border-slate-150 pb-2 mb-4 flex items-center gap-1.5 uppercase">
+                        <Activity className="w-4 h-4 text-indigo-600" />
+                        <span>របាយការណ៍កត់ត្រាលម្អិតតាមម៉ោង (Detailed Hourly Activity Logs)</span>
+                      </h3>
 
-                  {/* Executive Summary Section */}
-                  <div className="mb-6">
-                    <h3 className="text-xs font-black text-[#073B3A] border-b border-slate-150 pb-2 mb-2 flex items-center gap-1.5 uppercase">
-                      <ClipboardList className="w-4 h-4 text-emerald-600" />
-                      <span>សេចក្តីសង្ខេបសកម្មភាពរួមប្រចាំថ្ងៃ (Executive Summary of Today's Flow)</span>
-                    </h3>
-                    <p className="text-xs text-slate-650 font-bold leading-relaxed bg-amber-50/30 p-3.5 rounded-2xl border border-amber-900/10 whitespace-pre-line italic">
-                      " {selectedReport.overallSummary} "
-                    </p>
-                  </div>
-
-                  {/* Hourly Logs Timeline */}
-                  <div>
-                    <h3 className="text-xs font-black text-[#073B3A] border-b border-slate-150 pb-2 mb-4 flex items-center gap-1.5 uppercase">
-                      <Activity className="w-4 h-4 text-indigo-600" />
-                      <span>របាយការណ៍កត់ត្រាលម្អិតតាមម៉ោង (Detailed Hourly Activity Logs)</span>
-                    </h3>
-
-                    {/* Timeline representation */}
-                    <div className="relative border-l-2 border-slate-150 pl-5.5 space-y-5 ml-2 pt-1 text-left">
-                      {selectedReport.hourlyLogs.map((log, index) => (
-                        <div key={log.id} className="relative">
-                          {/* Circle dot on line */}
-                          <div className={`absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full border bg-white flex items-center justify-center ${
-                            log.status === 'Completed' ? 'border-emerald-500 scale-110' : 'border-slate-300'
-                          }`}>
-                            <div className={`w-1.5 h-1.5 rounded-full ${
-                              log.status === 'Completed' ? 'bg-emerald-600' : 'bg-slate-400'
-                            }`} />
-                          </div>
-
-                          <div className="bg-slate-50/60 p-3.5 rounded-2xl border border-slate-200/80 hover:bg-slate-50 transition">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-100 pb-1.5 mb-1.5">
-                              <span className="text-[11px] font-extrabold text-indigo-750 font-mono tracking-wide flex items-center gap-1 bg-indigo-50/80 px-2 py-0.5 rounded-lg border border-indigo-100 w-fit">
-                                <Clock className="w-3 h-3 text-indigo-500" />
-                                <span>{log.timeSlot}</span>
-                              </span>
-                              
-                              <span className={`text-[9px] font-black font-sans border px-2 py-0.5 rounded-full ${getStatusColor(log.status)}`}>
-                                {getStatusLabelKh(log.status)}
-                              </span>
+                      {/* Timeline representation */}
+                      <div className="relative border-l-2 border-slate-150 pl-5.5 space-y-5 ml-2 pt-1 text-left">
+                        {selectedReport.hourlyLogs.map((log, index) => (
+                          <div key={log.id} className="relative">
+                            {/* Circle dot on line */}
+                            <div className={`absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full border bg-white flex items-center justify-center ${
+                              log.status === 'Completed' ? 'border-emerald-500 scale-110' : 'border-slate-300'
+                            }`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${
+                                log.status === 'Completed' ? 'bg-emerald-600' : 'bg-slate-400'
+                              }`} />
                             </div>
 
-                            <p className="text-[11.5px] font-black text-slate-700 leading-normal">
-                              {log.activity}
-                            </p>
+                            <div className="bg-slate-50/60 p-3.5 rounded-2xl border border-slate-200/80 hover:bg-slate-50 transition">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-100 pb-1.5 mb-1.5">
+                                <span className="text-[11px] font-extrabold text-indigo-750 font-mono tracking-wide flex items-center gap-1 bg-indigo-50/80 px-2 py-0.5 rounded-lg border border-indigo-100 w-fit">
+                                  <Clock className="w-3 h-3 text-indigo-500" />
+                                  <span>{log.timeSlot}</span>
+                                </span>
+                                
+                                <span className={`text-[9px] font-black font-sans border px-2 py-0.5 rounded-full ${getStatusColor(log.status)}`}>
+                                  {getStatusLabelKh(log.status)}
+                                </span>
+                              </div>
 
-                            {log.remarks && (
-                              <p className="text-[10px] text-slate-500 font-bold mt-1.5 bg-white border border-slate-100 p-1.5 rounded-lg italic flex items-center gap-1">
-                                <span>✍️ <b>កត់សម្គាល់៖</b> {log.remarks}</span>
+                              <p className="text-[11.5px] font-black text-slate-750 leading-normal mt-1.5">
+                                {log.activity}
                               </p>
-                            )}
+
+                              {log.remarks && (
+                                <p className="text-[10px] text-slate-550 font-bold mt-1.5 bg-white border border-slate-100 p-1.5 rounded-lg italic flex items-center gap-1">
+                                  <span>✍️ <b>កត់សម្គាល់៖</b> {log.remarks}</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Signatures Area for school management audit */}
+                    <div className="mt-12 pt-8 border-t border-dashed border-slate-350 grid grid-cols-2 gap-8 text-center text-xs">
+                      <div>
+                        <p className="font-extrabold text-slate-500">អ្នករៀបចំរបាយការណ៍ / Prepared By</p>
+                        <div className="h-14 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
+                          (ហត្ថលេខា / Loung Veasna)
+                        </div>
+                        <p className="font-black text-[#073B3A]">{selectedReport.reporterName}</p>
+                        <p className="text-[10px] text-slate-400">Admin Supervisor • Western International School</p>
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-slate-500">ការិយាល័យរដ្ឋបាលកណ្តាល / Verified By</p>
+                        <div className="h-14 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
+                          (ការពិនិត្យ & យល់ព្រម)
+                        </div>
+                        <p className="font-black text-slate-700">___________________________</p>
+                        <p className="text-[10px] text-slate-400">School Admin Director / Principal</p>
+                      </div>
+                    </div>
+
+                  </div>
+                ) : (
+                  /* Format B: Authentic, Realistic Desk A4 Document Sheet with Ruler Guidelines */
+                  <div className="bg-slate-200 p-2 sm:p-6 rounded-3xl border border-slate-350 shadow-inner overflow-x-auto w-full no-print-bg">
+                    
+                    {/* Realistic A4 White Paper Sheet positioned like a real piece of paper */}
+                    <div 
+                      className="bg-white border text-left border-slate-350 shadow-[0_15px_35px_rgba(0,0,0,0.15)] relative font-sans mx-auto p-8 sm:p-[1in] flex flex-col justify-between" 
+                      style={{ maxWidth: '794px', width: '100%', minHeight: '1123px' }} 
+                      id="report-sheet"
+                    >
+                      {/* Top Paper Binding Line (Decorative and classy no-print hint) */}
+                      <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#073B3A]/85 no-print" />
+                      
+                      {/* Document Contents */}
+                      <div className="space-y-6">
+                        
+                        {/* 1. Official Cambodian National Letterhead */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start text-xs border-b border-slate-200 pb-3">
+                          
+                          {/* Left: School and Department Info */}
+                          <div className="space-y-1 text-slate-800">
+                            <h2 className="text-[11px] font-black text-[#073B3A] font-moul leading-relaxed">
+                              សាលាវេស្ទើនអន្តរជាតិ សាខាចំការដូង
+                            </h2>
+                            <p className="text-[9px] text-[#0d5c5a] font-normal font-moul">
+                              ការិយាល័យរដ្ឋបាល និងត្រួតពិនិត្យការងារសាលា
+                            </p>
+                            <p className="text-[8px] text-slate-400 tracking-wider uppercase font-sans font-extrabold">
+                              Western International School • administration
+                            </p>
+                          </div>
+
+                          {/* Right: Traditional Cambodian National Motto */}
+                          <div className="text-center sm:text-right self-center sm:self-auto mt-2 sm:mt-0">
+                            <p className="font-moul text-[9.5px] font-normal leading-normal text-slate-900 tracking-wider">
+                              ព្រះរាជាណាចក្រកម្ពុជា
+                            </p>
+                            <p className="font-moul text-[8.5px] font-normal leading-normal text-slate-800">
+                              ជាតិ សាសនា ព្រះមហាក្សត្រ
+                            </p>
+                            
+                            {/* Decorative traditional center line flow */}
+                            <div className="flex items-center justify-center sm:justify-end gap-1 mt-1 text-[8px] text-slate-300 select-none no-print">
+                              <span>⚜️</span>
+                              <span className="w-8 border-t border-dashed border-slate-300"></span>
+                              <span>⚜️</span>
+                            </div>
                           </div>
                         </div>
-                      ))}
+
+                        {/* 2. Formal Memo Decorative Double Horizontal Dividers */}
+                        <div className="border-t-2 border-slate-900 -mt-3.5">
+                          <div className="border-t border-slate-900 mt-0.5"></div>
+                        </div>
+
+                        {/* 3. Official Title of the Operational Sheet */}
+                        <div className="text-center space-y-1 my-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                          <h1 className="text-[12px] sm:text-[13.5px] font-black text-slate-900 font-moul tracking-wide leading-relaxed">
+                            របាយការណ៍សកម្មភាព និងរំហូរការងារប្រចាំថ្ងៃ
+                          </h1>
+                          <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider font-sans">
+                            DAILY OPERATION AND TIMELINE FLOW REPORT
+                          </p>
+                        </div>
+
+                        {/* 4. Elegant Metadata Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 border border-slate-250 bg-slate-50/50 rounded-2xl text-[10px]">
+                          <div>
+                            <span className="block text-slate-400 font-black">អ្នករាយការណ៍ / REPORTER:</span>
+                            <span className="text-[11px] font-black text-slate-800">
+                              {renderEditableField('reporterName', 'ឈ្មោះអ្នករាយការណ៍', selectedReport.reporterName, 'input')}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="block text-slate-400 font-black">កាលបរិច្ឆេទ / DATE:</span>
+                            <span className="text-[11px] font-bold text-slate-850 font-mono">
+                              {renderEditableField('date', 'កាលបរិច្ឆេទ', selectedReport.date, 'input')}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="block text-slate-400 font-black">ម៉ោងចូល / CHECK-IN LOG:</span>
+                            <span className="text-[11px] font-bold text-slate-800 font-mono">
+                              {renderEditableField('checkInTime', 'ម៉ោងចូល', selectedReport.checkInTime, 'input')}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="block text-slate-400 font-black">ម៉ោងចេញ / CHECK-OUT LOG:</span>
+                            <span className="text-[11px] font-bold text-[#073B3A] font-mono">
+                              {renderEditableField('checkOutTime', 'ម៉ោងចេញ', selectedReport.checkOutTime, 'input')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 5. Executive Summary Paragraph */}
+                        <div className="space-y-1 bg-amber-50/20 border border-amber-900/10 p-4 rounded-2xl">
+                          <span className="text-[9px] font-black text-amber-950 block uppercase tracking-wider">
+                            📝 សេចក្តីសង្ខេបលទ្ធផលរួម (Executive Summary of Today's Operation)
+                          </span>
+                          <div className="text-xs text-slate-700 italic leading-relaxed whitespace-pre-line font-medium pr-1">
+                            {renderEditableField('overallSummary', 'សេចក្តីសង្ខេប', selectedReport.overallSummary, 'textarea')}
+                          </div>
+                        </div>
+
+                        {/* 6. Professional Work Log Stamp Grid Table */}
+                        <div className="space-y-2">
+                          <span className="text-[9.5px] font-black text-[#073B3A] block uppercase tracking-wider">
+                            📊 បញ្ជីសកម្មភាពលម្អិតតាមម៉ោង (Detailed Operations Table)
+                          </span>
+                          <div className="border border-slate-300 rounded-2xl overflow-hidden shadow-3xs">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-slate-100 text-[9.5px] font-black text-slate-700 border-b border-slate-300 uppercase">
+                                  <th className="p-2 text-center border-r border-slate-300 w-12 bg-slate-50">ល.រ</th>
+                                  <th className="p-2 text-center border-r border-slate-300 w-24 bg-slate-50">លំហូរម៉ោង</th>
+                                  <th className="p-2 border-r border-slate-300 min-w-[240px]">សកម្មភាព និងការបំពេញការងារលម្អិត</th>
+                                  <th className="p-2 text-center border-r border-slate-300 w-20 bg-slate-50">ស្ថានភាព</th>
+                                  <th className="p-2 min-w-[120px]">កំណត់ចំណាំ</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white text-[10.5px] font-medium text-slate-700">
+                                {selectedReport.hourlyLogs.length === 0 ? (
+                                  <tr>
+                                    <td colSpan={5} className="p-6 text-center text-slate-400 italic">
+                                      មិនមានសកម្មភាពត្រូវបានវាយបញ្ចូលឡើយ។
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  selectedReport.hourlyLogs.map((log, index) => (
+                                    <tr key={log.id} className="hover:bg-slate-50/50">
+                                      
+                                      {/* No / Code column */}
+                                      <td className="p-1.5 border-r border-slate-300 text-center font-mono font-bold text-slate-400 bg-slate-50/10">
+                                        {index + 1}
+                                      </td>
+
+                                      {/* Time Slot column with preset or inline update */}
+                                      <td className="p-1.5 border-r border-slate-300 text-center font-mono text-[10px] font-bold text-indigo-900">
+                                        {renderEditableField(`log-time-${log.id}`, 'ម៉ោង', log.timeSlot, 'input', (val) => {
+                                          const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, timeSlot: val } : l);
+                                          handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated as any);
+                                        })}
+                                      </td>
+
+                                      {/* Direct activity content editing column */}
+                                      <td className="p-1 border-r border-slate-300 text-[10.5px] font-semibold text-slate-800">
+                                        {renderEditableField(`log-activity-${log.id}`, 'កិច្ចការ', log.activity, 'input', (val) => {
+                                          const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, activity: val } : l);
+                                          handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated as any);
+                                        })}
+                                      </td>
+
+                                      {/* Status display stamp */}
+                                      <td className="p-1 border-r border-slate-300 text-center">
+                                        <span className={`text-[8px] font-sans font-bold border px-1.5 py-0.5 rounded-full ${getStatusColor(log.status)}`}>
+                                          {getStatusLabelKh(log.status)}
+                                        </span>
+                                      </td>
+
+                                      {/* Remarks inline editing column */}
+                                      <td className="p-1 italic text-[10px] text-slate-550">
+                                        {renderEditableField(`log-remarks-${log.id}`, 'ចំណាំ', log.remarks || '', 'input', (val) => {
+                                          const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, remarks: val } : l);
+                                          handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated as any);
+                                        })}
+                                      </td>
+
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                      </div>
+
+                      {/* 7. Bottom Signatures & Rotated Red Seal (Stamp) area */}
+                      <div className="relative mt-6 pt-5 border-t border-slate-300 grid grid-cols-2 gap-6 text-center text-xs">
+                        
+                        {/* Red Ink Seal Stamp Container (Slightly rotated on top of signatures) */}
+                        {showStamp && (
+                          <div className="absolute right-12 bottom-1 w-28 h-28 border-4 border-double border-rose-600 rounded-full flex flex-col items-center justify-center text-center opacity-85 select-none pointer-events-none rotate-12 shadow-[inset_0_0_8px_rgba(225,29,72,0.1)] z-20">
+                            <div className="text-[7px] font-black text-rose-600 tracking-widest uppercase mb-0.5">WESTERN INT. SCHOOL</div>
+                            <div className="border-t border-b border-rose-600/60 py-0.5 px-2 font-moul text-[6.5px] text-rose-600 font-normal">បានពិនិត្យ & យល់ព្រម</div>
+                            <div className="text-[7px] font-black text-rose-600 tracking-wider mt-0.5">OFFICIAL APPROVED</div>
+                            <div className="text-[5px] font-mono text-rose-600 mt-0.5 opacity-75">ID: {selectedReport.id}</div>
+                          </div>
+                        )}
+
+                        {/* Sign A: Reporter */}
+                        <div className="space-y-1">
+                          <p className="font-extrabold text-slate-500 text-[9.5px]">អ្នករៀបចំរបាយការណ៍ / SUBMITTED BY</p>
+                          <div className="h-8 flex items-end justify-center font-nitean text-xs text-indigo-700 font-medium select-none italic pb-0.5">
+                            {selectedReport.reporterName.split(' ')[0] || 'Veasna'}
+                          </div>
+                          <p className="font-moul text-[8.5px] text-[#073B3A]">{selectedReport.reporterName}</p>
+                          <p className="text-[9px] text-slate-400">សាលាវេស្ទើនអន្តរជាតិ • Western International School</p>
+                        </div>
+
+                        {/* Sign B: Operations Director / Checker */}
+                        <div className="space-y-1">
+                          <p className="font-extrabold text-slate-500 text-[9.5px]">ការិយាល័យរដ្ឋបាលមធ្យម / APPROVED BY</p>
+                          <div className="h-8 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
+                            (ហត្ថលេខា និងសញ្ញា)
+                          </div>
+                          
+                          {/* Inline signature name editable to personalize checker */}
+                          <div className="font-moul text-[8.5px] text-slate-800">
+                            {renderEditableField('verifiedByCustomName', 'ឈ្មោះអ្នកអនុម័ត', (selectedReport as any).verifiedByCustomName || 'ហត្ថលេខា ប្រធានការិយាល័យ', 'input', (val) => {
+                              handleUpdateInlineField(selectedReport.id, 'verifiedByCustomName', val);
+                            })}
+                          </div>
+                          <p className="text-[9px] text-slate-400">អភិបាលសាលា / នាយករងរដ្ឋបាល (Western Admin Board)</p>
+                        </div>
+
+                      </div>
+
                     </div>
                   </div>
-
-                  {/* Signatures Area for school management audit */}
-                  <div className="mt-12 pt-8 border-t border-dashed border-slate-350 grid grid-cols-2 gap-8 text-center text-xs">
-                    <div>
-                      <p className="font-extrabold text-slate-500">អ្នករៀបចំរបាយការណ៍ / Prepared By</p>
-                      <div className="h-14 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
-                        (ហត្ថលេខា / Loung Veasna)
-                      </div>
-                      <p className="font-black text-[#073B3A]">{selectedReport.reporterName}</p>
-                      <p className="text-[10px] text-slate-400">Admin Supervisor • Western International School</p>
-                    </div>
-                    <div>
-                      <p className="font-extrabold text-slate-500">ការិយាល័យរដ្ឋបាលកណ្តាល / Verified By</p>
-                      <div className="h-14 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
-                        (ការពិនិត្យ & យល់ព្រម)
-                      </div>
-                      <p className="font-black text-slate-700">___________________________</p>
-                      <p className="text-[10px] text-slate-400">School Admin Director / Principal</p>
-                    </div>
-                  </div>
-
-                </div>
+                )}
 
               </motion.div>
             )}
