@@ -431,6 +431,25 @@ export default function DashboardStats({
     return path;
   }, [sortedElec, elecMax, chartWidth, chartHeight]);
 
+  const elecAreaPath = useMemo(() => {
+    if (sortedElec.length === 0) return '';
+    const yBottom = svgHeight - paddingBottom;
+    let path = '';
+    sortedElec.forEach((r, i) => {
+      const xCenter = paddingLeft + (i + 0.5) * (chartWidth / sortedElec.length);
+      const yAfter = svgHeight - paddingBottom - (r.costAfterUsd / elecMax) * chartHeight;
+      if (i === 0) {
+        path += `M ${xCenter} ${yBottom} L ${xCenter} ${yAfter}`;
+      } else {
+        path += ` L ${xCenter} ${yAfter}`;
+      }
+      if (i === sortedElec.length - 1) {
+        path += ` L ${xCenter} ${yBottom} Z`;
+      }
+    });
+    return path;
+  }, [sortedElec, elecMax, chartWidth, chartHeight]);
+
   const waterTrendPath = useMemo(() => {
     if (sortedWater.length === 0) return '';
     let path = '';
@@ -439,6 +458,25 @@ export default function DashboardStats({
       const yAfter = svgHeight - paddingBottom - (r.costAfterUsd / waterMax) * chartHeight;
       if (i === 0) path += `M ${xCenter} ${yAfter}`;
       else path += ` L ${xCenter} ${yAfter}`;
+    });
+    return path;
+  }, [sortedWater, waterMax, chartWidth, chartHeight]);
+
+  const waterAreaPath = useMemo(() => {
+    if (sortedWater.length === 0) return '';
+    const yBottom = svgHeight - paddingBottom;
+    let path = '';
+    sortedWater.forEach((r, i) => {
+      const xCenter = paddingLeft + (i + 0.5) * (chartWidth / sortedWater.length);
+      const yAfter = svgHeight - paddingBottom - (r.costAfterUsd / waterMax) * chartHeight;
+      if (i === 0) {
+        path += `M ${xCenter} ${yBottom} L ${xCenter} ${yAfter}`;
+      } else {
+        path += ` L ${xCenter} ${yAfter}`;
+      }
+      if (i === sortedWater.length - 1) {
+        path += ` L ${xCenter} ${yBottom} Z`;
+      }
     });
     return path;
   }, [sortedWater, waterMax, chartWidth, chartHeight]);
@@ -457,48 +495,48 @@ export default function DashboardStats({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Card 1: Total Staff */}
-        <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-emerald-950 rounded-2xl p-4 border border-emerald-800 shadow-md relative overflow-hidden group hover:border-emerald-700 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+        <div className="bg-gradient-to-br from-amber-950 via-stone-950 to-stone-950 rounded-2xl p-4 border border-amber-900 shadow-md relative overflow-hidden group hover:border-amber-700 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse shadow-sm shadow-amber-500/50" />
-                <p className="text-xs sm:text-sm font-black text-emerald-250 font-sans tracking-wide text-emerald-100/90">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
+                <p className="text-xs sm:text-sm font-black text-amber-200 font-sans tracking-wide text-amber-100/90">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
               </div>
               <div className="flex items-baseline gap-1 mt-0.5">
                 <span className="text-2xl sm:text-3xl font-mono font-black text-white tracking-tight">{staffList.length}</span>
                 <span className="text-sm sm:text-base font-bold text-amber-400 font-sans ml-1">នាក់</span>
               </div>
               <div className="pt-1">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-900/80 border border-emerald-800 text-[10px] font-semibold text-emerald-300 rounded-lg">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-950/80 border border-amber-900 text-[10px] font-semibold text-amber-300 rounded-lg">
+                  <span className="w-1 h-1 rounded-full bg-amber-400" />
                   កំពុងបំពេញការងារប្រចាំថ្ងៃ
                 </span>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-emerald-300 p-2.5 rounded-xl border border-emerald-700/50 transition-all duration-300 group-hover:scale-110 shrink-0">
+            <div className="bg-gradient-to-br from-amber-800 to-amber-900 text-amber-300 p-2.5 rounded-xl border border-amber-800/50 transition-all duration-300 group-hover:scale-110 shrink-0">
               <Users className="w-5 h-5 stroke-[2.2]" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
         </div>
 
         {/* Card 2: Presence Rate */}
-        <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-emerald-950 rounded-2xl p-4 border border-emerald-800 shadow-md relative overflow-hidden group hover:border-emerald-700 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+        <div className="bg-gradient-to-br from-amber-950 via-stone-950 to-stone-950 rounded-2xl p-4 border border-amber-900 shadow-md relative overflow-hidden group hover:border-amber-700 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-sm shadow-emerald-400/50" />
-                <p className="text-xs sm:text-sm font-black text-emerald-250 font-sans tracking-wide text-emerald-100/90">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
+                <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse shadow-sm shadow-amber-400/50" />
+                <p className="text-xs sm:text-sm font-black text-amber-200 font-sans tracking-wide text-amber-100/90">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
               </div>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl sm:text-3xl font-mono font-black text-emerald-400 tracking-tight">{presentRate}</span>
-                <span className="text-lg sm:text-xl font-bold text-emerald-300 ml-0.5">%</span>
+                <span className="text-2xl sm:text-3xl font-mono font-black text-amber-400 tracking-tight">{presentRate}</span>
+                <span className="text-lg sm:text-xl font-bold text-amber-300 ml-0.5">%</span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-900/60 border border-emerald-800 text-[10px] font-bold text-emerald-300 rounded-md">
-                  <span className="w-1 h-1 rounded-full bg-emerald-450" />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/60 border border-amber-900 text-[10px] font-bold text-amber-300 rounded-md">
+                  <span className="w-1 h-1 rounded-full bg-amber-400" />
                   វត្តមាន <strong className="font-mono ml-0.5">{totalPresent}</strong>
                 </span>
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/60 border border-amber-900 text-[10px] font-bold text-amber-300 rounded-md">
@@ -511,16 +549,16 @@ export default function DashboardStats({
                 </span>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-emerald-300 p-2.5 rounded-xl border border-emerald-700/50 transition-all duration-300 group-hover:scale-110 shrink-0">
+            <div className="bg-gradient-to-br from-amber-800 to-amber-900 text-amber-300 p-2.5 rounded-xl border border-amber-800/50 transition-all duration-300 group-hover:scale-110 shrink-0">
               <UserCheck className="w-5 h-5 stroke-[2.2]" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
         </div>
 
         {/* Card 3: Date Display Banner */}
-        <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-emerald-950 rounded-2xl p-4 border border-emerald-800 shadow-md relative overflow-hidden group hover:border-emerald-700 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
+        <div className="bg-gradient-to-br from-amber-950 via-stone-950 to-stone-950 rounded-2xl p-4 border border-amber-900 shadow-md relative overflow-hidden group hover:border-amber-700 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute -top-4 -right-4 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
           <div className="flex items-start justify-between gap-1">
             <div className="space-y-1.5">
               <div className="inline-block">
@@ -529,26 +567,26 @@ export default function DashboardStats({
                 </span>
               </div>
               <div>
-                <h4 className="text-xl sm:text-2xl font-black font-mono text-white tracking-wider mt-1 drop-shadow-[0_2px_4px_rgba(16,185,129,0.2)]">
+                <h4 className="text-xl sm:text-2xl font-black font-mono text-white tracking-wider mt-1 drop-shadow-[0_2px_4px_rgba(245,158,11,0.2)]">
                   {selectedDate}
                 </h4>
               </div>
-              <p className="text-[11px] font-semibold text-emerald-300/80 flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-emerald-500" />
+              <p className="text-[11px] font-semibold text-amber-300/80 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-amber-500" />
                 រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)
               </p>
               
-              <div className="bg-emerald-900/60 border border-emerald-800 rounded-lg px-2 py-1 text-[10.5px] font-bold text-amber-300/90 flex items-center gap-1.5 mt-2 transition max-w-max">
-                <Clock className="w-3.5 h-3.5 text-amber-405 animate-spin-slow shrink-0" />
+              <div className="bg-amber-950/60 border border-amber-900 rounded-lg px-2 py-1 text-[10.5px] font-bold text-amber-300/90 flex items-center gap-1.5 mt-2 transition max-w-max">
+                <Clock className="w-3.5 h-3.5 text-amber-400 animate-spin-slow shrink-0" />
                 <span>ស្រង់ដោយ៖ <strong className="tracking-wide">LOUNG Veasna</strong></span>
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-amber-400 p-2.5 rounded-xl border border-emerald-700/50 shrink-0 leading-none flex items-center justify-center">
+            <div className="bg-gradient-to-br from-amber-800 to-amber-900 text-amber-400 p-2.5 rounded-xl border border-amber-800/50 shrink-0 leading-none flex items-center justify-center">
               <Clock className="w-5 h-5 stroke-[2.2] animate-pulse" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
         </div>
 
       </div>
@@ -708,15 +746,15 @@ export default function DashboardStats({
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-bold">
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-slate-205 border border-slate-300" style={{ backgroundColor: '#cbd5e1' }} />
+              <span className="w-3.5 h-3.5 rounded bg-gradient-to-b from-slate-200 to-slate-300 border border-slate-300 shadow-sm" />
               <span className="text-slate-600 text-[11px]">ខែមុន (Previous)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-amber-500" />
+              <span className="w-3.5 h-3.5 rounded bg-gradient-to-b from-amber-400 to-amber-600 border border-amber-600 shadow-sm" />
               <span className="text-slate-600 text-[11px]">ភ្លើង (Electricity)</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded bg-sky-500" />
+              <span className="w-3.5 h-3.5 rounded bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-600 shadow-sm" />
               <span className="text-slate-600 text-[11px]">ទឹក (Water Supply)</span>
             </span>
           </div>
@@ -725,7 +763,7 @@ export default function DashboardStats({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Card 1: Electricity Analytics */}
-          <div className="bg-slate-50/40 border border-slate-100 rounded-2xl p-5 flex flex-col justify-between">
+          <div className="bg-slate-50/50 border border-slate-100 shadow-sm rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-all duration-300">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="flex items-center gap-2 text-[12px] font-moul font-normal text-slate-800">
@@ -735,7 +773,7 @@ export default function DashboardStats({
                     (Electricity Expense)
                   </span>
                 </span>
-                <span className="text-[9px] bg-amber-50 text-amber-705 border border-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full uppercase">
+                <span className="text-[9px] bg-amber-50 text-amber-700 border border-amber-100 font-bold px-2.5 py-0.5 rounded-full uppercase">
                   USD ($)
                 </span>
               </div>
@@ -751,8 +789,33 @@ export default function DashboardStats({
               ) : (
                 <div className="space-y-4">
                   {/* SVG Chart */}
-                  <div className="relative w-full overflow-hidden bg-white/75 backdrop-blur-sm border border-slate-100 p-2 rounded-xl">
+                  <div className="relative w-full overflow-hidden bg-white/90 shadow-sm border border-slate-100/80 p-3 rounded-2xl">
                     <svg viewBox="0 0 500 240" className="w-full h-auto">
+                      <defs>
+                        {/* Glow Filter */}
+                        <filter id="elecGlow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#f59e0b" floodOpacity="0.4" />
+                        </filter>
+                        
+                        {/* Bar Before Gradient */}
+                        <linearGradient id="elecBarBefore" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#e2e8f0" />
+                          <stop offset="100%" stopColor="#cbd5e1" />
+                        </linearGradient>
+
+                        {/* Bar After Gradient */}
+                        <linearGradient id="elecBarAfter" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#f59e0b" />
+                          <stop offset="100%" stopColor="#b45309" />
+                        </linearGradient>
+
+                        {/* Trend Area Gradient */}
+                        <linearGradient id="elecAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.2" />
+                          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+
                       {/* Grid Lines */}
                       {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
                         const yVal = pct * elecMax;
@@ -764,15 +827,15 @@ export default function DashboardStats({
                               y1={yPos} 
                               x2={500 - 20} 
                               y2={yPos} 
-                              stroke="#f1f5f9" 
-                              strokeWidth="1"
+                              stroke="#f8fafc" 
+                              strokeWidth="1.2"
                               strokeDasharray="4,4" 
                             />
                             <text 
                               x={42} 
                               y={yPos + 3.5} 
                               textAnchor="end" 
-                              className="text-[10px] font-black fill-slate-400 font-mono"
+                              className="text-[10px] font-bold fill-slate-400 font-mono"
                             >
                               ${Math.round(yVal)}
                             </text>
@@ -780,11 +843,20 @@ export default function DashboardStats({
                         );
                       })}
 
+                      {/* Area Fill under Trendline */}
+                      {elecAreaPath && (
+                        <path 
+                          d={elecAreaPath} 
+                          fill="url(#elecAreaGradient)"
+                          className="transition-all duration-300"
+                        />
+                      )}
+
                       {/* Bar groups */}
                       {sortedElec.map((r, i) => {
                         const xCenter = 50 + (i + 0.5) * (chartWidth / sortedElec.length);
-                        const xBefore = xCenter - singleBarWidth - 1.5;
-                        const xAfter = xCenter + 1.5;
+                        const xBefore = xCenter - singleBarWidth - 2;
+                        const xAfter = xCenter + 2;
 
                         const yBefore = 240 - 40 - (r.costBeforeUsd / elecMax) * chartHeight;
                         const yAfter = 240 - 40 - (r.costAfterUsd / elecMax) * chartHeight;
@@ -802,9 +874,9 @@ export default function DashboardStats({
                               y={yBefore}
                               width={singleBarWidth}
                               height={hBefore}
-                              fill="#cbd5e1"
-                              rx="2.5"
-                              opacity={isHovered ? 0.9 : 0.6}
+                              fill="url(#elecBarBefore)"
+                              rx="3"
+                              opacity={isHovered ? 0.9 : 0.7}
                               className="transition-all duration-200"
                             />
                             {/* Bar After */}
@@ -813,9 +885,9 @@ export default function DashboardStats({
                               y={yAfter}
                               width={singleBarWidth}
                               height={hAfter}
-                              fill="#f59e0b"
-                              rx="2.5"
-                              opacity={isHovered ? 1 : 0.85}
+                              fill="url(#elecBarAfter)"
+                              rx="3"
+                              opacity={isHovered ? 1 : 0.9}
                               className="transition-all duration-200"
                             />
                             
@@ -824,8 +896,8 @@ export default function DashboardStats({
                               x={xCenter}
                               y={240 - 40 + 18}
                               textAnchor="middle"
-                              className={`text-[10px] font-black transition-all ${
-                                isHovered ? 'fill-slate-900 font-extrabold' : 'fill-slate-400'
+                              className={`text-[9.5px] font-bold transition-all ${
+                                isHovered ? 'fill-amber-600 font-black' : 'fill-slate-400'
                               }`}
                             >
                               {formatKhmerMonthShort(r.monthYear)}
@@ -838,11 +910,12 @@ export default function DashboardStats({
                       <path 
                         d={elecTrendPath} 
                         fill="none" 
-                        stroke="#d97706" 
-                        strokeWidth="2.5" 
+                        stroke="#f59e0b" 
+                        strokeWidth="3" 
                         strokeLinecap="round" 
                         strokeLinejoin="round"
-                        className="opacity-70"
+                        filter="url(#elecGlow)"
+                        className="transition-all duration-300"
                       />
 
                       {/* Trendline Connection Dots */}
@@ -852,35 +925,47 @@ export default function DashboardStats({
                         const isHovered = hoveredElecIdx === i;
 
                         return (
-                          <circle
-                            key={`elec-point-${r.id}`}
-                            cx={xCenter}
-                            cy={yAfter}
-                            r={isHovered ? 6 : 4}
-                            fill="#f59e0b"
-                            stroke="#ffffff"
-                            strokeWidth="2"
-                            className="transition-all duration-200 cursor-pointer"
-                          />
+                          <g key={`elec-point-g-${r.id}`}>
+                            {isHovered && (
+                              <circle
+                                cx={xCenter}
+                                cy={yAfter}
+                                r={8}
+                                fill="#f59e0b"
+                                opacity="0.3"
+                                className="animate-pulse"
+                              />
+                            )}
+                            <circle
+                              cx={xCenter}
+                              cy={yAfter}
+                              r={isHovered ? 5.5 : 3.5}
+                              fill="#ffffff"
+                              stroke="#f59e0b"
+                              strokeWidth="2.5"
+                              className="transition-all duration-200 cursor-pointer"
+                            />
+                          </g>
                         );
                       })}
 
                       {/* Vertical line indicator */}
                       {hoveredElecIdx !== null && (
                         (() => {
-                          const xCenter = 50 + (hoveredElecIdx + 0.5) * (chartWidth / sortedElec.length);
-                          return (
-                            <line
-                              x1={xCenter}
-                              y1={30}
-                              x2={xCenter}
-                              y2={240 - 40}
-                              stroke="#cbd5e1"
-                              strokeWidth="1"
-                              strokeDasharray="3,3"
-                              pointerEvents="none"
-                            />
-                          );
+                           const xCenter = 50 + (hoveredElecIdx + 0.5) * (chartWidth / sortedElec.length);
+                           return (
+                             <line
+                               x1={xCenter}
+                               y1={30}
+                               x2={xCenter}
+                               y2={240 - 40}
+                               stroke="#f59e0b"
+                               strokeWidth="1.2"
+                               strokeDasharray="3,3"
+                               opacity="0.5"
+                               pointerEvents="none"
+                             />
+                           );
                         })()
                       )}
 
@@ -957,7 +1042,7 @@ export default function DashboardStats({
           </div>
 
           {/* Card 2: Water Analytics */}
-          <div className="bg-slate-50/40 border border-slate-100 rounded-2xl p-5 flex flex-col justify-between">
+          <div className="bg-slate-50/55 border border-slate-100 shadow-sm rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-all duration-300">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <span className="flex items-center gap-2 text-[12px] font-moul font-normal text-slate-800">
@@ -967,7 +1052,7 @@ export default function DashboardStats({
                     (Water Supply Expense)
                   </span>
                 </span>
-                <span className="text-[9px] bg-sky-50 text-sky-705 border border-sky-100 text-sky-700 font-bold px-2 py-0.5 rounded-full uppercase">
+                <span className="text-[9px] bg-sky-50 text-sky-700 border border-sky-100 font-bold px-2.5 py-0.5 rounded-full uppercase">
                   USD ($)
                 </span>
               </div>
@@ -983,8 +1068,33 @@ export default function DashboardStats({
               ) : (
                 <div className="space-y-4">
                   {/* SVG Chart */}
-                  <div className="relative w-full overflow-hidden bg-white/75 backdrop-blur-sm border border-slate-100 p-2 rounded-xl">
+                  <div className="relative w-full overflow-hidden bg-white/90 shadow-sm border border-slate-100/80 p-3 rounded-2xl">
                     <svg viewBox="0 0 500 240" className="w-full h-auto">
+                      <defs>
+                        {/* Glow Filter */}
+                        <filter id="waterGlow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#0284c7" floodOpacity="0.4" />
+                        </filter>
+                        
+                        {/* Bar Before Gradient */}
+                        <linearGradient id="waterBarBefore" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#e2e8f0" />
+                          <stop offset="100%" stopColor="#cbd5e1" />
+                        </linearGradient>
+
+                        {/* Bar After Gradient */}
+                        <linearGradient id="waterBarAfter" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#38bdf8" />
+                          <stop offset="100%" stopColor="#025a90" />
+                        </linearGradient>
+
+                        {/* Trend Area Gradient */}
+                        <linearGradient id="waterAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.2" />
+                          <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+
                       {/* Grid Lines */}
                       {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
                         const yVal = pct * waterMax;
@@ -996,15 +1106,15 @@ export default function DashboardStats({
                               y1={yPos} 
                               x2={500 - 20} 
                               y2={yPos} 
-                              stroke="#f1f5f9" 
-                              strokeWidth="1"
+                              stroke="#f8fafc" 
+                              strokeWidth="1.2"
                               strokeDasharray="4,4" 
                             />
                             <text 
                               x={42} 
                               y={yPos + 3.5} 
                               textAnchor="end" 
-                              className="text-[10px] font-black fill-slate-400 font-mono"
+                              className="text-[10px] font-bold fill-slate-400 font-mono"
                             >
                               ${Math.round(yVal)}
                             </text>
@@ -1012,11 +1122,20 @@ export default function DashboardStats({
                         );
                       })}
 
+                      {/* Area Fill under Trendline */}
+                      {waterAreaPath && (
+                        <path 
+                          d={waterAreaPath} 
+                          fill="url(#waterAreaGradient)"
+                          className="transition-all duration-300"
+                        />
+                      )}
+
                       {/* Bar groups */}
                       {sortedWater.map((r, i) => {
                         const xCenter = 50 + (i + 0.5) * (chartWidth / sortedWater.length);
-                        const xBefore = xCenter - singleBarWidth - 1.5;
-                        const xAfter = xCenter + 1.5;
+                        const xBefore = xCenter - singleBarWidth - 2;
+                        const xAfter = xCenter + 2;
 
                         const yBefore = 240 - 40 - (r.costBeforeUsd / waterMax) * chartHeight;
                         const yAfter = 240 - 40 - (r.costAfterUsd / waterMax) * chartHeight;
@@ -1034,9 +1153,9 @@ export default function DashboardStats({
                               y={yBefore}
                               width={singleBarWidth}
                               height={hBefore}
-                              fill="#cbd5e1"
-                              rx="2.5"
-                              opacity={isHovered ? 0.9 : 0.6}
+                              fill="url(#waterBarBefore)"
+                              rx="3"
+                              opacity={isHovered ? 0.9 : 0.7}
                               className="transition-all duration-200"
                             />
                             {/* Bar After */}
@@ -1045,9 +1164,9 @@ export default function DashboardStats({
                               y={yAfter}
                               width={singleBarWidth}
                               height={hAfter}
-                              fill="#0ea5e9"
-                              rx="2.5"
-                              opacity={isHovered ? 1 : 0.85}
+                              fill="url(#waterBarAfter)"
+                              rx="3"
+                              opacity={isHovered ? 1 : 0.9}
                               className="transition-all duration-200"
                             />
                             
@@ -1056,8 +1175,8 @@ export default function DashboardStats({
                               x={xCenter}
                               y={240 - 40 + 18}
                               textAnchor="middle"
-                              className={`text-[10px] font-black transition-all ${
-                                isHovered ? 'fill-slate-900 font-extrabold' : 'fill-slate-400'
+                              className={`text-[9.5px] font-bold transition-all ${
+                                isHovered ? 'fill-sky-600 font-black' : 'fill-slate-400'
                               }`}
                             >
                               {formatKhmerMonthShort(r.monthYear)}
@@ -1070,11 +1189,12 @@ export default function DashboardStats({
                       <path 
                         d={waterTrendPath} 
                         fill="none" 
-                        stroke="#0284c7" 
-                        strokeWidth="2.5" 
+                        stroke="#0ea5e9" 
+                        strokeWidth="3" 
                         strokeLinecap="round" 
                         strokeLinejoin="round"
-                        className="opacity-70"
+                        filter="url(#waterGlow)"
+                        className="transition-all duration-300"
                       />
 
                       {/* Trendline Connection Dots */}
@@ -1084,16 +1204,27 @@ export default function DashboardStats({
                         const isHovered = hoveredWaterIdx === i;
 
                         return (
-                          <circle
-                            key={`water-point-${r.id}`}
-                            cx={xCenter}
-                            cy={yAfter}
-                            r={isHovered ? 6 : 4}
-                            fill="#38bdf8"
-                            stroke="#ffffff"
-                            strokeWidth="2"
-                            className="transition-all duration-200 cursor-pointer"
-                          />
+                          <g key={`water-point-g-${r.id}`}>
+                            {isHovered && (
+                              <circle
+                                cx={xCenter}
+                                cy={yAfter}
+                                r={8}
+                                fill="#0ea5e9"
+                                opacity="0.3"
+                                className="animate-pulse"
+                              />
+                            )}
+                            <circle
+                              cx={xCenter}
+                              cy={yAfter}
+                              r={isHovered ? 5.5 : 3.5}
+                              fill="#ffffff"
+                              stroke="#0ea5e9"
+                              strokeWidth="2.5"
+                              className="transition-all duration-200 cursor-pointer"
+                            />
+                          </g>
                         );
                       })}
 
@@ -1107,9 +1238,10 @@ export default function DashboardStats({
                               y1={30}
                               x2={xCenter}
                               y2={240 - 40}
-                              stroke="#cbd5e1"
-                              strokeWidth="1"
+                              stroke="#0ea5e9"
+                              strokeWidth="1.2"
                               strokeDasharray="3,3"
+                              opacity="0.5"
                               pointerEvents="none"
                             />
                           );

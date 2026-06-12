@@ -643,10 +643,31 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                   @media print {
                     @page {
                       size: A4;
-                      margin: 0.8cm;
+                      margin: 1.2cm 1cm;
+                    }
+                    * {
+                      -webkit-print-color-adjust: exact !important;
+                      print-color-adjust: exact !important;
+                      box-shadow: none !important;
+                      text-shadow: none !important;
+                    }
+                    body {
+                      background: white !important;
+                      color: #0d1b2a !important;
+                      font-size: 11px !important;
+                      line-height: 1.5 !important;
                     }
                     body * {
                       visibility: hidden !important;
+                    }
+                    /* Parent scrolling / overflow overrides for Chrome, Safari, Firefox */
+                    html, body, #root, main, div, section, article {
+                      height: auto !important;
+                      max-height: none !important;
+                      overflow: visible !important;
+                      overflow-y: visible !important;
+                      box-shadow: none !important;
+                      border: none !important;
                     }
                     #printable-report-area, 
                     #report-sheet, 
@@ -654,9 +675,9 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                       visibility: visible !important;
                     }
                     #printable-report-area {
-                      position: absolute;
-                      left: 0;
-                      top: 0;
+                      position: absolute !important;
+                      left: 0 !important;
+                      top: 0 !important;
                       width: 100% !important;
                       margin: 0 !important;
                       padding: 0 !important;
@@ -666,13 +687,58 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                       box-shadow: none !important;
                       width: 100% !important;
                       max-width: 100% !important;
-                      min-height: 100% !important;
+                      min-height: auto !important;
                       margin: 0 !important;
-                      padding: 0.5cm 1cm !important;
+                      padding: 0 !important;
                       background: white !important;
                     }
-                    .no-print, #no-print-controls, button, .lucide {
+                    /* Professional anti-break groupings */
+                    .signature-section, 
+                    tr, 
+                    thead, 
+                    tfoot, 
+                    .metadata-grid,
+                    .summary-box {
+                      page-break-inside: avoid !important;
+                      break-inside: avoid !important;
+                    }
+                    thead {
+                      display: table-header-group !important;
+                    }
+                    tr {
+                      page-break-after: auto !important;
+                    }
+                    /* Eliminate shadows and improve table line visibility on standard paper */
+                    table {
+                      border-collapse: collapse !important;
+                      width: 100% !important;
+                    }
+                    th, td {
+                      border: 1px solid #94a3b8 !important;
+                      padding: 6px 10px !important;
+                    }
+                    /* Improve background and text coloring for maximum paper contrast */
+                    .bg-slate-50, .bg-slate-100, .bg-slate-50\\/50, .bg-slate-50\\/60, .bg-slate-100\\/80 {
+                      background-color: #f8fafc !important; /* Clean light grey for blocks/table headers */
+                    }
+                    .bg-amber-50\\/20, .bg-amber-50\\/30 {
+                      background-color: #fffbeb !important; /* Soft paper summary tint */
+                    }
+                    /* Make absolutely sure all buttons, forms, tooltips, edit icons, and editor tips are completely excluded */
+                    .no-print, 
+                    #no-print-controls, 
+                    button, 
+                    .lucide, 
+                    .animate-pulse,
+                    [role="tooltip"],
+                    .lucide-edit-3,
+                    [title*="កែម្រួល"],
+                    [title*="កែសម្រួល"] {
                       display: none !important;
+                      visibility: hidden !important;
+                      height: 0 !important;
+                      width: 0 !important;
+                      overflow: hidden !important;
                     }
                   }
                 `}} />
@@ -864,7 +930,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                     </div>
 
                     {/* Signatures Area for school management audit */}
-                    <div className="mt-12 pt-8 border-t border-dashed border-slate-350 grid grid-cols-2 gap-8 text-center text-xs">
+                    <div className="signature-section mt-12 pt-8 border-t border-dashed border-slate-350 grid grid-cols-2 gap-8 text-center text-xs">
                       <div>
                         <p className="font-extrabold text-slate-500">អ្នករៀបចំរបាយការណ៍ / Prepared By</p>
                         <div className="h-14 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
@@ -1061,7 +1127,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                       </div>
 
                       {/* 7. Bottom Signatures & Rotated Red Seal (Stamp) area */}
-                      <div className="relative mt-6 pt-5 border-t border-slate-300 grid grid-cols-2 gap-6 text-center text-xs">
+                      <div className="signature-section relative mt-6 pt-5 border-t border-slate-300 grid grid-cols-2 gap-6 text-center text-xs">
                         
                         {/* Red Ink Seal Stamp Container (Slightly rotated on top of signatures) */}
                         {showStamp && (
