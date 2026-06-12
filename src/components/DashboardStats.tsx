@@ -457,58 +457,98 @@ export default function DashboardStats({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Card 1: Total Staff */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[11.5px] font-semibold text-slate-500 leading-snug">ចំនួនបុគ្គលិកសរុប</p>
-              <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-3xl font-mono font-bold text-slate-800">{staffList.length}</span>
-                <span className="text-base font-sans font-medium text-slate-500 ml-1">នាក់</span>
+        <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-emerald-950 rounded-2xl p-4 border border-emerald-800 shadow-md relative overflow-hidden group hover:border-emerald-700 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse shadow-sm shadow-amber-500/50" />
+                <p className="text-xs sm:text-sm font-black text-emerald-250 font-sans tracking-wide text-emerald-100/90">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
               </div>
-              <p className="text-[11px] font-medium text-slate-455 text-slate-400 mt-2.5">កំពុងបំពេញការងារប្រចាំថ្ងៃ</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl sm:text-3xl font-mono font-black text-white tracking-tight">{staffList.length}</span>
+                <span className="text-sm sm:text-base font-bold text-amber-400 font-sans ml-1">នាក់</span>
+              </div>
+              <div className="pt-1">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-900/80 border border-emerald-800 text-[10px] font-semibold text-emerald-300 rounded-lg">
+                  <span className="w-1 h-1 rounded-full bg-emerald-400" />
+                  កំពុងបំពេញការងារប្រចាំថ្ងៃ
+                </span>
+              </div>
             </div>
-            <div className="bg-slate-100 p-4 rounded-xl text-slate-700">
-              <Users className="w-6 h-6 stroke-[2.5]" />
+            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-emerald-300 p-2.5 rounded-xl border border-emerald-700/50 transition-all duration-300 group-hover:scale-110 shrink-0">
+              <Users className="w-5 h-5 stroke-[2.2]" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-amber-500" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
         </div>
 
         {/* Card 2: Presence Rate */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-md relative overflow-hidden">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[11.5px] font-semibold text-slate-500 leading-snug">អត្រាវត្តមានសរុបថ្ងៃនេះ</p>
-              <div className="flex items-baseline gap-1 mt-2">
-                <span className="text-3xl font-mono font-bold text-emerald-600">{presentRate}</span>
-                <span className="text-xl font-sans font-medium text-emerald-500">%</span>
+        <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-emerald-950 rounded-2xl p-4 border border-emerald-800 shadow-md relative overflow-hidden group hover:border-emerald-700 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-sm shadow-emerald-400/50" />
+                <p className="text-xs sm:text-sm font-black text-emerald-250 font-sans tracking-wide text-emerald-100/90">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[11px] font-medium text-slate-500">
-                <span className="text-emerald-600 font-semibold">✓ <span className="font-mono">{totalPresent}</span> មក</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-amber-600 font-semibold"><span className="font-mono">{totalExcused}</span> ច្បាប់</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-rose-600 font-semibold"><span className="font-mono">{totalAbsent}</span> អត់ច្បាប់</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl sm:text-3xl font-mono font-black text-emerald-400 tracking-tight">{presentRate}</span>
+                <span className="text-lg sm:text-xl font-bold text-emerald-300 ml-0.5">%</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-900/60 border border-emerald-800 text-[10px] font-bold text-emerald-300 rounded-md">
+                  <span className="w-1 h-1 rounded-full bg-emerald-450" />
+                  វត្តមាន <strong className="font-mono ml-0.5">{totalPresent}</strong>
+                </span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/60 border border-amber-900 text-[10px] font-bold text-amber-300 rounded-md">
+                  <span className="w-1 h-1 rounded-full bg-amber-500" />
+                  ច្បាប់ <strong className="font-mono ml-0.5">{totalExcused}</strong>
+                </span>
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-950/60 border border-rose-900 text-[10px] font-bold text-rose-350 rounded-md">
+                  <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
+                  អត់ <strong className="font-mono ml-0.5">{totalAbsent}</strong>
+                </span>
               </div>
             </div>
-            <div className="bg-emerald-50 p-4 rounded-xl text-emerald-600">
-              <UserCheck className="w-6 h-6 stroke-[2.5]" />
+            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-emerald-300 p-2.5 rounded-xl border border-emerald-700/50 transition-all duration-300 group-hover:scale-110 shrink-0">
+              <UserCheck className="w-5 h-5 stroke-[2.2]" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-500" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
         </div>
 
         {/* Card 3: Date Display Banner */}
-        <div className="bg-slate-900 rounded-2xl p-5 border border-slate-800 shadow-md text-slate-100 relative overflow-hidden">
-          <div>
-            <span className="bg-amber-500 text-slate-950 font-moul font-normal text-[8.5px] px-2.5 py-1 rounded-full shadow-xs leading-none">កាលបរិច្ឆេទស្រង់</span>
-            <h4 className="text-xl font-bold font-mono text-white mt-2.5 tracking-tight">{selectedDate}</h4>
-            <p className="text-[11px] font-normal text-slate-400 mt-1 leading-normal">រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)</p>
-            <div className="flex items-center gap-1.5 text-[10.5px] font-medium text-amber-450 text-amber-400/95 mt-2.5">
-              <Clock className="w-3.5 h-3.5 animate-spin-slow" /> <span>ស្រង់ដោយ៖ LOUNG Veasna</span>
+        <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-emerald-950 rounded-2xl p-4 border border-emerald-800 shadow-md relative overflow-hidden group hover:border-emerald-700 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
+          <div className="flex items-start justify-between gap-1">
+            <div className="space-y-1.5">
+              <div className="inline-block">
+                <span className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-moul font-normal text-[8.5px] px-2 py-0.5 rounded-md shadow-sm leading-none">
+                  កាលបរិច្ឆេទស្រង់
+                </span>
+              </div>
+              <div>
+                <h4 className="text-xl sm:text-2xl font-black font-mono text-white tracking-wider mt-1 drop-shadow-[0_2px_4px_rgba(16,185,129,0.2)]">
+                  {selectedDate}
+                </h4>
+              </div>
+              <p className="text-[11px] font-semibold text-emerald-300/80 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)
+              </p>
+              
+              <div className="bg-emerald-900/60 border border-emerald-800 rounded-lg px-2 py-1 text-[10.5px] font-bold text-amber-300/90 flex items-center gap-1.5 mt-2 transition max-w-max">
+                <Clock className="w-3.5 h-3.5 text-amber-405 animate-spin-slow shrink-0" />
+                <span>ស្រង់ដោយ៖ <strong className="tracking-wide">LOUNG Veasna</strong></span>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 text-amber-400 p-2.5 rounded-xl border border-emerald-700/50 shrink-0 leading-none flex items-center justify-center">
+              <Clock className="w-5 h-5 stroke-[2.2] animate-pulse" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-amber-400" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-600 via-emerald-400 to-emerald-600" />
         </div>
 
       </div>

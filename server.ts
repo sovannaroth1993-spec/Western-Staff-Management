@@ -31,7 +31,7 @@ async function startServer() {
   });
 
   // Allowed Extensions and MIME Types for robust cross-browser verification
-  const allowedExtensions = [".pdf", ".xlsx", ".xls", ".csv"];
+  const allowedExtensions = [".pdf", ".xlsx", ".xls", ".csv", ".png", ".jpg", ".jpeg", ".gif", ".webp"];
   const allowedMimeTypes = [
     "application/pdf",
     "application/x-pdf",
@@ -39,7 +39,12 @@ async function startServer() {
     "application/vnd.ms-excel",
     "text/csv",
     "application/csv",
-    "application/octet-stream"
+    "application/octet-stream",
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/gif",
+    "image/webp"
   ];
 
   const upload = multer({
@@ -54,7 +59,7 @@ async function startServer() {
       if (isAllowedExt || isAllowedMime) {
         cb(null, true);
       } else {
-        cb(new Error("ប្រភេទឯកសារមិនត្រូវបានអនុញ្ញាតទេ! អនុញ្ញាតតែឯកសារ PDF និង Excel (.xlsx, .xls, .csv) ប៉ុណ្ណោះ។"));
+        cb(new Error("ប្រភេទឯកសារមិនត្រូវបានអនុញ្ញាតទេ! អនុញ្ញាតតែឯកសារ PDF, Excel (.xlsx, .xls, .csv) និងរូបភាព (.png, .jpg, .jpeg, .gif, .webp) ប៉ុណ្ណោះ។"));
       }
     },
     limits: {
@@ -126,14 +131,23 @@ async function startServer() {
     if (req.query.preview === "true") {
       // For preview in iframe, send inline Content-Disposition so browsers display it
       let contentType = "application/octet-stream";
-      if (filename.toLowerCase().endsWith(".pdf")) {
+      const lowerFile = filename.toLowerCase();
+      if (lowerFile.endsWith(".pdf")) {
         contentType = "application/pdf";
-      } else if (filename.toLowerCase().endsWith(".xlsx")) {
+      } else if (lowerFile.endsWith(".xlsx")) {
         contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-      } else if (filename.toLowerCase().endsWith(".xls")) {
+      } else if (lowerFile.endsWith(".xls")) {
         contentType = "application/vnd.ms-excel";
-      } else if (filename.toLowerCase().endsWith(".csv")) {
+      } else if (lowerFile.endsWith(".csv")) {
         contentType = "text/csv";
+      } else if (lowerFile.endsWith(".png")) {
+        contentType = "image/png";
+      } else if (lowerFile.endsWith(".jpg") || lowerFile.endsWith(".jpeg")) {
+        contentType = "image/jpeg";
+      } else if (lowerFile.endsWith(".gif")) {
+        contentType = "image/gif";
+      } else if (lowerFile.endsWith(".webp")) {
+        contentType = "image/webp";
       }
       res.setHeader("Content-Type", contentType);
       res.setHeader("Content-Disposition", "inline");

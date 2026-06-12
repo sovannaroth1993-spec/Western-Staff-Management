@@ -158,7 +158,7 @@ interface DocFileRecord {
   month: string; // YYYY-MM格式 eg 2026-05
   fileName: string;
   fileSize: number;
-  fileType: 'pdf' | 'excel' | 'spreadsheet';
+  fileType: 'pdf' | 'excel' | 'spreadsheet' | 'image';
   uploadedAt: string;
   fileData?: string; // base64 string
   uploadedBy: string;
@@ -495,9 +495,10 @@ export default function AdminDocumentationManager() {
       const extension = file.name.split('.').pop()?.toLowerCase();
       const isExcel = ['xlsx', 'xls', 'csv'].includes(extension || '');
       const isPdf = extension === 'pdf';
+      const isPhoto = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension || '');
 
-      if (!isExcel && !isPdf) {
-        showToast(`មិនគាំទ្រឯកសារប្រភេទនេះទេ! សាកល្បង PDF ឬ Excel វិញ។ (${file.name})`, 'warning');
+      if (!isExcel && !isPdf && !isPhoto) {
+        showToast(`មិនគាំទ្រឯកសារប្រភេទនេះទេ! សាកល្បង PDF, Excel ឬរូបភាពស៊េរីថ្មីវិញ។ (${file.name})`, 'warning');
         continue;
       }
 
@@ -509,13 +510,18 @@ export default function AdminDocumentationManager() {
         "application/vnd.ms-excel",
         "text/csv",
         "application/csv",
-        "application/octet-stream"
+        "application/octet-stream",
+        "image/png",
+        "image/jpeg",
+        "image/jpg",
+        "image/gif",
+        "image/webp"
       ];
       const isMimeAllowed = allowedMimes.includes(file.type || "");
-      const isExtensionAllowed = ['xlsx', 'xls', 'csv', 'pdf'].includes(extension || '');
+      const isExtensionAllowed = ['xlsx', 'xls', 'csv', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension || '');
 
       if (!isMimeAllowed && !isExtensionAllowed) {
-        showToast(`មិនគាំទ្រប្រភេទ MIME: ${file.type || "unknown"} ឡើយ! អនុញ្ញាតតែឯកសារ PDF និង Excel (.xlsx, .xls, .csv) ប៉ុណ្ណោះ។`, 'danger');
+        showToast(`មិនគាំទ្រប្រភេទ MIME: ${file.type || "unknown"} ឡើយ! អនុញ្ញាតតែឯកសារ PDF, Excel (.xlsx, .xls, .csv) និងរូបភាព (.png, .jpg, .jpeg, .gif, .webp) ប៉ុណ្ណោះ។`, 'danger');
         continue;
       }
 
@@ -545,7 +551,7 @@ export default function AdminDocumentationManager() {
           month: activeMonthString,
           fileName: file.name,
           fileSize: file.size,
-          fileType: isExcel ? 'excel' : 'pdf',
+          fileType: isExcel ? 'excel' : isPdf ? 'pdf' : isPhoto ? 'image' : 'pdf',
           uploadedAt: new Date().toISOString(),
           uploadedBy: 'រដ្ឋបាលសាលា (School Admin)',
           fileData: data.url // e.g. /download/171584...-file.xlsx
@@ -649,9 +655,15 @@ export default function AdminDocumentationManager() {
     if (fileRecord.fileData) {
       if (fileRecord.fileData.startsWith('data:')) {
         try {
-          const defaultMime = fileRecord.fileType === 'excel' 
-            ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-            : 'application/pdf';
+          const ext = fileRecord.fileName.split('.').pop()?.toLowerCase() || '';
+          let defaultMime = 'application/octet-stream';
+          if (fileRecord.fileType === 'excel') {
+            defaultMime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          } else if (fileRecord.fileType === 'pdf') {
+            defaultMime = 'application/pdf';
+          } else if (fileRecord.fileType === 'image') {
+            defaultMime = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+          }
           const blob = base64ToBlob(fileRecord.fileData, defaultMime);
           if (blob) {
             const url = URL.createObjectURL(blob);
@@ -1157,15 +1169,15 @@ export default function AdminDocumentationManager() {
                     ref={fileInputRef}
                     onChange={handleFileChange}
                     multiple
-                    accept=".pdf,.xlsx,.xls,.csv"
+                    accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.gif,.webp"
                     className="hidden"
                   />
                   <UploadCloud className={`w-10 h-10 mb-2 transition-transform ${isDragOver ? 'scale-110 text-emerald-600' : 'text-slate-400'}`} />
                   <p className="text-xs font-black text-slate-800">
-                    អូស និងទម្លាក់ឯកសារ Excel ឬ PDF ជាច្រើននៅទីនេះ ឬ ចុចដើម្បីស្វែងរកឯកសារ
+                    អូស និងទម្លាក់ឯកសារ Excel, PDF ឬរូបថតជាច្រើននៅទីនេះ ឬ ចុចដើម្បីស្វែងរកឯកសារ
                   </p>
                   <p className="text-[10px] text-slate-400 font-bold font-mono mt-1">
-                    Drag & Drop multiple files here or click to browse (PDF & Excel)
+                    Drag & Drop multiple files here or click to browse (PDF, Excel & Images)
                   </p>
                 </form>
               </div>
@@ -1185,8 +1197,8 @@ export default function AdminDocumentationManager() {
                 {activeFiles.length === 0 ? (
                   <div className="p-8 border border-slate-100 rounded-xl text-center bg-slate-50/30">
                     <AlertCircle className="w-8 h-8 text-slate-305 mx-auto mb-2 opacity-50" />
-                    <p className="text-xs text-slate-500 font-medium">មិនមានឯកសារភ្ជាប់សម្រាប់ខែ {MONTHS_KM[selectedMonthIndex].label} នេះនៅឡើយទេ</p>
-                    <p className="text-[9px] text-slate-400 font-bold font-mono">No attached spreadsheet or PDF files for this month yet.</p>
+                    <p className="text-xs text-slate-500 font-medium">មិនមានឯកសារភ្ជាប់ ឬរូបថតសម្រាប់ខែ {MONTHS_KM[selectedMonthIndex].label} នេះនៅឡើយទេ</p>
+                    <p className="text-[9px] text-slate-400 font-bold font-mono">No attached spreadsheets, PDFs, or photos for this month yet.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1197,10 +1209,12 @@ export default function AdminDocumentationManager() {
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className={`p-2 rounded-lg shrink-0 ${
-                            file.fileType === 'excel' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                            file.fileType === 'excel' ? 'bg-emerald-50 text-emerald-600' : file.fileType === 'image' ? 'bg-cyan-50 text-cyan-600' : 'bg-rose-50 text-rose-600'
                           }`}>
                             {file.fileType === 'excel' ? (
                               <FileSpreadsheet className="w-4.5 h-4.5" />
+                            ) : file.fileType === 'image' ? (
+                              <Eye className="w-4.5 h-4.5" />
                             ) : (
                               <FileText className="w-4.5 h-4.5" />
                             )}
@@ -1326,7 +1340,7 @@ export default function AdminDocumentationManager() {
             {/* Modal Scrollable Body */}
             <div className="p-5 overflow-y-auto space-y-5 flex-1 bg-slate-50">
               
-              {/* PDF Viewer OR Spreadsheet SheetJS Viewer */}
+              {/* PDF Viewer OR Image Viewer OR Spreadsheet SheetJS Viewer */}
               {fileToView.fileType === 'pdf' ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-[10px] sm:text-xs font-black text-emerald-800 leading-normal">
@@ -1359,6 +1373,38 @@ export default function AdminDocumentationManager() {
                         >
                           ទាញយកដើម្បីបើកមើល (Download to View)
                         </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : fileToView.fileType === 'image' ? (
+                /* Interactive Photo / Image Viewer Previewer */
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3.5 bg-cyan-50 border border-cyan-100 rounded-2xl text-[10px] sm:text-xs font-black text-cyan-800 leading-normal">
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <span className="w-2 h-2 rounded-full bg-cyan-600 animate-pulse shrink-0"></span>
+                      <span className="truncate">ការបង្ហាញរូបថតភ្ជាប់ (Viewing Uploaded Image / Photo Preview)</span>
+                    </span>
+                    <button
+                      onClick={() => downloadFile(fileToView)}
+                      className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl transition text-[9px] font-black cursor-pointer shadow-xs shrink-0"
+                    >
+                      ទាញយករូបថតដើម (Download Image)
+                    </button>
+                  </div>
+                  
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-center min-h-[300px] max-h-[500px] overflow-hidden shadow-inner">
+                    {previewUrl ? (
+                      <img 
+                        src={previewUrl} 
+                        alt={fileToView.fileName}
+                        className="max-w-full max-h-[460px] object-contain rounded-lg transition-transform hover:scale-105"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center space-y-3">
+                        <AlertCircle className="w-10 h-10 text-slate-600 animate-bounce" />
+                        <p className="text-xs font-bold">មិនអាចផ្ទុករូបភាពនេះបានទេ</p>
                       </div>
                     )}
                   </div>
