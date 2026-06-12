@@ -30,6 +30,8 @@ export interface Staff {
   icom?: string; // មុខងារ អាយកូម (Icom) - e.g. "មាន (Yes)" or custom label
   responsibleLocation?: string; // ទីតាំងទទួលខុសត្រូវ (Responsible Location)
   joinDate?: string; // ថ្ងៃខែឆ្នាំចូលធ្វើការ (Hire Date)
+  contractStatus?: string; // ស្ថានភាពកិច្ចសន្យា (Contract Status) e.g. "ពេញសិទ្ធិ", "សាកល្បង"
+  email?: string; // អ៊ីមែល (Email)
   attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
 }
 

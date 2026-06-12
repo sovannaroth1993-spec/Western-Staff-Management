@@ -9,7 +9,7 @@ import { parseStaffExcel, exportStaffToExcel } from '../utils/excelHelper';
 import { exportStaffToPdf } from '../utils/pdfHelper';
 import { 
   Plus, Edit2, Trash2, FileSpreadsheet, FileText, Upload, 
-  Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, X, Info,
+  Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, User, X, Info,
   Paperclip, Download, Eye, File, Link2, Globe, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -94,6 +94,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   const [formGender, setFormGender] = useState<'ប្រុស' | 'ស្រី'>('ប្រុស');
   const [formDob, setFormDob] = useState('');
   const [formJoinDate, setFormJoinDate] = useState('');
+  const [formContractStatus, setFormContractStatus] = useState('ពេញសិទ្ធិ (Full-Time)');
+  const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formPhoto, setFormPhoto] = useState('');
   const [formDept, setFormDept] = useState<Department>('Security');
@@ -118,6 +120,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
   // Attachments State
   const [selectedStaffForAttachments, setSelectedStaffForAttachments] = useState<Staff | null>(null);
+  const [selectedStaffProfile, setSelectedStaffProfile] = useState<Staff | null>(null);
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
   const attachmentFileInputRef = useRef<HTMLInputElement>(null);
   const [previewingAttachment, setPreviewingAttachment] = useState<{ id: string; name: string; type: string; dataUrl: string } | null>(null);
@@ -187,6 +190,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     setFormGender('ប្រុស');
     setFormDob('');
     setFormJoinDate('');
+    setFormContractStatus('ពេញសិទ្ធិ (Full-Time)');
+    setFormEmail('');
     setFormPhone('');
     setFormPhoto('');
     setFormDept('Security');
@@ -204,6 +209,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     setFormIcom('');
     setFormResponsibleLocation('');
     setFormJoinDate('');
+    setFormContractStatus('ពេញសិទ្ធិ (Full-Time)');
+    setFormEmail('');
     setEntryMode('single'); // default tab
     setKeepAndAddMore(false);
     setIsFormOpen(true);
@@ -218,6 +225,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
     setFormGender(staff.gender as 'ប្រុស' | 'ស្រី');
     setFormDob(staff.dob);
     setFormJoinDate(staff.joinDate || '');
+    setFormContractStatus(staff.contractStatus || 'ពេញសិទ្ធិ (Full-Time)');
+    setFormEmail(staff.email || '');
     setFormPhone(staff.phoneNumber);
     setFormPhoto(staff.photo);
     setFormDept(staff.department);
@@ -338,6 +347,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
             gender: formGender,
             dob: formDob || s.dob,
             joinDate: formJoinDate || s.joinDate,
+            contractStatus: formContractStatus,
+            email: formEmail.trim(),
             phoneNumber: formPhone.trim() || s.phoneNumber,
             photo: formPhoto || s.photo,
             department: formDept,
@@ -373,6 +384,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         gender: formGender,
         dob: formDob || '1990-01-01',
         joinDate: formJoinDate || '',
+        contractStatus: formContractStatus,
+        email: formEmail.trim(),
         phoneNumber: formPhone.trim() || 'N/A',
         photo: formPhoto,
         department: formDept,
@@ -390,6 +403,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         setFormPhoto('');
         setFormDob('');
         setFormJoinDate('');
+        setFormContractStatus('ពេញសិទ្ធិ (Full-Time)');
+        setFormEmail('');
         setFormIcom('');
         setFormResponsibleLocation('');
 
@@ -843,7 +858,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               key={staff.id}
-              className="bg-slate-50/50 rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition relative flex flex-col justify-between"
+              onClick={() => setSelectedStaffProfile(staff)}
+              className="bg-slate-50/50 rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-emerald-500 hover:bg-emerald-50/5 transition duration-200 relative flex flex-col justify-between cursor-pointer group/card"
             >
               {/* Photo 4*6 layout box */}
               <div>
@@ -853,7 +869,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       src={staff.photo} 
                       alt={staff.name} 
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300" 
                     />
                   ) : (
                     <div className="text-center p-2 flex flex-col items-center justify-center h-full">
@@ -872,11 +888,11 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                 </div>
 
                 <div className="text-center mt-3">
-                  <h4 className="text-base font-black text-slate-800">{staff.name}</h4>
+                  <h4 className="text-base font-black text-slate-800 group-hover/card:text-emerald-850 transition-colors">{staff.name}</h4>
                   <p className="text-xs font-bold text-emerald-800 mt-0.5">{staff.staffId}</p>
                   
                   {/* Department description tag */}
-                  <span className="inline-block bg-slate-200 text-slate-800 font-extrabold text-[9px] px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide">
+                  <span className="inline-block bg-slate-250 text-slate-800 font-extrabold text-[9px] px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide border border-slate-300 shadow-3xs">
                     {DEPARTMENT_NAMES_KM[staff.department]}
                   </span>
                 </div>
@@ -884,7 +900,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                 <div className="border-t border-slate-200/50 mt-3 pt-3 space-y-1.5 text-xs font-semibold text-slate-500">
                   <div className="flex justify-between">
                     <span>ភេទ៖ <span className="font-extrabold text-slate-700">{staff.gender}</span></span>
-                    <span>ចំនួនឆ្នាំធ្វើការ៖ <span className="font-extrabold text-emerald-800 font-sans">{calculateYearsOfWork(staff.joinDate)}</span></span>
+                    <span>ចំនួនឆ្នាំធ្វើការ៖ <span className="font-extrabold text-emerald-850 font-sans">{calculateYearsOfWork(staff.joinDate)}</span></span>
                   </div>
                   {staff.joinDate && (
                     <div className="flex justify-between">
@@ -909,10 +925,11 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                           })()}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center justify-center p-1 rounded-md bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white transition duration-200 cursor-pointer border border-sky-100"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center p-1 rounded-md bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white transition duration-200 cursor-pointer border border-sky-100 animate-pulse"
                           title="បើកឆាត Telegram (Instant Contact)"
                         >
-                          <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-.97.53-1.35.52-.42-.01-1.23-.24-1.83-.44-.74-.24-1.33-.37-1.28-.79.03-.22.33-.45.91-.69 3.56-1.55 5.93-2.57 7.12-3.06 3.4-1.4 4.1-1.64 4.56-1.65.11 0 .34.03.49.15.12.1.15.24.17.34 0 .07.01.21 0 .28z" />
                           </svg>
                         </a>
@@ -945,6 +962,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                             })()}
                             target="_blank"
                             rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
                             className="flex items-center justify-center gap-1.5 w-full bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white border border-sky-100 hover:border-sky-600 rounded-lg py-1.5 px-2 text-[10px] font-extrabold transition-all duration-200 cursor-pointer shadow-2xs group"
                             title="ចុចទីនេះដើម្បីបើកឆាត Telegram ទៅកាន់អ្នកទទួលខុសត្រូវ"
                           >
@@ -963,7 +981,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               {/* Edit / Delete quick buttons */}
               <div className="flex items-center gap-2 border-t border-slate-200/50 mt-4 pt-3 justify-end">
                 <button 
-                  onClick={() => openAttachmentModal(staff, 'upload')}
+                  onClick={(e) => { e.stopPropagation(); openAttachmentModal(staff, 'upload'); }}
                   className="p-1.5 text-slate-400 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative cursor-pointer"
                   title="ឯកសារភ្ជាប់ (File Attachments)"
                 >
@@ -975,7 +993,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   )}
                 </button>
                 <button 
-                  onClick={() => openAttachmentModal(staff, 'link')}
+                  onClick={(e) => { e.stopPropagation(); openAttachmentModal(staff, 'link'); }}
                   className="p-1.5 text-slate-400 hover:text-emerald-805 bg-white hover:bg-emerald-50 rounded-lg border border-slate-200/60 transition flex items-center justify-center relative cursor-pointer"
                   title="តំណភ្ជាប់ Web (Other Links)"
                 >
@@ -987,14 +1005,14 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   )}
                 </button>
                 <button 
-                  onClick={() => openEditForm(staff)}
+                  onClick={(e) => { e.stopPropagation(); openEditForm(staff); }}
                   className="p-1.5 text-slate-400 hover:text-emerald-805 bg-white hover:bg-emerald-50 rounded-lg border border-slate-200/60 transition cursor-pointer"
                   title="កែសម្រួលព័ត៌មាន"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button 
-                  onClick={() => handleDeleteStaff(staff.id, staff.name, staff.staffId)}
+                  onClick={(e) => { e.stopPropagation(); handleDeleteStaff(staff.id, staff.name, staff.staffId); }}
                   className="p-1.5 text-slate-400 hover:text-rose-600 bg-white hover:bg-rose-50 rounded-lg border border-slate-200/60 transition cursor-pointer"
                   title="លុបចោល"
                 >
@@ -1143,6 +1161,33 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                       onChange={(e) => setFormJoinDate(e.target.value)}
                       className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
                     />
+                  </div>
+
+                  {/* Contract Status & Email Row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">ស្ថានភាពកិច្ចសន្យា (Contract Status)</label>
+                      <select
+                        value={formContractStatus}
+                        onChange={(e) => setFormContractStatus(e.target.value)}
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                      >
+                        <option value="ពេញសិទ្ធិ (Full-Time)">ពេញសិទ្ធិ (Full-Time)</option>
+                        <option value="សាកល្បង (Probation)">សាកល្បង (Probation)</option>
+                        <option value="កិច្ចសន្យា (Contract)">កិច្ចសន្យា (Contract)</option>
+                        <option value="បណ្តោះអាសន្ន (Temporary)">បណ្តោះអាសន្ន (Temporary)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">អ៊ីមែល (Email - optional)</label>
+                      <input 
+                        type="email"
+                        value={formEmail}
+                        onChange={(e) => setFormEmail(e.target.value)}
+                        placeholder="staff@wis.edu.kh"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                      />
+                    </div>
                   </div>
 
                   {/* Phone & Department row */}
@@ -1905,6 +1950,300 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
                   className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-black px-6 py-2.5 rounded-xl cursor-pointer w-full sm:w-auto text-center"
                 >
                   បិទវិញ (Close View)
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Staff Detailed Profile Modal */}
+      <AnimatePresence>
+        {selectedStaffProfile && (
+          <div 
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
+            onClick={() => setSelectedStaffProfile(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b-2 border-emerald-500 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+                    <User className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black tracking-tight">ប្រវត្តិរូបសង្ខេបបុគ្គលិក / Staff Member Profile</h3>
+                    <p className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">{selectedStaffProfile.staffId}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedStaffProfile(null)} 
+                  className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 overflow-y-auto space-y-6">
+                
+                {/* 1. Main Header Profile Segment with Photo & Primary Info */}
+                <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start border-b border-slate-100 pb-6">
+                  {/* Portrait aspect box */}
+                  <div className="w-32 h-44 bg-slate-100 border border-slate-350 shadow-md relative overflow-hidden rounded-xl flex items-center justify-center shrink-0">
+                    {selectedStaffProfile.photo ? (
+                      <img 
+                        src={selectedStaffProfile.photo} 
+                        alt={selectedStaffProfile.name} 
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <div className="text-center p-2 flex flex-col items-center justify-center h-full">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Photo</span>
+                        <div className="mt-2 w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-sm font-black text-slate-600">
+                          {selectedStaffProfile.name.split(' ').pop()?.substring(0, 2) || 'WIS'}
+                        </div>
+                      </div>
+                    )}
+                    <div className="absolute bottom-1.5 right-1.5 bg-emerald-600 text-[8px] font-bold text-white px-1.5 py-0.5 rounded shadow-3xs uppercase tracking-wider">
+                      Verified
+                    </div>
+                  </div>
+
+                  {/* Primary labels & meta */}
+                  <div className="flex-1 space-y-3.5 text-center sm:text-left">
+                    <div>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <h4 className="text-xl font-black text-slate-800 tracking-tight">{selectedStaffProfile.name}</h4>
+                        <span className="bg-slate-150 text-slate-750 border border-slate-250 font-extrabold text-[9px] px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                          {selectedStaffProfile.gender}
+                        </span>
+                      </div>
+                      <p className="text-xs font-bold text-emerald-805 mt-0.5 font-mono">{selectedStaffProfile.staffId}</p>
+                    </div>
+
+                    {/* Quick Badges */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                      <span className="bg-slate-100 text-slate-850 hover:bg-slate-200 border border-slate-200 font-extrabold text-[10px] px-3 py-1 rounded-lg">
+                        📂 {DEPARTMENT_NAMES_KM[selectedStaffProfile.department]}
+                      </span>
+                      <span className={`border font-extrabold text-[10px] px-3 py-1 rounded-lg ${
+                        selectedStaffProfile.contractStatus?.includes('Probation') || selectedStaffProfile.contractStatus?.includes('សាកល្បង')
+                          ? 'bg-amber-50 border-amber-250 text-amber-805'
+                          : selectedStaffProfile.contractStatus?.includes('Contract') || selectedStaffProfile.contractStatus?.includes('កិច្ចសន្យា')
+                            ? 'bg-indigo-50 border-indigo-250 text-indigo-805'
+                            : selectedStaffProfile.contractStatus?.includes('Temporary') || selectedStaffProfile.contractStatus?.includes('បណ្តោះអាសន្ន')
+                              ? 'bg-rose-50 border-rose-250 text-rose-805'
+                              : 'bg-emerald-50 border-emerald-250 text-emerald-805'
+                      }`}>
+                        🛡️ {selectedStaffProfile.contractStatus || 'ពេញសិទ្ធិ (Full-Time)'}
+                      </span>
+                    </div>
+
+                    {/* Summary row */}
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-md">
+                      បុគ្គលិកបម្រើការងារនៅក្នុងផ្នែក <span className="text-slate-850 font-extrabold">{DEPARTMENT_NAMES_KM[selectedStaffProfile.department]}</span> នៃសាលាមីលតិន (Milton School/WIS)។ ព័ត៌មានលម្អិត និងឯកសារភ្ជាប់ត្រូវបានដាក់តាំងបង្ហាញខាងក្រោម។
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Detailed Profile Fields Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
+                  {/* Left panel: Info general */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col justify-between">
+                    <h5 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-3">ព័ត៌មានផ្ទាល់ខ្លួនបុគ្គលិក / Personal details</h5>
+                    <div className="space-y-3.5">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">ថ្ងៃខែឆ្នាំកំណើត (DOB)៖</span>
+                        <span className="font-extrabold text-slate-800 font-sans">{selectedStaffProfile.dob || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">អាយុ (Age)៖</span>
+                        <span className="font-extrabold text-slate-800">
+                          {(() => {
+                            if (!selectedStaffProfile.dob) return 'N/A';
+                            const birth = new Date(selectedStaffProfile.dob);
+                            if (isNaN(birth.getTime())) return 'N/A';
+                            const today = new Date();
+                            let age = today.getFullYear() - birth.getFullYear();
+                            const m = today.getMonth() - birth.getMonth();
+                            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                              age--;
+                            }
+                            return `${age} ឆ្នាំ (Years)`;
+                          })()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">ទូរស័ព្ទ (Phone Contact)៖</span>
+                        <span className="font-black text-slate-850 font-mono tracking-wide">{selectedStaffProfile.phoneNumber}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">អ៊ីមែល (Email)៖</span>
+                        <span className="font-bold text-slate-800 text-[11px] font-sans break-all">{selectedStaffProfile.email || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right panel: Info work */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col justify-between">
+                    <h5 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-3">កិច្ចសន្យា និងសេវាកម្ម / Employment & contract</h5>
+                    <div className="space-y-3.5">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">កាលបរិច្ឆេទចាប់ផ្តើម (Join Date)៖</span>
+                        <span className="font-extrabold text-slate-800 font-sans">{selectedStaffProfile.joinDate || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">បទពិសោធន៍ (Tenure)៖</span>
+                        <span className="font-extrabold text-emerald-800 font-sans">{calculateYearsOfWork(selectedStaffProfile.joinDate)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">ស្ថានភាពការងារ (Contract)៖</span>
+                        <span className="font-extrabold text-slate-805 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-3xs">{selectedStaffProfile.contractStatus || 'ពេញសិទ្ធិ (Full-Time)'}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-semibold text-slate-500">ទីតាំងទទួលខុសត្រូវ៖</span>
+                        <span className="font-black text-slate-800 text-[11px]">{selectedStaffProfile.responsibleLocation || 'មិនទាន់កំណត់'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* 3. Logistics details and asset assignments */}
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                  <h5 className="text-[11px] font-black uppercase text-slate-400 tracking-wider mb-2.5">ការចាត់តាំងការងារ និង ទ្រព្យសម្បត្តិ / Checkpoints & walkie-talkies</h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="bg-white border border-slate-150 p-3 rounded-xl flex items-center gap-3">
+                      <span className="text-2xl shrink-0">📍</span>
+                      <div>
+                        <div className="text-[10px] text-slate-400 font-extrabold uppercase">ទីតាំងប្រចាំការ / Duty Location</div>
+                        <div className="text-xs font-black text-slate-800">{selectedStaffProfile.responsibleLocation || 'គ្មានទីតាំងកំណត់'}</div>
+                      </div>
+                    </div>
+                    <div className="bg-white border border-slate-150 p-3 rounded-xl flex items-center gap-3">
+                      <span className="text-2xl shrink-0">📻</span>
+                      <div>
+                        <div className="text-[10px] text-slate-400 font-extrabold uppercase">មុខងារអាយកូម / Icom Walkie-Talkie</div>
+                        <div className="text-xs font-black text-slate-800">{selectedStaffProfile.icom || 'មិនមានកំណត់'}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Documents & Social Connection Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Telegram shortcut connection details */}
+                  <div className="border border-sky-100 bg-sky-50/50 p-4 rounded-2xl">
+                    <h5 className="text-[11px] font-black uppercase text-sky-850 tracking-wider mb-2 flex items-center gap-1">
+                      <span className="animate-pulse">💬</span> ទំនាក់ទំនងរហ័ស Telegram Contact
+                    </h5>
+                    <p className="text-[11px] text-sky-950 font-medium mb-3">
+                      បើកការសន្ទនាផ្ទាល់ជាសកលតាមរយៈប្រព័ន្ធ Telegram មួយឃ្លីក៖
+                    </p>
+                    {selectedStaffProfile.phoneNumber && selectedStaffProfile.phoneNumber !== 'N/A' && selectedStaffProfile.phoneNumber !== 'គ្មាន' ? (
+                      <a
+                        href={(() => {
+                          const clean = selectedStaffProfile.phoneNumber.replace(/[^0-9]/g, '');
+                          const international = clean.startsWith('855') 
+                            ? clean 
+                            : clean.startsWith('0') 
+                              ? `855${clean.slice(1)}` 
+                              : `855${clean}`;
+                          return `https://t.me/+${international}`;
+                        })()}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center justify-center gap-2 w-full bg-sky-600 hover:bg-sky-700 text-white font-black text-xs py-2.5 px-4 rounded-xl transition duration-200 shadow-md shadow-sky-100"
+                      >
+                        <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-.97.53-1.35.52-.42-.01-1.23-.24-1.83-.44-.74-.24-1.33-.37-1.28-.79.03-.22.33-.45.91-.69 3.56-1.55 5.93-2.57 7.12-3.06 3.4-1.4 4.1-1.64 4.56-1.65.11 0 .34.03.49.15.12.1.15.24.17.34 0 .07.01.21 0 .28z" />
+                        </svg>
+                        <span>ឆាតទៅកាន់ Telegram ផ្ទាល់</span>
+                      </a>
+                    ) : (
+                      <div className="text-center font-bold text-xs text-slate-400 py-2 bg-slate-100 border border-slate-200 rounded-xl">
+                        គ្មានលេខទូរស័ព្ទដើម្បីភ្ជាប់
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Document and attachment overview summaries */}
+                  <div className="border border-teal-100 bg-teal-50/50 p-4 rounded-2xl flex flex-col justify-between">
+                    <h5 className="text-[11px] font-black uppercase text-teal-850 tracking-wider mb-2 flex items-center gap-1">
+                      📁 ប័ណ្ណសារឯកសារភ្ជាប់ Attachments
+                    </h5>
+                    <div className="text-xs text-teal-950 font-semibold space-y-1.5 font-sans">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span>📂 ឯកសារដែលបានផ្ទុកឡើង៖</span>
+                        <span className="font-extrabold text-slate-700">
+                          {selectedStaffProfile.attachments?.filter(a => a.type !== 'link').length || 0} ច្បាប់
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span>🔗 តំណភ្ជាប់គេហទំព័រក្រៅ៖</span>
+                        <span className="font-extrabold text-slate-700">
+                          {selectedStaffProfile.attachments?.filter(a => a.type === 'link').length || 0} តំណ
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const copy = selectedStaffProfile;
+                        setSelectedStaffProfile(null);
+                        setSelectedStaffForAttachments(copy);
+                        setIsAttachmentModalOpen(true);
+                      }}
+                      className="mt-3 inline-flex items-center justify-center gap-1.5 w-full bg-teal-600 hover:bg-teal-700 text-white font-black text-xs py-2.5 px-4 rounded-xl transition duration-200 shadow-md shadow-teal-50"
+                    >
+                      <Paperclip className="w-3.5 h-3.5" />
+                      <span>ចាត់ចែងឯកសារ / Manage Files</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Footer */}
+              <div className="bg-slate-50 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-slate-150 shrink-0">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      const staffToEdit = selectedStaffProfile;
+                      setSelectedStaffProfile(null);
+                      openEditForm(staffToEdit);
+                    }}
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-white hover:bg-emerald-50 text-emerald-800 font-extrabold text-xs px-5 py-2.5 rounded-xl transition border border-emerald-200 cursor-pointer"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 text-emerald-805" />
+                    <span>កែសម្រួលប្រវត្តិរូប</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const staffToDelete = selectedStaffProfile;
+                      setSelectedStaffProfile(null);
+                      handleDeleteStaff(staffToDelete.id, staffToDelete.name, staffToDelete.staffId);
+                    }}
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-white hover:bg-rose-50 text-rose-650 text-rose-600 font-extrabold text-xs px-4 py-2.5 rounded-xl transition border border-rose-200 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                    <span>លុបបុគ្គលិក</span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => setSelectedStaffProfile(null)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white font-black text-xs px-6 py-2.5 rounded-xl cursor-pointer"
+                >
+                  បិទព័ត៌មាន (Close Profile)
                 </button>
               </div>
             </motion.div>
