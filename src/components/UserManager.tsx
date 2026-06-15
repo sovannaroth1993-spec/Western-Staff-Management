@@ -26,6 +26,26 @@ interface UserManagerProps {
   lang: 'kh' | 'en';
 }
 
+export const AVAILABLE_PERMISSIONS = [
+  { key: 'dashboard', labelKh: 'ផ្ទាំងព័ត៌មាន (Dashboard)', labelEn: 'Dashboard Stats' },
+  { key: 'attendance', labelKh: 'ស្រង់វត្តមានបុគ្គលិក (Attendance)', labelEn: 'Attendance' },
+  { key: 'staff', labelKh: 'គ្រប់គ្រងបុគ្គលិក (Staff info)', labelEn: 'Staff Info' },
+  { key: 'students', labelKh: 'គ្រប់គ្រងសិស្ស (Students info)', labelEn: 'Student Info' },
+  { key: 'studentstatistics', labelKh: 'ប្រព័ន្ធស្ថិតិសិស្ស (Student stats)', labelEn: 'Student Stats' },
+  { key: 'electricity', labelKh: 'តាមដានអគ្គិសនី (Electricity)', labelEn: 'Electricity' },
+  { key: 'water', labelKh: 'តាមដានទឹក (Water)', labelEn: 'Water' },
+  { key: 'fixedassets', labelKh: 'គ្រប់គ្រងទ្រព្យសម្បត្តិថេរ (Fixed Assets)', labelEn: 'Fixed Assets' },
+  { key: 'insurance', labelKh: 'ធានារ៉ាប់រងសិស្ស (Student Insurance)', labelEn: 'Insurance' },
+  { key: 'cctv', labelKh: 'តាមដាន CCTV (CCTV Management)', labelEn: 'CCTV' },
+  { key: 'classroomequipment', labelKh: 'សម្ភារៈថ្នាក់រៀន (Classroom Equipment)', labelEn: 'Classroom Equipment' },
+  { key: 'dailyreport', labelKh: 'របាយការណ៍ប្រចាំថ្ងៃ (Daily Report)', labelEn: 'Daily Report' },
+  { key: 'admindocs', labelKh: 'ឯកសាររដ្ឋបាល (Admin Docs)', labelEn: 'Admin Docs' },
+  { key: 'otherlinks', labelKh: 'តំណភ្ជាប់ផ្សេងៗ (Other Links)', labelEn: 'Other Links' },
+  { key: 'schoolinfo', labelKh: 'ព័ត៌មានសាលាវេស្ទើន (School Info)', labelEn: 'School Info' },
+  { key: 'telegram', labelKh: 'ប្រព័ន្ធ Forward ទៅ Telegram', labelEn: 'Telegram Alert' },
+  { key: 'usermanager', labelKh: 'គ្រប់គ្រងអ្នកប្រើប្រាស់ (User manager)', labelEn: 'User Manager' },
+];
+
 export default function UserManager({
   usersList,
   setUsersList,
@@ -54,6 +74,7 @@ export default function UserManager({
   const [selectedRequest, setSelectedRequest] = useState<UserRequest | null>(null);
   const [adminRemarks, setAdminRemarks] = useState('');
   const [forcePasswordChange, setForcePasswordChange] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
   // Translations
   const t = {
@@ -207,7 +228,8 @@ export default function UserManager({
       role,
       status,
       createdAt: new Date().toISOString(),
-      forcePasswordChange: forcePasswordChange
+      forcePasswordChange: forcePasswordChange,
+      permissions: selectedPermissions
     };
 
     setUsersList([...usersList, newUser]);
@@ -223,6 +245,7 @@ export default function UserManager({
     setStatus('active');
     setFormError('');
     setForcePasswordChange(false);
+    setSelectedPermissions([]);
   };
 
   const openEdit = (user: UserAccount) => {
@@ -233,6 +256,7 @@ export default function UserManager({
     setRole(user.role);
     setStatus(user.status);
     setForcePasswordChange(user.forcePasswordChange || false);
+    setSelectedPermissions(user.permissions || []);
     setIsEditModalOpen(true);
   };
 
@@ -255,7 +279,8 @@ export default function UserManager({
           password: password || u.password,
           role,
           status,
-          forcePasswordChange: forcePasswordChange
+          forcePasswordChange: forcePasswordChange,
+          permissions: selectedPermissions
         };
       }
       return u;
@@ -617,15 +642,37 @@ export default function UserManager({
                               </div>
                             )}
                             <div>
-                              <span>{user.fullName}</span>
-                              {currentUser?.username === user.username && (
-                                <span className="ml-2 bg-emerald-100 text-emerald-800 text-[8px] font-black px-1.5 py-0.5 rounded uppercase font-sans">You</span>
-                              )}
-                              {user.forcePasswordChange && (
-                                <span className="ml-2 bg-amber-100 border border-amber-200 text-amber-805 text-[8.5px] font-black px-1.5 py-0.5 rounded uppercase animate-pulse font-sans">
-                                  {lang === 'kh' ? '🔑 ទាមទារប្តូរលេខសម្ងាត់' : '🔑 Change Required'}
-                                </span>
-                              )}
+                              <div className="flex items-center gap-1.5">
+                                <span>{user.fullName}</span>
+                                {currentUser?.username === user.username && (
+                                  <span className="bg-emerald-100 text-emerald-800 text-[8px] font-black px-1.5 py-0.5 rounded uppercase font-sans">You</span>
+                                )}
+                                {user.forcePasswordChange && (
+                                  <span className="bg-amber-100 border border-amber-200 text-amber-805 text-[8.5px] font-black px-1.5 py-0.5 rounded uppercase animate-pulse font-sans">
+                                    {lang === 'kh' ? '🔑 ទាមទារប្តូរលេខសម្ងាត់' : '🔑 Change Required'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-1 flex flex-wrap gap-1 max-w-[320px]">
+                                {user.role === 'admin' ? (
+                                  <span className="bg-amber-50 border border-amber-200 text-[#073B3A] text-[8.5px] font-bold px-1.5 py-0.5 rounded font-sans">
+                                    ★ {lang === 'kh' ? 'សិទ្ធិគ្រប់គ្រងទាំងអស់' : 'Super Admin'}
+                                  </span>
+                                ) : user.permissions && user.permissions.length > 0 ? (
+                                  user.permissions.map(kp => {
+                                    const match = AVAILABLE_PERMISSIONS.find(p => p.key === kp);
+                                    return (
+                                      <span key={kp} className="bg-emerald-50/60 border border-emerald-100 text-emerald-805 text-[8.5px] font-bold px-1.5 py-0.5 rounded font-sans leading-none">
+                                        {lang === 'kh' ? (match?.labelKh.split(' ')[0] || kp) : (match?.labelEn || kp)}
+                                      </span>
+                                    );
+                                  })
+                                ) : (
+                                  <span className="bg-slate-50 border border-slate-100 text-slate-400 text-[8.5px] font-bold px-1.5 py-0.5 rounded italic font-sans leading-none">
+                                    {lang === 'kh' ? 'សិទ្ធិបុគ្គលិកធម្មតា (Staff Portal)' : 'Staff Portal Only'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -1015,6 +1062,70 @@ export default function UserManager({
                   </div>
                 </div>
 
+                {/* Permitted Features Checkboxes */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-black text-slate-500">
+                      {lang === 'kh' ? 'សិទ្ធិប្រើប្រាស់មុខងារនានាក្នុងប្រព័ន្ធ' : 'Feature Permissions'}
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPermissions(AVAILABLE_PERMISSIONS.map(p => p.key))}
+                        className="text-[9.5px] font-black text-emerald-600 hover:underline cursor-pointer"
+                      >
+                        {lang === 'kh' ? 'ជ្រើសទាំងអស់' : 'Select All'}
+                      </button>
+                      <span className="text-[9px] text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPermissions([])}
+                        className="text-[9.5px] font-black text-rose-600 hover:underline cursor-pointer"
+                      >
+                        {lang === 'kh' ? 'សម្អាតទាំងអស់' : 'Clear All'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {role === 'admin' ? (
+                    <div className="bg-amber-50/50 text-amber-805 text-[10px] font-bold p-3 rounded-2xl border border-amber-200/50 italic">
+                      💡 {lang === 'kh' ? 'តួនាទី Admin មានសិទ្ធិប្រើប្រាស់មុខងារទាំងអស់ក្នុងប្រព័ន្ធដោយស្វ័យប្រវត្តិ។' : 'Admin accounts automatically have full access to all system features.'}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/50 max-h-48 overflow-y-auto">
+                      {AVAILABLE_PERMISSIONS.map((perm) => {
+                        const isChecked = selectedPermissions.includes(perm.key);
+                        return (
+                          <label 
+                            key={perm.key} 
+                            className={`flex items-start gap-1.5 p-1.5 rounded-xl border transition cursor-pointer select-none ${
+                              isChecked 
+                                ? 'bg-emerald-50/40 border-emerald-100 text-emerald-900 font-extrabold' 
+                                : 'bg-white border-transparent hover:bg-slate-100/50 text-slate-600'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setSelectedPermissions(selectedPermissions.filter(p => p !== perm.key));
+                                } else {
+                                  setSelectedPermissions([...selectedPermissions, perm.key]);
+                                }
+                              }}
+                              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 mt-0.5 h-3.5 w-3.5 cursor-pointer shrink-0"
+                            />
+                            <span className="text-[10px] leading-snug">
+                              {lang === 'kh' ? perm.labelKh : perm.labelEn}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
                   <button
                     type="button"
@@ -1141,6 +1252,70 @@ export default function UserManager({
                       <option value="inactive">🔴 {lang === 'kh' ? "មិនសកម្ម" : "Inactive"}</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Permitted Features Checkboxes */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-black text-slate-500">
+                      {lang === 'kh' ? 'សិទ្ធិប្រើប្រាស់មុខងារនានាក្នុងប្រព័ន្ធ' : 'Feature Permissions'}
+                    </label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPermissions(AVAILABLE_PERMISSIONS.map(p => p.key))}
+                        className="text-[9.5px] font-black text-emerald-600 hover:underline cursor-pointer"
+                      >
+                        {lang === 'kh' ? 'ជ្រើសទាំងអស់' : 'Select All'}
+                      </button>
+                      <span className="text-[9px] text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPermissions([])}
+                        className="text-[9.5px] font-black text-rose-600 hover:underline cursor-pointer"
+                      >
+                        {lang === 'kh' ? 'សម្អាតទាំងអស់' : 'Clear All'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {role === 'admin' ? (
+                    <div className="bg-amber-50/50 text-amber-805 text-[10px] font-bold p-3 rounded-2xl border border-amber-200/50 italic">
+                      💡 {lang === 'kh' ? 'តួនាទី Admin មានសិទ្ធិប្រើប្រាស់មុខងារទាំងអស់ក្នុងប្រព័ន្ធដោយស្វ័យប្រវត្តិ។' : 'Admin accounts automatically have full access to all system features.'}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-200/50 max-h-48 overflow-y-auto">
+                      {AVAILABLE_PERMISSIONS.map((perm) => {
+                        const isChecked = selectedPermissions.includes(perm.key);
+                        return (
+                          <label 
+                            key={perm.key} 
+                            className={`flex items-start gap-1.5 p-1.5 rounded-xl border transition cursor-pointer select-none ${
+                              isChecked 
+                                ? 'bg-emerald-50/40 border-emerald-100 text-emerald-900 font-extrabold' 
+                                : 'bg-white border-transparent hover:bg-slate-100/50 text-slate-600'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setSelectedPermissions(selectedPermissions.filter(p => p !== perm.key));
+                                } else {
+                                  setSelectedPermissions([...selectedPermissions, perm.key]);
+                                }
+                              }}
+                              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 mt-0.5 h-3.5 w-3.5 cursor-pointer shrink-0"
+                            />
+                            <span className="text-[10px] leading-snug">
+                              {lang === 'kh' ? perm.labelKh : perm.labelEn}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">

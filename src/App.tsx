@@ -137,7 +137,7 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal'>('dashboard');
   const [pendingReportDate, setPendingReportDate] = useState<string | null>(null);
 
   // Authentication & Role-based Access States
@@ -221,7 +221,15 @@ export default function App() {
       console.error(e);
     }
     setCurrentUser(user);
-    setActiveTab('dashboard');
+    if (user.role === 'admin') {
+      setActiveTab('dashboard');
+    } else {
+      if (user.permissions && user.permissions.includes('dashboard')) {
+        setActiveTab('dashboard');
+      } else {
+        setActiveTab('staff-portal');
+      }
+    }
   };
 
   const handleLogout = () => {
@@ -235,6 +243,22 @@ export default function App() {
     }
     setCurrentUser(null);
   };
+
+  const hasPermission = (tabKey: string) => {
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
+    if (tabKey === 'staff-portal') return true;
+    return currentUser.permissions?.includes(tabKey) || false;
+  };
+
+  // Redirect standard users to staff-portal if they try to access unauthorized tabs on page load or state shift
+  useEffect(() => {
+    if (currentUser && currentUser.role !== 'admin') {
+      if (activeTab !== 'staff-portal' && (!currentUser.permissions || !currentUser.permissions.includes(activeTab))) {
+        setActiveTab('staff-portal');
+      }
+    }
+  }, [currentUser, activeTab]);
 
   // Intercept Remote Scanner URL parameter on mobile devices
   const [remoteScanChannel, setRemoteScanChannel] = useState<string | null>(() => {
@@ -407,46 +431,7 @@ export default function App() {
     );
   }
 
-  // 2. Direct to Standard User custom portal if logged in as a normal user
-  if (currentUser.role === 'user') {
-    return (
-      <div className="min-h-screen text-slate-800 flex flex-col font-sans selection:bg-amber-100 selection:text-slate-900 bg-slate-50">
-        <div className="bg-slate-900 text-slate-400 py-1 flex items-center justify-between px-6 border-b border-slate-800 shrink-0">
-          <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
-            <Sparkles className="w-4.5 h-4.5 animate-pulse" />
-            <span>{t.topStrip}</span>
-          </div>
-          <div className="text-[10px] text-slate-405 font-bold uppercase tracking-widest font-mono">
-            {t.versionLabel}
-          </div>
-        </div>
 
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
-          <UserDashboard 
-            currentUser={currentUser}
-            usersList={usersList}
-            setUsersList={setUsersList}
-            userRequests={userRequests}
-            setUserRequests={setUserRequests}
-            staffList={staffList}
-            onLogout={handleLogout}
-            lang={lang === 'en' ? 'en' : 'kh'}
-          />
-        </div>
-
-        <footer className="mt-16 text-center border-t border-slate-200 pt-8 max-w-7xl mx-auto w-full px-6 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-slate-400 font-semibold gap-4 pb-12 font-sans">
-          <div>
-            © {new Date().getFullYear()} {lang === 'en' ? 'Western International School' : 'សាលាវេស្ទើនអន្តរជាតិ'}. {t.footerCopyright}
-          </div>
-          <div className="flex items-center justify-center gap-4 text-slate-500 font-medium">
-            <span>{t.footerMotto}</span>
-            <span>•</span>
-            <span className="text-emerald-700 font-bold hover:underline cursor-pointer">{t.footerSystem}</span>
-          </div>
-        </footer>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen md:h-screen text-slate-800 flex flex-col md:flex-row font-sans selection:bg-amber-100 selection:text-slate-900 relative md:overflow-hidden bg-slate-50">
@@ -490,261 +475,311 @@ export default function App() {
         </div>
 
         <nav className="flex flex-col gap-1.5 mt-2">
-          {/* Tab 1: Dashboard */}
+          {/* Always Visible: Personal / Staff Portal */}
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => setActiveTab('staff-portal')}
             className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'dashboard'
+              activeTab === 'staff-portal'
                 ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
                 : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
             }`}
           >
-            <LayoutDashboard className="w-4.5 h-4.5 text-amber-305" />
-            <span>{t.dashboard}</span>
+            <UserCheck className="w-4.5 h-4.5 text-amber-305" />
+            <span>{t.staffPortal}</span>
           </button>
+
+          {/* Tab 1: Dashboard */}
+          {hasPermission('dashboard') && (
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <LayoutDashboard className="w-4.5 h-4.5 text-amber-305" />
+              <span>{t.dashboard}</span>
+            </button>
+          )}
 
           {/* Tab 1.5: Electricity Analysis */}
-          <button
-            onClick={() => setActiveTab('electricity')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'electricity'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Zap className="w-4.5 h-4.5 text-amber-400 fill-amber-400/15" />
-            <span className="flex-1">{t.electricity}</span>
-          </button>
+          {hasPermission('electricity') && (
+            <button
+              onClick={() => setActiveTab('electricity')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'electricity'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Zap className="w-4.5 h-4.5 text-amber-400 fill-amber-400/15" />
+              <span className="flex-1">{t.electricity}</span>
+            </button>
+          )}
 
           {/* Tab 1.6: Water Analysis */}
-          <button
-            onClick={() => setActiveTab('water')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'water'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Droplet className="w-4.5 h-4.5 text-sky-400 fill-sky-500/15" />
-            <span className="flex-1">{t.water}</span>
-          </button>
+          {hasPermission('water') && (
+            <button
+              onClick={() => setActiveTab('water')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'water'
+                  ? 'bg-[#0d5c5a] text-amber-305 text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Droplet className="w-4.5 h-4.5 text-sky-400 fill-sky-500/15" />
+              <span className="flex-1">{t.water}</span>
+            </button>
+          )}
 
           {/* Tab 1.75: Khmer Calendar */}
-          <button
-            onClick={() => setActiveTab('khmercalendar')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'khmercalendar'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Calendar className="w-4.5 h-4.5 text-rose-405" />
-            <span className="flex-1">{t.khmercalendar}</span>
-          </button>
+          {hasPermission('khmercalendar') && (
+            <button
+              onClick={() => setActiveTab('khmercalendar')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'khmercalendar'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Calendar className="w-4.5 h-4.5 text-rose-405" />
+              <span className="flex-1">{t.khmercalendar}</span>
+            </button>
+          )}
 
           {/* Tab 1.8: Fixed Asset Manager */}
-          <button
-            onClick={() => setActiveTab('fixedassets')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'fixedassets'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <HardDrive className="w-4.5 h-4.5 text-emerald-400 fill-emerald-500/15" />
-            <span className="flex-1">{t.fixedassets}</span>
-          </button>
+          {hasPermission('fixedassets') && (
+            <button
+              onClick={() => setActiveTab('fixedassets')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'fixedassets'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <HardDrive className="w-4.5 h-4.5 text-emerald-400 fill-emerald-500/15" />
+              <span className="flex-1">{t.fixedassets}</span>
+            </button>
+          )}
 
           {/* Tab 1.9: Student Insurance */}
-          <button
-            onClick={() => setActiveTab('insurance')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'insurance'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <ShieldCheck className="w-4.5 h-4.5 text-emerald-400 fill-emerald-500/15" />
-            <span className="flex-1">{t.insurance}</span>
-          </button>
+          {hasPermission('insurance') && (
+            <button
+              onClick={() => setActiveTab('insurance')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'insurance'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <ShieldCheck className="w-4.5 h-4.5 text-emerald-400 fill-emerald-500/15" />
+              <span className="flex-1">{t.insurance}</span>
+            </button>
+          )}
 
           {/* Tab 1.10: CCTV Management */}
-          <button
-            onClick={() => setActiveTab('cctv')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'cctv'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Video className="w-4.5 h-4.5 text-emerald-400" />
-            <span className="flex-1">{t.cctv}</span>
-          </button>
+          {hasPermission('cctv') && (
+            <button
+              onClick={() => setActiveTab('cctv')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'cctv'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Video className="w-4.5 h-4.5 text-emerald-400" />
+              <span className="flex-1">{t.cctv}</span>
+            </button>
+          )}
 
           {/* Tab 1.11: Classroom Equipment Management */}
-          <button
-            onClick={() => setActiveTab('classroomequipment')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'classroomequipment'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <School className="w-4.5 h-4.5 text-emerald-400" />
-            <span className="flex-1">{t.classroomequipment}</span>
-          </button>
+          {hasPermission('classroomequipment') && (
+            <button
+              onClick={() => setActiveTab('classroomequipment')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'classroomequipment'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <School className="w-4.5 h-4.5 text-emerald-400" />
+              <span className="flex-1">{t.classroomequipment}</span>
+            </button>
+          )}
 
           {/* Tab 1.115: Daily Report */}
-          <button
-            onClick={() => setActiveTab('dailyreport')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'dailyreport'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Clock className="w-4.5 h-4.5 text-emerald-400" />
-            <span className="flex-1">{t.dailyReport}</span>
-          </button>
-
-
-
+          {hasPermission('dailyreport') && (
+            <button
+              onClick={() => setActiveTab('dailyreport')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'dailyreport'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Clock className="w-4.5 h-4.5 text-emerald-400" />
+              <span className="flex-1">{t.dailyReport}</span>
+            </button>
+          )}
 
           {/* Tab 1.12: Admin Documentation */}
-          <button
-            onClick={() => setActiveTab('admindocs')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'admindocs'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <FolderOpen className="w-4.5 h-4.5 text-emerald-400 animate-bounce" />
-            <span className="flex-1">{t.admindocs}</span>
-          </button>
+          {hasPermission('admindocs') && (
+            <button
+              onClick={() => setActiveTab('admindocs')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'admindocs'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <FolderOpen className="w-4.5 h-4.5 text-emerald-400 animate-bounce" />
+              <span className="flex-1">{t.admindocs}</span>
+            </button>
+          )}
 
           {/* Tab 1.14: Other Web Links (Other) */}
-          <button
-            onClick={() => setActiveTab('otherlinks')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'otherlinks'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Link2 className="w-4.5 h-4.5 text-emerald-400" />
-            <span className="flex-1">{t.otherlinks}</span>
-          </button>
+          {hasPermission('otherlinks') && (
+            <button
+              onClick={() => setActiveTab('otherlinks')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'otherlinks'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Link2 className="w-4.5 h-4.5 text-emerald-400" />
+              <span className="flex-1">{t.otherlinks}</span>
+            </button>
+          )}
 
           {/* Separator */}
-          <div className="h-px bg-[#0d5c5a]/40 my-2" />
+          {(hasPermission('staff') || hasPermission('students') || hasPermission('studentstatistics') || hasPermission('schoolinfo')) && (
+            <div className="h-px bg-[#0d5c5a]/40 my-2" />
+          )}
 
           {/* Tab 2: Staff setups */}
-          <button
-            onClick={() => setActiveTab('staff')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'staff'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Users className="w-4.5 h-4.5 text-slate-100" />
-            <span>{t.staff}</span>
-          </button>
+          {hasPermission('staff') && (
+            <button
+              onClick={() => setActiveTab('staff')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'staff'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Users className="w-4.5 h-4.5 text-slate-100" />
+              <span>{t.staff}</span>
+            </button>
+          )}
 
           {/* Tab 2.5: Student setups */}
-          <button
-            onClick={() => setActiveTab('students')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'students'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <GraduationCap className="w-4.5 h-4.5 text-slate-100" />
-            <span>{t.students}</span>
-          </button>
+          {hasPermission('students') && (
+            <button
+              onClick={() => setActiveTab('students')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'students'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <GraduationCap className="w-4.5 h-4.5 text-slate-100" />
+              <span>{t.students}</span>
+            </button>
+          )}
 
           {/* Tab 2.6: Student Statistics */}
-          <button
-            onClick={() => setActiveTab('studentstatistics')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'studentstatistics'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <BarChart2 className="w-4.5 h-4.5 text-slate-100" />
-            <span>{t.studentStatistics}</span>
-          </button>
+          {hasPermission('studentstatistics') && (
+            <button
+              onClick={() => setActiveTab('studentstatistics')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'studentstatistics'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <BarChart2 className="w-4.5 h-4.5 text-slate-100" />
+              <span>{t.studentStatistics}</span>
+            </button>
+          )}
 
           {/* Tab 2.7: Western School Info */}
-          <button
-            onClick={() => setActiveTab('schoolinfo')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'schoolinfo'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Building className="w-4.5 h-4.5 text-slate-100" />
-            <span>{t.schoolInfo}</span>
-          </button>
+          {hasPermission('schoolinfo') && (
+            <button
+              onClick={() => setActiveTab('schoolinfo')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'schoolinfo'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Building className="w-4.5 h-4.5 text-slate-100" />
+              <span>{t.schoolInfo}</span>
+            </button>
+          )}
 
           {/* Tab 3: Attendance registration */}
-          <button
-            onClick={() => setActiveTab('attendance')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'attendance'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <UserCheck className="w-4.5 h-4.5 text-slate-100" />
-            <span>{t.attendance}</span>
-          </button>
+          {hasPermission('attendance') && (
+            <button
+              onClick={() => setActiveTab('attendance')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'attendance'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <UserCheck className="w-4.5 h-4.5 text-slate-100" />
+              <span>{t.attendance}</span>
+            </button>
+          )}
 
           {/* Tab 4: Telegram forwarding */}
-          <button
-            onClick={() => setActiveTab('telegram')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'telegram'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Send className="w-4.5 h-4.5 text-slate-100" />
-            <span>{t.telegram}</span>
-          </button>
+          {hasPermission('telegram') && (
+            <button
+              onClick={() => setActiveTab('telegram')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'telegram'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Send className="w-4.5 h-4.5 text-slate-100" />
+              <span>{t.telegram}</span>
+            </button>
+          )}
 
           {/* Separator */}
-          <div className="h-px bg-[#0d5c5a]/40 my-2" />
+          {hasPermission('usermanager') && (
+            <div className="h-px bg-[#0d5c5a]/40 my-2" />
+          )}
 
           {/* User Management tab (Admin only) */}
-          <button
-            onClick={() => setActiveTab('usermanager')}
-            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-              activeTab === 'usermanager'
-                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-            }`}
-          >
-            <Shield className="w-4.5 h-4.5 text-amber-400" />
-            <span className="flex-1">{lang === 'kh' ? 'គ្រប់គ្រងអ្នកប្រើប្រាស់' : 'User Accounts'}</span>
-            {userRequests.filter(r => r.status === 'Pending').length > 0 && (
-              <span className="bg-rose-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded-full animate-pulse mr-2">
-                {userRequests.filter(r => r.status === 'Pending').length}
-              </span>
-            )}
-          </button>
+          {hasPermission('usermanager') && (
+            <button
+              onClick={() => setActiveTab('usermanager')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'usermanager'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Shield className="w-4.5 h-4.5 text-amber-400" />
+              <span className="flex-1">{lang === 'kh' ? 'គ្រប់គ្រងអ្នកប្រើប្រាស់' : 'User Accounts'}</span>
+              {userRequests.filter(r => r.status === 'Pending').length > 0 && (
+                <span className="bg-rose-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded-full animate-pulse mr-2">
+                  {userRequests.filter(r => r.status === 'Pending').length}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Separator */}
-          <div className="h-px bg-[#0d5c5a]/40 my-2" />
+          <div className="h-px bg-[#0d5c5a]/40 my-2 mt-auto" />
 
           {/* Sign Out (Logout) button */}
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-semibold tracking-wide text-rose-350 hover:text-white hover:bg-rose-955/20 pl-4 mt-auto cursor-pointer transition duration-200"
+            className="w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-semibold tracking-wide text-rose-350 hover:text-white hover:bg-rose-955/20 pl-4 cursor-pointer transition duration-200"
           >
             <LogOut className="w-4.5 h-4.5 text-rose-450" />
             <span>{lang === 'kh' ? 'ចាកចេញពីប្រព័ន្ធ' : 'Sign Out Dashboard'}</span>
@@ -884,6 +919,19 @@ export default function App() {
                 <DailyReportManager 
                   initialDate={pendingReportDate}
                   onClearInitialDate={() => setPendingReportDate(null)}
+                />
+              )}
+
+              {activeTab === 'staff-portal' && (
+                <UserDashboard 
+                  currentUser={currentUser!}
+                  usersList={usersList}
+                  setUsersList={setUsersList}
+                  userRequests={userRequests}
+                  setUserRequests={setUserRequests}
+                  staffList={staffList}
+                  onLogout={handleLogout}
+                  lang={lang === 'en' ? 'en' : 'kh'}
                 />
               )}
 

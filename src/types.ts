@@ -395,6 +395,7 @@ export interface UserAccount {
   createdAt: string;
   forcePasswordChange?: boolean;
   avatar?: string;
+  permissions?: string[];
 }
 
 export interface UserRequest {

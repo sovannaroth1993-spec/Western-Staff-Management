@@ -107,6 +107,23 @@ export default function Header({ totalStaff, totalPresentToday, lang }: HeaderPr
     return () => clearInterval(timer);
   }, []);
 
+  // Sync logo changes from storage or other components
+  useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        setLogo(localStorage.getItem('wis_school_logo') || '');
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('wis_logo_changed', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('wis_logo_changed', handleStorageChange);
+    };
+  }, []);
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -116,6 +133,9 @@ export default function Header({ totalStaff, totalPresentToday, lang }: HeaderPr
         setLogo(base64String);
         try {
           localStorage.setItem('wis_school_logo', base64String);
+          // Dispatch event to keep other views (like LoginScreen) synchronized
+          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new Event('wis_logo_changed'));
         } catch (error) {
           console.error("Local storage error:", error);
           alert(t.imageTooLarge);
@@ -127,11 +147,15 @@ export default function Header({ totalStaff, totalPresentToday, lang }: HeaderPr
 
   const handleRemoveLogo = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setLogo('');
-    try {
-      localStorage.removeItem('wis_school_logo');
-    } catch (err) {
-      console.error(err);
+    if (confirm(lang === 'en' ? "Are you sure you want to remove the school logo?" : "តើអ្នកចង់លុប Logo សាលាមែនទេ?")) {
+      setLogo('');
+      try {
+        localStorage.removeItem('wis_school_logo');
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('wis_logo_changed'));
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 

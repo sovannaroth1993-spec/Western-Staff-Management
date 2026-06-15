@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserAccount } from '../types';
 import { motion } from 'motion/react';
-import { Key, User, ShieldAlert, Sparkles, LogIn, ChevronDown, ChevronUp, Lock, CheckCircle2, X } from 'lucide-react';
+import { Key, User, ShieldAlert, LogIn, Lock, CheckCircle2, X, Upload } from 'lucide-react';
 
 interface LoginScreenProps {
   usersList: UserAccount[];
@@ -19,7 +19,32 @@ export default function LoginScreen({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [showHelp, setShowHelp] = useState(true);
+
+  // Logo state
+  const [logo, setLogo] = useState<string>(() => {
+    try {
+      return localStorage.getItem('wis_school_logo') || '';
+    } catch {
+      return '';
+    }
+  });
+
+  // Sync logo in real-time
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      try {
+        setLogo(localStorage.getItem('wis_school_logo') || '');
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('wis_logo_changed', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('wis_logo_changed', handleStorageChange);
+    };
+  }, []);
 
   // Forgot Password States
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
@@ -104,12 +129,6 @@ export default function LoginScreen({
     onLoginSuccess(foundUser);
   };
 
-  const handleFillDemo = (demoUser: string) => {
-    setUsername(demoUser);
-    setPassword('123456');
-    setErrorMsg('');
-  };
-
   const handleForgotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setForgotError('');
@@ -178,9 +197,105 @@ export default function LoginScreen({
         
         {/* Superior Branding Panel */}
         <div className="bg-[#073B3A] text-white p-6 pb-8 text-center relative border-b-4 border-amber-400">
-          {/* Logo element placeholder visual wrapper */}
-          <div className="w-14 h-14 bg-gradient-to-tr from-amber-300 to-amber-500 rounded-2xl flex items-center justify-center text-slate-950 font-black text-lg mx-auto shadow-md mb-3.5">
-            WIS
+          {/* Custom Logo uploadable container - allows transparent background */}
+          <div className="relative group mx-auto w-20 h-20 mb-3.5 flex items-center justify-center">
+            {logo ? (
+              <div className="relative w-20 h-20 flex items-center justify-center bg-transparent group-hover:scale-105 transition-all duration-300">
+                <img 
+                  src={logo} 
+                  alt="WIS Logo" 
+                  className="object-contain w-full h-full max-h-20 max-w-20"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Logo Actions Overlay (Edit / Delete) */}
+                <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex items-center justify-center gap-1.5 z-10">
+                  <label className="p-1.5 bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-lg cursor-pointer transition shadow-md" title={lang === 'kh' ? 'កែសម្រួល Logo' : 'Change Logo'}>
+                    <Upload className="w-3.5 h-3.5 font-bold" />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            const base64String = reader.result as string;
+                            setLogo(base64String);
+                            try {
+                              localStorage.setItem('wis_school_logo', base64String);
+                              // Dispatch event to update other components (Header, etc.)
+                              window.dispatchEvent(new Event('storage'));
+                              window.dispatchEvent(new Event('wis_logo_changed'));
+                            } catch (error) {
+                              console.error("Local storage error:", error);
+                              alert(lang === 'kh' ? "រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង ២MB។" : "Image too large! Please select a smaller file.");
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }} 
+                      className="hidden" 
+                    />
+                  </label>
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(lang === 'kh' ? "តើអ្នកចង់លុប Logo ផ្ទាល់ខ្លួននេះមែនទេ?" : "Are you sure you want to remove this custom logo?")) {
+                        setLogo('');
+                        try {
+                          localStorage.removeItem('wis_school_logo');
+                          window.dispatchEvent(new Event('storage'));
+                          window.dispatchEvent(new Event('wis_logo_changed'));
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }
+                    }} 
+                    className="p-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition shadow-md cursor-pointer" 
+                    title={lang === 'kh' ? 'លុប Logo' : 'Remove Logo'}
+                  >
+                    <X className="w-3.5 h-3.5 font-bold" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative group">
+                <div className="w-14 h-14 bg-gradient-to-tr from-amber-300 to-amber-500 rounded-2xl flex items-center justify-center text-slate-950 font-black text-lg shadow-md hover:scale-105 transition duration-350">
+                  WIS
+                </div>
+                {/* Hover label to upload custom transparent PNG */}
+                <label className="absolute inset-0 bg-[#073B3A]/85 border-2 border-dashed border-amber-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer text-white text-[9px] font-black uppercase tracking-tight shadow-lg" title={lang === 'kh' ? 'បញ្ចូល Logo គ្មាន Background' : 'Upload custom logo'}>
+                  <Upload className="w-4 h-4 text-amber-300 mb-0.5 animate-bounce" />
+                  <span>Logo</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const base64String = reader.result as string;
+                          setLogo(base64String);
+                          try {
+                            localStorage.setItem('wis_school_logo', base64String);
+                            window.dispatchEvent(new Event('storage'));
+                            window.dispatchEvent(new Event('wis_logo_changed'));
+                          } catch (error) {
+                            console.error("Local storage error:", error);
+                            alert(lang === 'kh' ? "រូបភាពធំពេក! សូមជ្រើសរើសរូបភាពតូចជាង ២MB។" : "Image too large! Please select a smaller file.");
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                    className="hidden" 
+                  />
+                </label>
+              </div>
+            )}
           </div>
           <span className="text-[9.5px] font-black text-amber-300 uppercase tracking-widest block mb-1">
             {t.tag}
@@ -278,87 +393,6 @@ export default function LoginScreen({
               </button>
             </div>
           </form>
-        </div>
-
-        {/* Pre-populated Evaluation Accounts Drawer */}
-        <div className="border-t border-slate-100 bg-slate-50/70">
-          <button
-            type="button"
-            onClick={() => setShowHelp(!showHelp)}
-            className="w-full px-6 py-3 flex items-center justify-between text-xs font-black text-slate-500 hover:text-slate-850 transition cursor-pointer"
-          >
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-500 animate-bounce" />
-              <span>{t.demoAccounts}</span>
-            </span>
-            {showHelp ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-
-          {showHelp && (
-            <div className="px-6 pb-6 space-y-3.5">
-              <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
-                {t.demoDesc}
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {/* Admin button filler */}
-                <button
-                  onClick={() => handleFillDemo('admin')}
-                  type="button"
-                  className="bg-white hover:bg-emerald-50/50 border border-slate-200 rounded-xl p-2 text-left transition text-xs font-bold block w-full group cursor-pointer"
-                >
-                  <div className="text-[9.5px] font-black text-emerald-805 flex items-center justify-between">
-                    <span>Admin Profile</span>
-                    <span className="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-mono font-bold block">PWD: 123456</span>
-                  </div>
-                  <div className="text-[11px] text-slate-700 font-bold mt-1">@admin</div>
-                  <div className="text-[9px] text-slate-400 font-semibold mt-0.5">System Admin</div>
-                </button>
-
-                {/* User 1 button filler */}
-                <button
-                  onClick={() => handleFillDemo('user01')}
-                  type="button"
-                  className="bg-white hover:bg-amber-50/40 border border-slate-200 rounded-xl p-2 text-left transition text-xs font-bold block w-full group cursor-pointer"
-                >
-                  <div className="text-[9.5px] font-black text-amber-705 flex items-center justify-between">
-                    <span>User Profile</span>
-                    <span className="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-mono font-bold block font-bold">PWD: 123456</span>
-                  </div>
-                  <div className="text-[11px] text-slate-700 font-bold mt-1">@user01</div>
-                  <div className="text-[9px] text-slate-400 font-semibold mt-0.5">John Doe (Standard)</div>
-                </button>
-
-                {/* Teacher 1 button filler */}
-                <button
-                  onClick={() => handleFillDemo('teacher01')}
-                  type="button"
-                  className="bg-white hover:bg-emerald-50/30 border border-slate-200 rounded-xl p-2 text-left transition text-xs font-bold block w-full group cursor-pointer"
-                >
-                  <div className="text-[9.5px] font-black text-emerald-805 flex items-center justify-between">
-                    <span>User Profile</span>
-                    <span className="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-mono font-bold block font-bold">PWD: 123456</span>
-                  </div>
-                  <div className="text-[11px] text-slate-700 font-bold mt-1">@teacher01</div>
-                  <div className="text-[9px] text-slate-400 font-semibold mt-0.5">Sok Dara (Teacher)</div>
-                </button>
-
-                {/* Staff 1 button filler */}
-                <button
-                  onClick={() => handleFillDemo('staff01')}
-                  type="button"
-                  className="bg-white hover:bg-emerald-50/30 border border-slate-200 rounded-xl p-2 text-left transition text-xs font-bold block w-full group cursor-pointer"
-                >
-                  <div className="text-[9.5px] font-black text-emerald-805 flex items-center justify-between">
-                    <span>User Profile</span>
-                    <span className="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-mono font-bold block font-bold">PWD: 123456</span>
-                  </div>
-                  <div className="text-[11px] text-slate-700 font-bold mt-1">@staff01</div>
-                  <div className="text-[9px] text-slate-400 font-semibold mt-0.5">Chan Vannak (Security)</div>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Forgot Password Modal */}
