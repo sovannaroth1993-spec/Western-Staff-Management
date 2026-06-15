@@ -382,3 +382,31 @@ export interface DailyReport {
   createdAt: string;
 }
 
+export type UserRole = 'admin' | 'user';
+export type UserStatus = 'active' | 'inactive';
+
+export interface UserAccount {
+  id: string;
+  username: string;
+  password?: string;
+  fullName: string;
+  role: UserRole;
+  status: UserStatus;
+  createdAt: string;
+  forcePasswordChange?: boolean;
+  avatar?: string;
+}
+
+export interface UserRequest {
+  id: string;
+  username: string;
+  fullName: string;
+  requestTitle: string;
+  requestType: 'Leave' | 'Equipment' | 'Maintenance' | 'Other';
+  description: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  createdAt: string;
+  remarks?: string;
+}
+
+

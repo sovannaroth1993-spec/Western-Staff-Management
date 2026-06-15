@@ -25,13 +25,17 @@ import DailyReportManager from './components/DailyReportManager';
 import StudentStatistics from './components/StudentStatistics';
 import WesternSchoolInfo from './components/WesternSchoolInfo';
 
-import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord, Student } from './types';
+import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord, Student, UserAccount, UserRequest } from './types';
 import { DEFAULT_STAFF } from './data/defaultStaff';
 import { DEFAULT_STUDENTS } from './data/defaultStudents';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video, Clock, BarChart2
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video, Clock, BarChart2, Shield, UserX, FileText
 } from 'lucide-react';
+import LoginScreen from './components/LoginScreen';
+import UserManager from './components/UserManager';
+import UserDashboard from './components/UserDashboard';
+import ForcePasswordChange from './components/ForcePasswordChange';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Default initial entries for water analysis comparison demonstration
@@ -133,8 +137,136 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager'>('dashboard');
   const [pendingReportDate, setPendingReportDate] = useState<string | null>(null);
+
+  // Authentication & Role-based Access States
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('wis_current_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [usersList, setUsersList] = useState<UserAccount[]>(() => {
+    try {
+      const savedUsersList = localStorage.getItem('wis_users_list');
+      if (savedUsersList) {
+        return JSON.parse(savedUsersList);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    const defaultAccounts: UserAccount[] = [
+      {
+        id: 'usr_admin',
+        username: 'admin',
+        password: '123456',
+        fullName: 'System Administrator',
+        role: 'admin',
+        status: 'active',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'usr_user01',
+        username: 'user01',
+        password: '123456',
+        fullName: 'John Doe',
+        role: 'user',
+        status: 'active',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'usr_teacher01',
+        username: 'teacher01',
+        password: '123456',
+        fullName: 'Sok Dara',
+        role: 'user',
+        status: 'active',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'usr_staff01',
+        username: 'staff01',
+        password: '123456',
+        fullName: 'Chan Vannak',
+        role: 'user',
+        status: 'active',
+        createdAt: new Date().toISOString()
+      }
+    ];
+    try {
+      localStorage.setItem('wis_users_list', JSON.stringify(defaultAccounts));
+    } catch {}
+    return defaultAccounts;
+  });
+
+  const [userRequests, setUserRequests] = useState<UserRequest[]>(() => {
+    try {
+      const savedReqs = localStorage.getItem('wis_user_requests');
+      if (savedReqs) {
+        return JSON.parse(savedReqs);
+      }
+    } catch {}
+    const sampleReqs: UserRequest[] = [
+      {
+        id: 'req_sample_1',
+        username: 'teacher01',
+        fullName: 'Sok Dara',
+        requestTitle: 'ស្នើសុំច្បាប់ឈប់សម្រាក ២ថ្ងៃ (Request 2 Days Leave)',
+        requestType: 'Leave',
+        description: 'ខ្ញុំបាទចង់ស្នើសុំសម្រាកព្យាបាលជំងឺផ្ដាសាយធំ ២ថ្ងៃ ពីថ្ងៃទី១៦ ដល់ ១៧ ខែមិថុនា។',
+        status: 'Pending',
+        createdAt: new Date().toISOString()
+      }
+    ];
+    try {
+      localStorage.setItem('wis_user_requests', JSON.stringify(sampleReqs));
+    } catch {}
+    return sampleReqs;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('wis_users_list', JSON.stringify(usersList));
+    } catch (err) {
+      console.error(err);
+    }
+  }, [usersList]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('wis_user_requests', JSON.stringify(userRequests));
+    } catch (err) {
+      console.error(err);
+    }
+  }, [userRequests]);
+
+  const handleLoginSuccess = (user: UserAccount) => {
+    try {
+      localStorage.setItem('wis_current_user', JSON.stringify(user));
+      localStorage.setItem('wis_profile_name', user.fullName);
+      localStorage.setItem('wis_profile_role', user.role === 'admin' ? (lang === 'kh' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ' : 'System Administrator') : (lang === 'kh' ? 'បុគ្គលិកធម្មតា' : 'Standard User'));
+    } catch (e) {
+      console.error(e);
+    }
+    setCurrentUser(user);
+    setActiveTab('dashboard');
+  };
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('wis_current_user');
+      localStorage.removeItem('wis_profile_name');
+      localStorage.removeItem('wis_profile_role');
+      localStorage.removeItem('wis_profile_avatar');
+    } catch (e) {
+      console.error(e);
+    }
+    setCurrentUser(null);
+  };
 
   // Intercept Remote Scanner URL parameter on mobile devices
   const [remoteScanChannel, setRemoteScanChannel] = useState<string | null>(() => {
@@ -278,6 +410,73 @@ export default function App() {
           setRemoteScanChannel(null);
         }} 
       />
+    );
+  }
+
+  // 1. Force authentication barrier if not logged in
+  if (!currentUser) {
+    return (
+      <LoginScreen 
+        usersList={usersList} 
+        onLoginSuccess={handleLoginSuccess} 
+        lang={lang === 'en' ? 'en' : 'kh'} 
+        setLang={(newLang) => setLang(newLang as Language)} 
+      />
+    );
+  }
+
+  // 1b. Force password change if requested from administration reset
+  if (currentUser.forcePasswordChange) {
+    return (
+      <ForcePasswordChange 
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        usersList={usersList}
+        setUsersList={setUsersList}
+        lang={lang === 'en' ? 'en' : 'kh'}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  // 2. Direct to Standard User custom portal if logged in as a normal user
+  if (currentUser.role === 'user') {
+    return (
+      <div className="min-h-screen text-slate-800 flex flex-col font-sans selection:bg-amber-100 selection:text-slate-900 bg-slate-50">
+        <div className="bg-slate-900 text-slate-400 py-1 flex items-center justify-between px-6 border-b border-slate-800 shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
+            <Sparkles className="w-4.5 h-4.5 animate-pulse" />
+            <span>{t.topStrip}</span>
+          </div>
+          <div className="text-[10px] text-slate-405 font-bold uppercase tracking-widest font-mono">
+            {t.versionLabel}
+          </div>
+        </div>
+
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+          <UserDashboard 
+            currentUser={currentUser}
+            usersList={usersList}
+            setUsersList={setUsersList}
+            userRequests={userRequests}
+            setUserRequests={setUserRequests}
+            staffList={staffList}
+            onLogout={handleLogout}
+            lang={lang === 'en' ? 'en' : 'kh'}
+          />
+        </div>
+
+        <footer className="mt-16 text-center border-t border-slate-200 pt-8 max-w-7xl mx-auto w-full px-6 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-slate-400 font-semibold gap-4 pb-12 font-sans">
+          <div>
+            © {new Date().getFullYear()} {lang === 'en' ? 'Western International School' : 'សាលាវេស្ទើនអន្តរជាតិ'}. {t.footerCopyright}
+          </div>
+          <div className="flex items-center justify-center gap-4 text-slate-500 font-medium">
+            <span>{t.footerMotto}</span>
+            <span>•</span>
+            <span className="text-emerald-700 font-bold hover:underline cursor-pointer">{t.footerSystem}</span>
+          </div>
+        </footer>
+      </div>
     );
   }
 
@@ -549,6 +748,39 @@ export default function App() {
             <Send className="w-4.5 h-4.5 text-slate-100" />
             <span>{t.telegram}</span>
           </button>
+
+          {/* Separator */}
+          <div className="h-px bg-[#0d5c5a]/40 my-2" />
+
+          {/* User Management tab (Admin only) */}
+          <button
+            onClick={() => setActiveTab('usermanager')}
+            className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+              activeTab === 'usermanager'
+                ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+            }`}
+          >
+            <Shield className="w-4.5 h-4.5 text-amber-400" />
+            <span className="flex-1">{lang === 'kh' ? 'គ្រប់គ្រងអ្នកប្រើប្រាស់' : 'User Accounts'}</span>
+            {userRequests.filter(r => r.status === 'Pending').length > 0 && (
+              <span className="bg-rose-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded-full animate-pulse mr-2">
+                {userRequests.filter(r => r.status === 'Pending').length}
+              </span>
+            )}
+          </button>
+
+          {/* Separator */}
+          <div className="h-px bg-[#0d5c5a]/40 my-2" />
+
+          {/* Sign Out (Logout) button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-semibold tracking-wide text-rose-350 hover:text-white hover:bg-rose-955/20 pl-4 mt-auto cursor-pointer transition duration-200"
+          >
+            <LogOut className="w-4.5 h-4.5 text-rose-450" />
+            <span>{lang === 'kh' ? 'ចាកចេញពីប្រព័ន្ធ' : 'Sign Out Dashboard'}</span>
+          </button>
         </nav>
       </aside>
 
@@ -684,6 +916,17 @@ export default function App() {
                 <DailyReportManager 
                   initialDate={pendingReportDate}
                   onClearInitialDate={() => setPendingReportDate(null)}
+                />
+              )}
+
+              {activeTab === 'usermanager' && (
+                <UserManager 
+                  usersList={usersList}
+                  setUsersList={setUsersList}
+                  userRequests={userRequests}
+                  setUserRequests={setUserRequests}
+                  currentUser={currentUser}
+                  lang={lang === 'en' ? 'en' : 'kh'}
                 />
               )}
             </div>
