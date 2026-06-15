@@ -102,15 +102,16 @@ export default function ForcePasswordChange({
 
     setSuccess(true);
 
-    setTimeout(() => {
-      // Complete state update
-      try {
-        localStorage.setItem('wis_current_user', JSON.stringify(updatedUser));
-      } catch (err) {
-        console.error(err);
-      }
-      setCurrentUser(updatedUser);
-    }, 1500);
+      setTimeout(() => {
+        // Complete state update
+        try {
+          sessionStorage.setItem('wis_current_user', JSON.stringify(updatedUser));
+          localStorage.setItem('wis_current_user', JSON.stringify(updatedUser));
+        } catch (err) {
+          console.error(err);
+        }
+        setCurrentUser(updatedUser);
+      }, 1500);
   };
 
   return (

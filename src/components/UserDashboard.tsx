@@ -251,9 +251,11 @@ export default function UserDashboard({
     if (newPassword) {
       // Re-save session credentials
       const updatedCurr = { ...currentUser, fullName: profileName.trim(), password: newPassword, avatar: avatar };
+      sessionStorage.setItem('wis_current_user', JSON.stringify(updatedCurr));
       localStorage.setItem('wis_current_user', JSON.stringify(updatedCurr));
     } else {
       const updatedCurr = { ...currentUser, fullName: profileName.trim(), avatar: avatar };
+      sessionStorage.setItem('wis_current_user', JSON.stringify(updatedCurr));
       localStorage.setItem('wis_current_user', JSON.stringify(updatedCurr));
     }
 

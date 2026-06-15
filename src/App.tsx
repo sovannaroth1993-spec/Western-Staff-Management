@@ -137,13 +137,23 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal'>('dashboard');
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal'>(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tabParam = searchParams.get('tab');
+      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal'];
+      if (tabParam && validTabs.includes(tabParam)) {
+        return tabParam as any;
+      }
+    } catch {}
+    return 'dashboard';
+  });
   const [pendingReportDate, setPendingReportDate] = useState<string | null>(null);
 
   // Authentication & Role-based Access States
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
     try {
-      const savedUser = localStorage.getItem('wis_current_user');
+      const savedUser = sessionStorage.getItem('wis_current_user') || localStorage.getItem('wis_current_user');
       return savedUser ? JSON.parse(savedUser) : null;
     } catch {
       return null;
@@ -212,28 +222,64 @@ export default function App() {
     }
   }, [userRequests]);
 
-  const handleLoginSuccess = (user: UserAccount) => {
+  const handleLoginSuccess = (user: UserAccount, rememberMe: boolean) => {
     try {
-      localStorage.setItem('wis_current_user', JSON.stringify(user));
+      // Always store in sessionStorage for active tab/window session logic
+      sessionStorage.setItem('wis_current_user', JSON.stringify(user));
+      
+      if (rememberMe) {
+        localStorage.setItem('wis_current_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('wis_current_user');
+      }
+      
+      sessionStorage.setItem('wis_profile_name', user.fullName);
+      sessionStorage.setItem('wis_profile_role', user.role === 'admin' ? (lang === 'kh' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ' : 'System Administrator') : (lang === 'kh' ? 'បុគ្គលិកធម្មតា' : 'Standard User'));
       localStorage.setItem('wis_profile_name', user.fullName);
       localStorage.setItem('wis_profile_role', user.role === 'admin' ? (lang === 'kh' ? 'អ្នកគ្រប់គ្រងប្រព័ន្ធ' : 'System Administrator') : (lang === 'kh' ? 'បុគ្គលិកធម្មតា' : 'Standard User'));
     } catch (e) {
       console.error(e);
     }
     setCurrentUser(user);
+
+    // Read optional target redirect tab from query param (Deep Link support)
+    let targetTab = activeTab;
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tabParam = searchParams.get('tab');
+      if (tabParam) {
+        targetTab = tabParam as any;
+      }
+    } catch {}
+
     if (user.role === 'admin') {
-      setActiveTab('dashboard');
+      setActiveTab(targetTab === 'staff-portal' ? 'dashboard' : targetTab);
     } else {
-      if (user.permissions && user.permissions.includes('dashboard')) {
+      const canAccessTarget = user.permissions?.includes(targetTab) || false;
+      if (targetTab === 'staff-portal') {
+        setActiveTab('staff-portal');
+      } else if (canAccessTarget) {
+        setActiveTab(targetTab);
+      } else if (user.permissions && user.permissions.includes('dashboard')) {
         setActiveTab('dashboard');
       } else {
         setActiveTab('staff-portal');
       }
     }
+
+    // Clean up query parameters from URL for aesthetics and secure bookmark sharing
+    try {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch {}
   };
 
   const handleLogout = () => {
     try {
+      sessionStorage.removeItem('wis_current_user');
+      sessionStorage.removeItem('wis_profile_name');
+      sessionStorage.removeItem('wis_profile_role');
+      sessionStorage.removeItem('wis_profile_avatar');
+
       localStorage.removeItem('wis_current_user');
       localStorage.removeItem('wis_profile_name');
       localStorage.removeItem('wis_profile_role');

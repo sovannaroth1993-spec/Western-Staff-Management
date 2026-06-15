@@ -5,7 +5,7 @@ import { Key, User, ShieldAlert, LogIn, Lock, CheckCircle2, X, Upload } from 'lu
 
 interface LoginScreenProps {
   usersList: UserAccount[];
-  onLoginSuccess: (user: UserAccount) => void;
+  onLoginSuccess: (user: UserAccount, rememberMe: boolean) => void;
   lang: 'kh' | 'en';
   setLang: (lang: 'kh' | 'en') => void;
 }
@@ -19,6 +19,7 @@ export default function LoginScreen({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Logo state
   const [logo, setLogo] = useState<string>(() => {
@@ -75,7 +76,8 @@ export default function LoginScreen({
       forgotErrNotFound: "មិនរកឃើញឈ្មោះគណនីនេះក្នុងប្រព័ន្ធឡើយ!",
       forgotErrPending: "សំណើសុំកំណត់លេខសម្ងាត់របស់គណនីនេះ កំពុងរង់ចាំ Admin អនុម័តរួចហើយ!",
       forgotSuccessMsg: "សំណើសុំកំណត់លេខសម្ងាត់ឡើងវិញត្រូវបានផ្ញើដោយជោគជ័យ! សូមទាក់ទងអ្នកគ្រប់គ្រង (Admin) ដើម្បីអនុម័ត។",
-      backToLogin: "ត្រឡប់ទៅទំព័រចូលគណនី"
+      backToLogin: "ត្រឡប់ទៅទំព័រចូលគណនី",
+      rememberMe: "ចងចាំគណនីខ្ញុំនៅលើឧបករណ៍នេះ (Remember Me)"
     },
     en: {
       tag: "WESTERN INTERNATIONAL SCHOOL SYSTEM",
@@ -99,7 +101,8 @@ export default function LoginScreen({
       forgotErrNotFound: "This username was not found in the system!",
       forgotErrPending: "A password reset request for this user is already pending Admin approval!",
       forgotSuccessMsg: "Reset request submitted successfully! Please contact your Administrator to approve.",
-      backToLogin: "Back to Secure Login"
+      backToLogin: "Back to Secure Login",
+      rememberMe: "Remember me on this device"
     }
   }[lang];
 
@@ -126,7 +129,7 @@ export default function LoginScreen({
     }
 
     // Success login
-    onLoginSuccess(foundUser);
+    onLoginSuccess(foundUser, rememberMe);
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {
@@ -368,6 +371,19 @@ export default function LoginScreen({
                 />
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 py-1 select-none">
+              <input
+                id="login-remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded border-slate-300 text-[#073B3A] focus:ring-[#073B3A]/30 h-4 w-4 cursor-pointer"
+              />
+              <label htmlFor="login-remember-me" className="text-xs font-black text-slate-500 hover:text-[#073B3A] transition cursor-pointer leading-none">
+                {t.rememberMe}
+              </label>
             </div>
 
             <button
