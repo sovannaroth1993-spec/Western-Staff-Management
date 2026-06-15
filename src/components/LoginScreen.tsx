@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserAccount } from '../types';
 import { motion } from 'motion/react';
-import { Key, User, ShieldAlert, Sparkles, LogIn, ChevronDown, ChevronUp, Lock, CheckCircle2 } from 'lucide-react';
+import { Key, User, ShieldAlert, Sparkles, LogIn, ChevronDown, ChevronUp, Lock, CheckCircle2, X } from 'lucide-react';
 
 interface LoginScreenProps {
   usersList: UserAccount[];
@@ -21,6 +21,12 @@ export default function LoginScreen({
   const [errorMsg, setErrorMsg] = useState('');
   const [showHelp, setShowHelp] = useState(true);
 
+  // Forgot Password States
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotError, setForgotError] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+
   const t = {
     kh: {
       tag: "ប្រព័ន្ធគ្រប់គ្រងសាលាវេស្ទើនអន្តរជាតិ",
@@ -35,7 +41,16 @@ export default function LoginScreen({
       demoAccounts: "គណនីគំរូសម្រាប់សាកល្បង (Demo Accounts)",
       demoDesc: "អ្នកអាចប្រើប្រាស់គណនីខាងក្រោម ដើម្បីសាកល្បង៖",
       roleAdmin: "រដ្ឋបាល (Admin)",
-      roleUser: "បុគ្គលិកធម្មតា (Standard User)"
+      roleUser: "បុគ្គលិកធម្មតា (Standard User)",
+      forgotPasswordLink: "ភ្លេចលេខកូដសម្ងាត់? ស្នើសុំ Admin កំណត់ឡើងវិញ",
+      forgotTitle: "ស្នើសុំកំណត់លេខសម្ងាត់ឡើងវិញ",
+      forgotSubmit: "ផ្ញើសំណើសុំកំណត់ឡើងវិញ",
+      forgotUsernameLabel: "បញ្ចូលឈ្មោះគណនីរបស់អ្នក *",
+      forgotErrEmpty: "សូមបញ្ចូលឈ្មោះគណនី!",
+      forgotErrNotFound: "មិនរកឃើញឈ្មោះគណនីនេះក្នុងប្រព័ន្ធឡើយ!",
+      forgotErrPending: "សំណើសុំកំណត់លេខសម្ងាត់របស់គណនីនេះ កំពុងរង់ចាំ Admin អនុម័តរួចហើយ!",
+      forgotSuccessMsg: "សំណើសុំកំណត់លេខសម្ងាត់ឡើងវិញត្រូវបានផ្ញើដោយជោគជ័យ! សូមទាក់ទងអ្នកគ្រប់គ្រង (Admin) ដើម្បីអនុម័ត។",
+      backToLogin: "ត្រឡប់ទៅទំព័រចូលគណនី"
     },
     en: {
       tag: "WESTERN INTERNATIONAL SCHOOL SYSTEM",
@@ -50,7 +65,16 @@ export default function LoginScreen({
       demoAccounts: "Pre-loaded Demo Accounts (គណនីគំរូ)",
       demoDesc: "Use these credentials to evaluate the role permission behaviors:",
       roleAdmin: "System Administrator",
-      roleUser: "Standard User"
+      roleUser: "Standard User",
+      forgotPasswordLink: "Forgot password? Request Admin reset",
+      forgotTitle: "Request Password Reset",
+      forgotSubmit: "Submit Reset Request",
+      forgotUsernameLabel: "Enter your username *",
+      forgotErrEmpty: "Please enter your username!",
+      forgotErrNotFound: "This username was not found in the system!",
+      forgotErrPending: "A password reset request for this user is already pending Admin approval!",
+      forgotSuccessMsg: "Reset request submitted successfully! Please contact your Administrator to approve.",
+      backToLogin: "Back to Secure Login"
     }
   }[lang];
 
@@ -84,6 +108,64 @@ export default function LoginScreen({
     setUsername(demoUser);
     setPassword('123456');
     setErrorMsg('');
+  };
+
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotSuccess('');
+
+    if (!forgotUsername.trim()) {
+      setForgotError(t.forgotErrEmpty);
+      return;
+    }
+
+    const tUsername = forgotUsername.trim().toLowerCase();
+    const foundUser = usersList.find(u => u.username.toLowerCase() === tUsername);
+    if (!foundUser) {
+      setForgotError(t.forgotErrNotFound);
+      return;
+    }
+
+    // Load existing reset requests to prevent duplicate pending
+    let logs = [];
+    try {
+      const savedLogs = localStorage.getItem('wis_password_reset_logs');
+      if (savedLogs) {
+        logs = JSON.parse(savedLogs);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    const isPending = logs.some((l: any) => l.username.toLowerCase() === tUsername && l.status === 'Pending');
+    if (isPending) {
+      setForgotError(t.forgotErrPending);
+      return;
+    }
+
+    // Create new log entry
+    const newLog = {
+      id: 'pr_' + Date.now(),
+      userId: foundUser.id,
+      username: foundUser.username,
+      fullName: foundUser.fullName,
+      actionType: 'User_Requested',
+      requestedAt: new Date().toISOString(),
+      performedBy: 'Client Portal',
+      status: 'Pending',
+      details: lang === 'kh' ? 'ស្នើឡើងដោយបុគ្គលិកតាមទំព័រដើម។' : 'Requested via Client login portal.'
+    };
+
+    const updatedLogs = [newLog, ...logs];
+    try {
+      localStorage.setItem('wis_password_reset_logs', JSON.stringify(updatedLogs));
+    } catch (err) {
+      console.error(err);
+    }
+
+    setForgotSuccess(t.forgotSuccessMsg);
+    setForgotUsername('');
   };
 
   return (
@@ -180,6 +262,21 @@ export default function LoginScreen({
               <LogIn className="w-4 h-4 text-amber-305" />
               <span>{t.loginBtn}</span>
             </button>
+
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotUsername('');
+                  setForgotError('');
+                  setForgotSuccess('');
+                  setIsForgotModalOpen(true);
+                }}
+                className="text-[11px] font-black text-emerald-800 hover:text-emerald-950 hover:underline transition cursor-pointer"
+              >
+                {t.forgotPasswordLink}
+              </button>
+            </div>
           </form>
         </div>
 
@@ -263,6 +360,77 @@ export default function LoginScreen({
             </div>
           )}
         </div>
+
+        {/* Forgot Password Modal */}
+        {isForgotModalOpen && (
+          <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col">
+              <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b-2 border-emerald-500">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4.5 h-4.5 text-amber-405" />
+                  <h3 className="text-sm font-black text-white">{t.forgotTitle}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsForgotModalOpen(false)}
+                  className="text-slate-400 hover:text-white transition cursor-pointer p-1 rounded-full hover:bg-white/10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleForgotSubmit} className="p-6 space-y-4">
+                {forgotError && (
+                  <div className="bg-rose-50 border border-rose-200 text-rose-805 px-4 py-2.5 rounded-2xl text-xs font-bold leading-relaxed">
+                    ⚠️ {forgotError}
+                  </div>
+                )}
+
+                {forgotSuccess ? (
+                  <div className="space-y-4 py-2 text-center">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-700 leading-relaxed px-2">
+                      {forgotSuccess}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotModalOpen(false)}
+                      className="inline-flex items-center justify-center w-full bg-[#073B3A] hover:bg-[#052b2a] text-white font-black text-xs py-2.5 px-4 rounded-xl shadow-md transition duration-200 cursor-pointer"
+                    >
+                      {t.backToLogin}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-black text-slate-500">{t.forgotUsernameLabel}</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          value={forgotUsername}
+                          onChange={(e) => setForgotUsername(e.target.value)}
+                          placeholder="e.g. user01"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-bold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/25 focus:border-emerald-600 transition placeholder:text-slate-400"
+                        />
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 px-4 rounded-2xl shadow-lg shadow-emerald-600/20 transition-all duration-200 cursor-pointer text-center"
+                    >
+                      <span>{t.forgotSubmit}</span>
+                    </button>
+                  </>
+                )}
+              </form>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

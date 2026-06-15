@@ -154,7 +154,10 @@ export default function App() {
     try {
       const savedUsersList = localStorage.getItem('wis_users_list');
       if (savedUsersList) {
-        return JSON.parse(savedUsersList);
+        const parsed = JSON.parse(savedUsersList) as UserAccount[];
+        const filtered = parsed.filter(u => u.username !== 'user01' && u.username !== 'teacher01' && u.username !== 'staff01');
+        localStorage.setItem('wis_users_list', JSON.stringify(filtered));
+        return filtered;
       }
     } catch (e) {
       console.error(e);
@@ -166,33 +169,6 @@ export default function App() {
         password: '123456',
         fullName: 'System Administrator',
         role: 'admin',
-        status: 'active',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'usr_user01',
-        username: 'user01',
-        password: '123456',
-        fullName: 'John Doe',
-        role: 'user',
-        status: 'active',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'usr_teacher01',
-        username: 'teacher01',
-        password: '123456',
-        fullName: 'Sok Dara',
-        role: 'user',
-        status: 'active',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'usr_staff01',
-        username: 'staff01',
-        password: '123456',
-        fullName: 'Chan Vannak',
-        role: 'user',
         status: 'active',
         createdAt: new Date().toISOString()
       }
@@ -207,21 +183,13 @@ export default function App() {
     try {
       const savedReqs = localStorage.getItem('wis_user_requests');
       if (savedReqs) {
-        return JSON.parse(savedReqs);
+        const parsed = JSON.parse(savedReqs) as UserRequest[];
+        const filtered = parsed.filter(r => r.username !== 'user01' && r.username !== 'teacher01' && r.username !== 'staff01');
+        localStorage.setItem('wis_user_requests', JSON.stringify(filtered));
+        return filtered;
       }
     } catch {}
-    const sampleReqs: UserRequest[] = [
-      {
-        id: 'req_sample_1',
-        username: 'teacher01',
-        fullName: 'Sok Dara',
-        requestTitle: 'ស្នើសុំច្បាប់ឈប់សម្រាក ២ថ្ងៃ (Request 2 Days Leave)',
-        requestType: 'Leave',
-        description: 'ខ្ញុំបាទចង់ស្នើសុំសម្រាកព្យាបាលជំងឺផ្ដាសាយធំ ២ថ្ងៃ ពីថ្ងៃទី១៦ ដល់ ១៧ ខែមិថុនា។',
-        status: 'Pending',
-        createdAt: new Date().toISOString()
-      }
-    ];
+    const sampleReqs: UserRequest[] = [];
     try {
       localStorage.setItem('wis_user_requests', JSON.stringify(sampleReqs));
     } catch {}

@@ -5,6 +5,18 @@ import {
   Users, UserPlus, Shield, UserCheck, UserX, Trash2, Edit2, Check, X, Search, Lock, FileText, BadgeAlert, Sparkles, MessageSquare, Plus, Clock, ThumbsUp, ThumbsDown, RefreshCw
 } from 'lucide-react';
 
+export interface PasswordResetLog {
+  id: string;
+  userId?: string;
+  username: string;
+  fullName: string;
+  actionType: 'User_Requested' | 'Admin_Reset' | 'Request_Approved' | 'Request_Rejected';
+  requestedAt: string;
+  performedBy: string;
+  status: 'Pending' | 'Completed' | 'Rejected';
+  details: string;
+}
+
 interface UserManagerProps {
   usersList: UserAccount[];
   setUsersList: (users: UserAccount[]) => void;
@@ -89,7 +101,23 @@ export default function UserManager({
       confirmResetPassword: "តើអ្នកប្រាកដជាចង់កំណត់លេខសម្ងាត់របស់គណនី @{username} ទៅជាតម្លៃដើម '123456' ឡើងវិញមែនទេ?",
       resetSuccess: "បានកំណត់លេខសម្ងាត់របស់ @{username} ទៅជា '123456' ដោយជោគជ័យ!",
       resetToDefaultBtn: "ប្តូរទៅលំនាំដើម (123456)",
-      forcePasswordChangeLabel: "តម្រូវឱ្យផ្លាស់ប្តូរលេខសម្ងាត់ពេលចូលលើកដំបូង (Force change on next login)"
+      forcePasswordChangeLabel: "តម្រូវឱ្យផ្លាស់ប្តូរលេខសម្ងាត់ពេលចូលលើកដំបូង (Force change on next login)",
+      tabResetLogs: "ប្រវត្តិប្តូរលេខសម្ងាត់",
+      noResetLogs: "មិនមានប្រវត្តិនៃការប្តូរលេខសម្ងាត់ក្នុងប្រព័ន្ធទេ",
+      resetLogTime: "ពេលវេលា",
+      resetLogUser: "ឈ្មោះគណនី / ឈ្មោះពេញ",
+      resetLogType: "ប្រភេទសកម្មភាព",
+      resetLogStatus: "ស្ថានភាពសន្តិសុខ",
+      resetLogAdmin: "អនុវត្តដោយ",
+      resetLogDetails: "ព័ត៌មានលម្អិត & គោលនយោបាយ",
+      actionApproved: "បានអនុម័តសំណើ",
+      actionRejected: "បានបដិសេធសំណើ",
+      actionRequested: "សំណើសុំកំណត់ឡើងវិញ",
+      actionDirectReset: "កំណត់ឡើងវិញដោយ Admin",
+      btnApprove: "អនុម័ត",
+      btnReject: "បដិសេធ",
+      btnClearLogs: "សម្អាតប្រវត្តិទាំងអស់",
+      confirmClearLogs: "តើអ្នកប្រាកដជាចង់សម្អាតប្រវត្តិ និងកំណត់ត្រាទាំងអស់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ!"
     },
     en: {
       title: "User Accounts & Permissions",
@@ -135,7 +163,23 @@ export default function UserManager({
       confirmResetPassword: "Are you sure you want to reset the password for @{username} to the default value '123456'?",
       resetSuccess: "Successfully reset password for @{username} to '123456'!",
       resetToDefaultBtn: "Reset to Default (123456)",
-      forcePasswordChangeLabel: "Force password change on next login"
+      forcePasswordChangeLabel: "Force password change on next login",
+      tabResetLogs: "Password Reset Logs",
+      noResetLogs: "No password reset logs or requests found in the system",
+      resetLogTime: "Timestamp",
+      resetLogUser: "Username / Target User",
+      resetLogType: "Action Type",
+      resetLogStatus: "Security Status",
+      resetLogAdmin: "Performed By",
+      resetLogDetails: "Log Details & Security Policy",
+      actionApproved: "Approved Request",
+      actionRejected: "Rejected Request",
+      actionRequested: "User Reset Request",
+      actionDirectReset: "Direct Admin Reset",
+      btnApprove: "Approve",
+      btnReject: "Reject",
+      btnClearLogs: "Clear All Logs",
+      confirmClearLogs: "Are you sure you want to clear all security logs and history? This action is irreversible!"
     }
   }[lang];
 
@@ -224,7 +268,12 @@ export default function UserManager({
   };
 
   const handleDeleteUser = (userId: string, targetUsername: string) => {
-    if (currentUser && currentUser.username === targetUsername) {
+    if (!currentUser || currentUser.role !== 'admin') {
+      alert(lang === 'kh' ? "មានតែគណនីរដ្ឋបាល (Admin) ទេដែលទើបអាចលុបបាន!" : "Only Admin accounts can delete users!");
+      return;
+    }
+
+    if (currentUser.username === targetUsername) {
       alert(lang === 'kh' ? "អ្នកមិនអាចលុបគណនីដែលកំពុងប្រើប្រាស់បានទេ!" : "You cannot delete the currently logged-in account!");
       return;
     }
@@ -248,6 +297,28 @@ export default function UserManager({
         return u;
       });
       setUsersList(updated);
+
+      // Create Admin Direct Reset Log
+      const targetUser = usersList.find(u => u.id === userId);
+      const adminName = currentUser ? `${currentUser.fullName} (@${currentUser.username})` : 'Administrator';
+      
+      const newLog: PasswordResetLog = {
+        id: 'pr_' + Date.now(),
+        userId: userId,
+        username: targetUsername,
+        fullName: targetUser?.fullName || targetUsername,
+        actionType: 'Admin_Reset',
+        requestedAt: new Date().toISOString(),
+        performedBy: adminName,
+        status: 'Completed',
+        details: lang === 'kh' 
+          ? `កំណត់លេខសម្ងាត់ឡើងវិញទៅលំនាំដើម '123456' ដោយផ្ទាល់ដោយ Admin៖ ${adminName}។`
+          : `Direct administrator reset to default '123456' by ${adminName}.`
+      };
+
+      const updatedLogs = [newLog, ...resetLogs];
+      saveLogs(updatedLogs);
+
       alert(t.resetSuccess.replace('{username}', targetUsername));
     }
   };
@@ -279,7 +350,119 @@ export default function UserManager({
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const [activeSubTab, setActiveSubTab] = useState<'users' | 'requests'>('users');
+  const [activeSubTab, setActiveSubTab] = useState<'users' | 'requests' | 'resetLogs'>('users');
+  const [resetLogs, setResetLogs] = useState<PasswordResetLog[]>([]);
+
+  useEffect(() => {
+    try {
+      const savedLogs = localStorage.getItem('wis_password_reset_logs');
+      if (savedLogs) {
+        setResetLogs(JSON.parse(savedLogs));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const saveLogs = (updatedLogs: PasswordResetLog[]) => {
+    setResetLogs(updatedLogs);
+    try {
+      localStorage.setItem('wis_password_reset_logs', JSON.stringify(updatedLogs));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleApproveResetRequest = (logId: string) => {
+    const log = resetLogs.find(l => l.id === logId);
+    if (!log) return;
+
+    const targetUser = usersList.find(u => u.username.toLowerCase() === log.username.toLowerCase());
+    if (!targetUser) {
+      alert(lang === 'kh' ? "មិនអាចអនុម័តបានទេ ព្រោះគណនីនេះលែងមានក្នុងប្រព័ន្ធទៀតហើយ!" : "Cannot approve! This user account no longer exists in the system.");
+      
+      const updatedLogs = resetLogs.map(l => {
+        if (l.id === logId) {
+          return {
+            ...l,
+            status: 'Rejected' as const,
+            details: lang === 'kh' ? "គណនីនេះត្រូវបានលុបចេញពីប្រព័ន្ធ។" : "User account has been deleted from system."
+          };
+        }
+        return l;
+      });
+      saveLogs(updatedLogs);
+      return;
+    }
+
+    const adminName = currentUser ? `${currentUser.fullName} (@${currentUser.username})` : 'Administrator';
+
+    const updatedUsers = usersList.map(u => {
+      if (u.id === targetUser.id) {
+        return {
+          ...u,
+          password: '123456',
+          forcePasswordChange: true
+        };
+      }
+      return u;
+    });
+    setUsersList(updatedUsers);
+
+    const updatedLogs = resetLogs.map(l => {
+      if (l.id === logId) {
+        return {
+          ...l,
+          actionType: 'Request_Approved' as const,
+          status: 'Completed' as const,
+          performedBy: adminName,
+          details: lang === 'kh' 
+            ? `បានអនុម័តសំណើរបស់ @${targetUser.username} ដោយ Admin៖ ${adminName}។ លេខសម្ងាត់កំណត់ទៅ '123456'។`
+            : `Approved request of @${targetUser.username} by Admin: ${adminName}. Password set to default '123456'.`
+        };
+      }
+      return l;
+    });
+    saveLogs(updatedLogs);
+
+    alert(lang === 'kh' 
+      ? `បានអនុម័តសំណើរបស់ @${targetUser.username} និងកំណត់លេខសម្ងាត់ទៅលំនាំដើម '123456' ដោយជោគជ័យ!` 
+      : `Approved reset request for @${targetUser.username} and successfully reset password to '123456'!`);
+  };
+
+  const handleRejectResetRequest = (logId: string) => {
+    const log = resetLogs.find(l => l.id === logId);
+    if (!log) return;
+
+    if (confirm(lang === 'kh' ? "តើអ្នកប្រាកដជាចង់បដិសេធសំណើនេះមែនទេ?" : "Are you sure you want to reject this request?")) {
+      const adminName = currentUser ? `${currentUser.fullName} (@${currentUser.username})` : 'Administrator';
+
+      const updatedLogs = resetLogs.map(l => {
+        if (l.id === logId) {
+          return {
+            ...l,
+            actionType: 'Request_Rejected' as const,
+            status: 'Rejected' as const,
+            performedBy: adminName,
+            details: lang === 'kh' 
+              ? `បានបដិសេធដោយ Admin៖ ${adminName}។`
+              : `Rejected by Admin: ${adminName}.`
+          };
+        }
+        return l;
+      });
+      saveLogs(updatedLogs);
+
+      alert(lang === 'kh' ? "បានបដិសេធសំណើដោយជោគជ័យ!" : "Successfully rejected reset request!");
+    }
+  };
+
+  const handleClearAllLogs = () => {
+    if (confirm(t.confirmClearLogs)) {
+      saveLogs([]);
+      alert(lang === 'kh' ? "សម្អាតប្រវត្តិនៃការប្តូរលេខសម្ងាត់ដោយជោគជ័យ!" : "Successfully cleared all password reset logs!");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -338,6 +521,24 @@ export default function UserManager({
             {userRequests.filter(r => r.status === 'Pending').length > 0 && (
               <span className="bg-rose-500 text-white font-black px-1.5 py-0.5 rounded-full text-[9px] animate-pulse">
                 {userRequests.filter(r => r.status === 'Pending').length}New
+              </span>
+            )}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveSubTab('resetLogs')}
+          className={`px-6 py-3 font-bold text-xs rounded-t-2xl border-t border-x transition-all cursor-pointer ${
+            activeSubTab === 'resetLogs'
+              ? 'bg-white border-slate-200 border-b-white text-emerald-805 shadow-2xs'
+              : 'border-transparent text-slate-400 bg-transparent hover:text-slate-700'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <Lock className="w-4 h-4" />
+            {t.tabResetLogs}
+            {resetLogs.filter(l => l.status === 'Pending').length > 0 && (
+              <span className="bg-rose-500 text-white font-black px-1.5 py-0.5 rounded-full text-[9px] animate-pulse">
+                {resetLogs.filter(l => l.status === 'Pending').length}New
               </span>
             )}
           </span>
@@ -476,7 +677,7 @@ export default function UserManager({
                             </button>
                             <button
                               onClick={() => handleDeleteUser(user.id, user.username)}
-                              disabled={currentUser?.username === user.username}
+                              disabled={currentUser?.role !== 'admin' || currentUser?.username === user.username}
                               className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg border border-slate-200 hover:border-rose-200 transition disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                               title={t.delete}
                             >
@@ -498,7 +699,7 @@ export default function UserManager({
             </div>
           </div>
         </div>
-      ) : (
+      ) : activeSubTab === 'requests' ? (
         /* Requests Tab panel */
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -573,6 +774,135 @@ export default function UserManager({
                 {t.noRequests}
               </div>
             )}
+          </div>
+        </div>
+      ) : (
+        /* Password Reset Logs Tab panel */
+        <div className="space-y-4">
+          <div className="flex items-center justify-between col-span-full">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider">
+              {lang === 'kh' ? 'កំណត់ត្រា និងសំណើប្តូរលេខសម្ងាត់' : 'Password Reset Logs & Action Items'}
+            </h3>
+            {resetLogs.length > 0 && (
+              <button
+                onClick={handleClearAllLogs}
+                className="bg-rose-50 hover:bg-rose-100/80 border border-rose-200 hover:border-rose-300 text-rose-750 font-extrabold text-[10px] px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{t.btnClearLogs}</span>
+              </button>
+            )}
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-3xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/75 border-b border-slate-200 text-[10.5px] font-black text-slate-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-6">{t.resetLogTime}</th>
+                    <th className="py-3.5 px-6">{t.resetLogUser}</th>
+                    <th className="py-3.5 px-6">{t.resetLogType}</th>
+                    <th className="py-3.5 px-6">{t.resetLogStatus}</th>
+                    <th className="py-3.5 px-6">{t.resetLogAdmin}</th>
+                    <th className="py-3.5 px-6">{t.resetLogDetails}</th>
+                    <th className="py-3.5 px-6 text-center">{t.actions}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {resetLogs.length > 0 ? (
+                    resetLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50 transition">
+                        <td className="py-3.5 px-6 text-[10.5px] font-mono text-slate-500 whitespace-nowrap">
+                          {new Date(log.requestedAt).toLocaleString()}
+                        </td>
+                        <td className="py-3.5 px-6">
+                          <div className="text-xs font-black text-slate-800">@{log.username}</div>
+                          <div className="text-[10px] font-bold text-slate-400">{log.fullName}</div>
+                        </td>
+                        <td className="py-3.5 px-6 whitespace-nowrap">
+                          <span className={`text-[10px] font-extrabold px-2 py-1 rounded-md leading-none flex items-center gap-1.5 w-fit ${
+                            log.actionType === 'User_Requested'
+                              ? 'bg-amber-50 text-amber-805 border border-amber-200/60'
+                              : log.actionType === 'Admin_Reset'
+                                ? 'bg-indigo-50 text-indigo-850 border border-indigo-200/60'
+                                : log.actionType === 'Request_Approved'
+                                  ? 'bg-emerald-50 text-emerald-805 border border-emerald-250/60'
+                                  : 'bg-rose-50 text-rose-805 border border-rose-250/60'
+                          }`}>
+                            {log.actionType === 'User_Requested' ? (
+                              <>
+                                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                {t.actionRequested}
+                              </>
+                            ) : log.actionType === 'Admin_Reset' ? (
+                              <>
+                                <span className="h-1.5 w-1.5 rounded-full bg-indigo-505" />
+                                {t.actionDirectReset}
+                              </>
+                            ) : log.actionType === 'Request_Approved' ? (
+                              <>
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-505" />
+                                {t.actionApproved}
+                              </>
+                            ) : (
+                              <>
+                                <span className="h-1.5 w-1.5 rounded-full bg-rose-505" />
+                                {t.actionRejected}
+                              </>
+                            )}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-6 whitespace-nowrap">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            log.status === 'Pending'
+                              ? 'bg-amber-100 text-amber-805 border-amber-300'
+                              : log.status === 'Completed'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : 'bg-rose-100 text-rose-800 border-rose-300'
+                          }`}>
+                            {log.status === 'Pending' ? t.statusPending : log.status === 'Completed' ? t.statusApproved : t.statusRejected}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-6 text-xs font-semibold text-slate-600 max-w-[140px] truncate" title={log.performedBy}>
+                          {log.performedBy}
+                        </td>
+                        <td className="py-3.5 px-6 text-xs font-semibold text-slate-500 max-w-xs truncate" title={log.details}>
+                          {log.details}
+                        </td>
+                        <td className="py-3.5 px-6 text-center whitespace-nowrap">
+                          {log.status === 'Pending' ? (
+                            <div className="inline-flex gap-1.5 justify-center">
+                              <button
+                                onClick={() => handleApproveResetRequest(log.id)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[10.5px] px-2.5 py-1 rounded-lg shadow-sm hover:shadow-md transition cursor-pointer flex items-center gap-1"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>{t.btnApprove}</span>
+                              </button>
+                              <button
+                                onClick={() => handleRejectResetRequest(log.id)}
+                                className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 hover:border-rose-300 font-extrabold text-[10.5px] px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span>{t.btnReject}</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-slate-300 text-[10px] font-mono select-none">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-slate-400 font-bold text-xs bg-white">
+                        {t.noResetLogs}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
