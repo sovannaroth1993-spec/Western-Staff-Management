@@ -36,6 +36,7 @@ import {
   StudentAbsentRecord, 
   StudentSickRecord 
 } from '../types';
+import { exportMonthlyReportToPdf } from '../utils/pdfHelper';
 
 // Let's configure beautiful default seeds for June-2026
 const DEFAULT_LUNCH_SEEDS: LunchRecord[] = [
@@ -645,6 +646,17 @@ export const MonthlyReportManager: React.FC = () => {
             >
               <Printer className="w-4 h-4 text-slate-900 stroke-[2.5px]" />
               <span>បោះពុម្ព (Print pdf)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                exportMonthlyReportToPdf(activeReport);
+                triggerSaveNotification('បានទាញយករបាយការណ៍ជា PDF ជោគជ័យ! (Exported PDF report)', 'success');
+              }}
+              className="bg-[#0b6b69] hover:bg-[#0c7a77] text-white font-extrabold text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-emerald-300 stroke-[2.5px]" />
+              <span>ទាញយក PDF (Export PDF)</span>
             </button>
 
             <button

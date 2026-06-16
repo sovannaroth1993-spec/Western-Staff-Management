@@ -4,8 +4,22 @@
  */
 
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-import { Staff, Department, AttendanceRecord, CleaningTask, DEPARTMENT_NAMES_KM, WaterRecord } from '../types';
+import autoTable from 'jspdf-autotable';
+import { 
+  Staff, 
+  Department, 
+  AttendanceRecord, 
+  CleaningTask, 
+  DEPARTMENT_NAMES_KM, 
+  WaterRecord,
+  MonthlyReport,
+  LunchRecord,
+  MosquitoSpraySchedule,
+  AchievementRecord,
+  InsuranceClaimRecord,
+  StudentAbsentRecord,
+  StudentSickRecord
+} from '../types';
 
 // Declare standard plugins for jsPDF
 interface jsPDFWithAutoTable extends jsPDF {
@@ -177,7 +191,7 @@ export function exportStaffToPdf(staffList: Staff[], department: Department | 'A
     8: { cellWidth: 24 }   // Location
   };
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: 46,
     head: [tableColumn],
     body: tableRows,
@@ -282,7 +296,7 @@ export function exportAttendanceToPdf(records: AttendanceRecord[], staffList: St
     5: { cellWidth: 42 }    // Notes
   };
 
-  doc.autoTable({
+  autoTable(doc, {
     startY: 46,
     head: [tableColumn],
     body: tableRows,
@@ -347,7 +361,7 @@ export function exportCleaningToPdf(tasks: CleaningTask[], date: string) {
     ]);
   });
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: 46,
     head: [tableColumn],
     body: tableRows,
@@ -456,7 +470,7 @@ export function exportWaterToPdf(waterRecords: WaterRecord[]) {
     ]);
   });
   
-  doc.autoTable({
+  autoTable(doc, {
     startY: 52,
     head: [tableColumn],
     body: tableRows,
@@ -486,4 +500,339 @@ export function exportWaterToPdf(waterRecords: WaterRecord[]) {
   doc.text('School Principal', 140, finalY + 30);
   
   doc.save(`WIS_Water_Supply_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+/**
+ * Helper to export the Monthly Performance Report to PDF
+ */
+export function exportMonthlyReportToPdf(report: MonthlyReport) {
+  const doc = new jsPDF() as jsPDFWithAutoTable;
+  
+  // 1. Initial Page Branding Banner
+  doc.setFillColor(7, 59, 58); // Western deep green (#073B3A)
+  doc.rect(0, 0, 210, 16, 'F');
+  
+  doc.setFillColor(251, 191, 36); // Amber Gold divider line
+  doc.rect(0, 16, 210, 2, 'F');
+  
+  // Header Branding Text
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.text('WESTERN INTERNATIONAL SCHOOL', 14, 11);
+  
+  doc.setFontSize(8);
+  doc.setTextColor(217, 249, 157); // Light green-yellow
+  doc.text('WIS COMPREHENSIVE CAMPUS SUMMARY RECORD', 140, 11);
+
+  // Document Title & Reference Month
+  doc.setTextColor(7, 59, 58);
+  doc.setFontSize(18);
+  doc.text('MONTHLY PERFORMANCE REPORT', 14, 28);
+  
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Reference Month: `, 14, 35);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(7, 59, 58);
+  doc.text(`${report.month.toUpperCase()}`, 45, 35);
+  
+  doc.setFont('Helvetica', 'normal');
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Report Level: Administrative Review SOP-2.1`, 14, 40);
+  doc.text(`Generated On: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 110, 40);
+  
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(226, 232, 240); // slate-200
+  doc.line(14, 43, 196, 43);
+
+  let currentY = 50;
+
+  // Function to check and prevent orphaned headings (adds new page if near bottom)
+  const ensureSpace = (heightNeeded: number) => {
+    if (currentY + heightNeeded > 280) {
+      doc.addPage();
+      currentY = 20; // reset to margin top on the new page
+    }
+  };
+
+  // --- SECTION 1: LUNCH RECORDS ---
+  ensureSpace(25);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(7, 59, 58);
+  doc.text('1. STUDENT & FACULTY LUNCH SUPPLY RECORDS', 14, currentY);
+  
+  const lunchColumns = ['No', 'Lunch Pack Description', 'Count (Qty)', 'Total Outlay ($)', 'Period / Active Note'];
+  const lunchRows = (report.lunchList || []).map((item, idx) => [
+    idx + 1,
+    transliterateKhmerToLatin(item.description),
+    item.count,
+    `$${Number(item.total).toFixed(2)}`,
+    transliterateKhmerToLatin(item.note) || 'New Academic Year: 2025-2026'
+  ]);
+
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [lunchColumns],
+    body: lunchRows.length > 0 ? lunchRows : [['-', 'No lunch records entered for this period.', '-', '-', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [7, 59, 58], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5, font: 'Helvetica' },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 72 },
+      2: { cellWidth: 24, halign: 'center' },
+      3: { cellWidth: 26, halign: 'center' },
+      4: { cellWidth: 50 }
+    }
+  });
+  
+  currentY = (doc as any).lastAutoTable.finalY + 10;
+
+  // --- SECTION 2: MOSQUITO SPRAY ---
+  ensureSpace(25);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(7, 59, 58);
+  doc.text('2. SANITATION MOSQUITO SPRAY SCHEDULE BY GUARDS', 14, currentY);
+
+  const mosqColumns = ['No', 'Date of Spray', 'Day of Week', 'Execution Time', 'Operational Instructions'];
+  const mosqRows = (report.mosquitoList || []).map((item, idx) => [
+    idx + 1,
+    item.date,
+    transliterateKhmerToLatin(item.day),
+    item.time,
+    'SOP compliant. Performed by guards after class hours.'
+  ]);
+
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [mosqColumns],
+    body: mosqRows.length > 0 ? mosqRows : [['-', 'No mosquito spray logs captured.', '-', '-', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [7, 59, 58], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5, font: 'Helvetica' },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 32, halign: 'center' },
+      2: { cellWidth: 35 },
+      3: { cellWidth: 30, halign: 'center' },
+      4: { cellWidth: 75 }
+    }
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 10;
+
+  // --- SECTION 3: KEY SCHOOL ACHIEVEMENTS ---
+  ensureSpace(25);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(7, 59, 58);
+  doc.text('3. CAMPUS IMPROVEMENTS & KEY ACHIEVEMENTS', 14, currentY);
+
+  const achieveColumns = ['No', 'Notable Achievements / Upgrades Description', 'Remarks & Current Development Status'];
+  const achieveRows = (report.achievementList || []).map((item, idx) => [
+    idx + 1,
+    transliterateKhmerToLatin(item.description),
+    transliterateKhmerToLatin(item.remarks)
+  ]);
+
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [achieveColumns],
+    body: achieveRows.length > 0 ? achieveRows : [['-', 'No notable development milestones recorded.', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [7, 59, 58], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5, font: 'Helvetica' },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 92 },
+      2: { cellWidth: 80 }
+    }
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 10;
+
+  // --- SECTION 4: INSURANCE CLAIMS ---
+  ensureSpace(25);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(7, 59, 58);
+  doc.text('4. STUDENT INSURANCE CLAIMS TRACKING LOG', 14, currentY);
+
+  const claimColumns = ['No', 'Student Full Name', 'Grade', 'Sex', 'Accident Date & Time', 'Claim Date', 'Coverage Remarks / Status'];
+  const claimRows = (report.insuranceClaimList || []).map((item, idx) => [
+    idx + 1,
+    transliterateKhmerToLatin(item.name),
+    item.grade,
+    item.sex.includes('Female') || item.sex.includes('ស្រី') ? 'Female' : 'Male',
+    `${item.dateAccident} ${item.timeAccident}`,
+    item.dateClaim,
+    transliterateKhmerToLatin(item.remarks)
+  ]);
+
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [claimColumns],
+    body: claimRows.length > 0 ? claimRows : [['-', 'No injury insurance claims lodged this month.', '-', '-', '-', '-', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [7, 59, 58], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5, font: 'Helvetica' },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 35 },
+      2: { cellWidth: 18, halign: 'center' },
+      3: { cellWidth: 15, halign: 'center' },
+      4: { cellWidth: 32, halign: 'center' },
+      5: { cellWidth: 22, halign: 'center' },
+      6: { cellWidth: 50 }
+    }
+  });
+
+  currentY = (doc as any).lastAutoTable.finalY + 10;
+
+  // --- SECTION 5: STUDENT DAILY ABSENTEES ---
+  ensureSpace(25);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(7, 59, 58);
+  doc.text('5. DAILY STUDENT ABSENTEES SUMMARY LOG', 14, currentY);
+
+  const absentColumns = ['No', 'Absent Date', 'Male (Qty)', 'Female (Qty)', 'Total Absentees', 'Main Stated Circumstances & Reasons'];
+  const absentRows = (report.absentList || []).map((item, idx) => [
+    idx + 1,
+    item.date,
+    item.male,
+    item.female,
+    item.total,
+    transliterateKhmerToLatin(item.remarks) || '-'
+  ]);
+
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [absentColumns],
+    body: absentRows.length > 0 ? absentRows : [['-', 'No school absentees registered.', '-', '-', '-', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [7, 59, 58], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5, font: 'Helvetica' },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 28, halign: 'center' },
+      2: { cellWidth: 20, halign: 'center' },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 26, halign: 'center' },
+      5: { cellWidth: 78 }
+    }
+  });
+
+  // Brief absentees summary helper text if we have rows
+  if (report.absentList && report.absentList.length > 0) {
+    const totalAbs = report.absentList.reduce((acc, c) => acc + c.total, 0);
+    const avgAbs = (totalAbs / report.absentList.length).toFixed(1);
+    doc.setFontSize(8.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(51, 65, 85);
+    doc.text(`* Total Days Tracked: ${report.absentList.length} days | Total Cumulative Absent days: ${totalAbs} | Avg: ${avgAbs} daily absentees.`, 14, (doc as any).lastAutoTable.finalY + 5);
+    currentY = (doc as any).lastAutoTable.finalY + 12;
+  } else {
+    currentY = (doc as any).lastAutoTable.finalY + 10;
+  }
+
+  // --- SECTION 6: DAILY STUDENT SICK LOGS ---
+  ensureSpace(25);
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(7, 59, 58);
+  doc.text('6. DAILY STUDENT SICK & CLINIC VISITS LOG', 14, currentY);
+
+  const sickColumns = ['No', 'Date Logged', 'Male Case', 'Female Case', 'Total Incident', 'Primary Symptoms & Clinic Response'];
+  const sickRows = (report.sickList || []).map((item, idx) => [
+    idx + 1,
+    item.date,
+    item.male,
+    item.female,
+    item.total,
+    transliterateKhmerToLatin(item.remarks) || '-'
+  ]);
+
+  autoTable(doc, {
+    startY: currentY + 3,
+    head: [sickColumns],
+    body: sickRows.length > 0 ? sickRows : [['-', 'No students reported ill in the campus clinic.', '-', '-', '-', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [7, 59, 58], textColor: [255, 255, 255], fontStyle: 'bold' },
+    styles: { fontSize: 8.5, font: 'Helvetica' },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 28, halign: 'center' },
+      2: { cellWidth: 20, halign: 'center' },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 26, halign: 'center' },
+      5: { cellWidth: 78 }
+    }
+  });
+
+  // Brief sick summary helper text if we have rows
+  if (report.sickList && report.sickList.length > 0) {
+    const totalSick = report.sickList.reduce((acc, c) => acc + c.total, 0);
+    doc.setFontSize(8.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(51, 65, 85);
+    doc.text(`* Total Campus Medical Incidents: ${totalSick} cases recorded and handled by campus nurse.`, 14, (doc as any).lastAutoTable.finalY + 5);
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+  } else {
+    currentY = (doc as any).lastAutoTable.finalY + 12;
+  }
+
+  // --- SIGNATURE FOOTER ACCENT BLOCK ---
+  ensureSpace(45);
+  
+  // Footer rule
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(226, 232, 240);
+  doc.line(14, currentY, 196, currentY);
+
+  currentY += 8;
+
+  // Signatures
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Prepared By:', 14, currentY);
+  
+  doc.text('Verified & Approved By:', 135, currentY);
+
+  doc.setFontSize(10);
+  doc.setTextColor(7, 59, 58);
+  const prepName = transliterateKhmerToLatin(report.preparedBy || 'Mr. LOUNG Veasna');
+  const prepTitle = transliterateKhmerToLatin(report.preparedTitle || 'Admin Supervisor');
+  doc.text(prepName, 14, currentY + 18);
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text('_________________________', 14, currentY + 12);
+  doc.text(prepTitle, 14, currentY + 22);
+  doc.setFontSize(7.5);
+  doc.text('Signature Verified Digitally', 14, currentY + 26);
+
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(7, 59, 58);
+  doc.text('School Principal', 135, currentY + 18);
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(148, 163, 184);
+  doc.text('_________________________', 135, currentY + 12);
+  doc.text('Western International School', 135, currentY + 22);
+
+  // Print Date footprint on bottom left
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text(`WIS-SOP-V2.1 • MONTHLY_REPORTS_DB • SYSTEM ID: ${report.id}`, 14, 287);
+  doc.text(`Report Ref: PDF_COMP_SUMMARY`, 160, 287);
+
+  // Save PDF
+  doc.save(`WIS_Monthly_Performance_Report_${report.id}.pdf`);
 }

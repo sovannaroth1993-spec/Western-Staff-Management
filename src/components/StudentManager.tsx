@@ -8,7 +8,7 @@ import { Student, StudentGrade, GRADE_NAMES_KM, ALL_GRADES } from '../types';
 import * as XLSX from 'xlsx';
 import { transliterateKhmerToLatin } from '../utils/pdfHelper';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { 
   Plus, Edit2, Trash2, FileSpreadsheet, FileText, Upload, 
   Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, X, Info,
@@ -715,7 +715,7 @@ export default function StudentManager({ studentList, setStudentList, lang }: St
       7: { cellWidth: 18 }
     };
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 46,
       head: [columns],
       body: rows,

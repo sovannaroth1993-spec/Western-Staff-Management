@@ -656,20 +656,7 @@ export default function App() {
             </button>
           )}
 
-          {/* Tab 1.115: Daily Report */}
-          {hasPermission('dailyreport') && (
-            <button
-              onClick={() => setActiveTab('dailyreport')}
-              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
-                activeTab === 'dailyreport'
-                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
-                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
-              }`}
-            >
-              <Clock className="w-4.5 h-4.5 text-emerald-400" />
-              <span className="flex-1">{t.dailyReport}</span>
-            </button>
-          )}
+
 
           {/* Tab 1.12: Admin Documentation */}
           {hasPermission('admindocs') && (
@@ -713,6 +700,21 @@ export default function App() {
             >
               <FileText className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
               <span className="flex-1">{t.monthlyReport}</span>
+            </button>
+          )}
+
+          {/* Tab 1.13.6: Daily Operations Report */}
+          {hasPermission('dailyreport') && (
+            <button
+              onClick={() => setActiveTab('dailyreport')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'dailyreport'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Clock className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+              <span className="flex-1">{t.dailyReport}</span>
             </button>
           )}
 

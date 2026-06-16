@@ -376,10 +376,15 @@ export interface DailyReport {
   date: string; // YYYY-MM-DD
   checkInTime: string; // entry time e.g., "07:30"
   checkOutTime: string; // exit time e.g., "17:00"
-  reporterName: string; // Name of person who records it
+  reporterName: string; // Name of person who records it (Prepared by)
   overallSummary: string;
   hourlyLogs: HourlyLog[];
   createdAt: string;
+  department?: string; // Department (default: Operations)
+  issuesEncountered?: string; // បញ្ហាប្រឈម
+  actionsTaken?: string; // ដំណោះស្រាយដែលបានអនុវត្ត
+  planForTomorrow?: string; // ផែនការសម្រាប់ថ្ងៃស្អែក
+  remarks?: string; // កំណត់សម្គាល់
 }
 
 export type UserRole = 'admin' | 'user';
