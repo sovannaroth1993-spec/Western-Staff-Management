@@ -638,8 +638,9 @@ export default function UserDashboard({
                                     👑 {lang === 'kh' ? 'សិទ្ធិពិសេសអ្នកគ្រប់គ្រង (Admin Full Access)' : 'Admin: Full Unrestricted Access'}
                                   </div>
                                 ) : (
-                                  <div className="text-[10px] font-black text-[#073B3A] bg-emerald-50 border border-emerald-100 p-2 rounded-xl mb-1.5 flex items-center gap-1">
-                                    📋 {lang === 'kh' ? 'ម៉ឺនុយប្រព័ន្ធដែលអាចចូលមើលបាន៖' : 'Assigned Menu Authorization:'}
+                                  <div className="text-[10px] font-black text-[#073B3A] bg-emerald-50 border border-emerald-150 p-2 rounded-xl mb-1.5 flex items-center justify-between gap-1">
+                                    <span>📋 {lang === 'kh' ? 'ម៉ឺនុយប្រព័ន្ធដែលអាចចូលមើលបាន (ចុចដើម្បីបើក/បិទ)៖' : 'Assigned Menu (Click block to toggle):'}</span>
+                                    <span className="text-[9px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded animate-pulse">EDITABLE</span>
                                   </div>
                                 )}
 
@@ -665,10 +666,46 @@ export default function UserDashboard({
                                   ].map((perm) => {
                                     const hasAccess = u.role === 'admin' || (u.permissions && u.permissions.includes(perm.key));
                                     
+                                    const handleTogglePermission = () => {
+                                      if (u.role === 'admin') return;
+                                      
+                                      let newPermissions = [...(u.permissions || [])];
+                                      if (newPermissions.includes(perm.key)) {
+                                        newPermissions = newPermissions.filter(k => k !== perm.key);
+                                      } else {
+                                        newPermissions.push(perm.key);
+                                      }
+
+                                      // Create updated users list
+                                      const updatedUsers = usersList.map(item => {
+                                        if (item.id === u.id) {
+                                          const updated = { ...item, permissions: newPermissions };
+                                          // Update session user permissions too if modifying current logged user
+                                          if (item.username === currentUser.username) {
+                                            const updatedCurr = { ...currentUser, permissions: newPermissions };
+                                            sessionStorage.setItem('wis_current_user', JSON.stringify(updatedCurr));
+                                            localStorage.setItem('wis_current_user', JSON.stringify(updatedCurr));
+                                          }
+                                          return updated;
+                                        }
+                                        return item;
+                                      });
+
+                                      setUsersList(updatedUsers);
+                                      localStorage.setItem('wis_users_list', JSON.stringify(updatedUsers));
+                                    };
+
                                     return (
-                                      <div 
+                                      <button 
                                         key={perm.key} 
-                                        className={`flex items-center justify-between p-2 rounded-xl border text-[10.5px] font-black transition ${
+                                        type="button"
+                                        onClick={handleTogglePermission}
+                                        disabled={u.role === 'admin'}
+                                        className={`flex items-center justify-between p-2 rounded-xl border text-[10.5px] font-black transition text-left ${
+                                          u.role !== 'admin'
+                                            ? 'cursor-pointer hover:border-emerald-500 hover:shadow-2xs active:scale-95'
+                                            : ''
+                                        } ${
                                           hasAccess 
                                             ? 'bg-emerald-50/70 border-emerald-200/80 text-[#073B3A]' 
                                             : 'bg-slate-100/50 border-slate-200/40 text-slate-400 opacity-60'
@@ -681,7 +718,7 @@ export default function UserDashboard({
                                         <span className="shrink-0 text-[10px]">
                                           {hasAccess ? '✅' : '❌'}
                                         </span>
-                                      </div>
+                                      </button>
                                     );
                                   })}
                                 </div>

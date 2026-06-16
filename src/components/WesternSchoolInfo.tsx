@@ -24,7 +24,13 @@ import {
   ExternalLink,
   BookMarked,
   Map,
-  BadgePercent
+  BadgePercent,
+  Upload,
+  Image,
+  Plus,
+  Trash2,
+  Calculator,
+  Percent
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -39,12 +45,319 @@ const CATEGORIES = [
   { id: 'program', name: 'កម្មវិធីសិក្សា & សញ្ញាបត្រ (Curriculum & Diploma)', icon: Award }
 ];
 
+interface TuitionSession {
+  id: string;
+  nameKh: string;
+  nameEn: string;
+  yearly: number;
+  subAnnual: number; // Term for Kinder, Semester for Grades
+  monthly: number;
+  adminFee: number;
+}
+
+interface TuitionProgram {
+  id: string;
+  nameKh: string;
+  nameEn: string;
+  isKindergarten: boolean;
+  sessions: TuitionSession[];
+}
+
+const TUITION_PROGRAMS: TuitionProgram[] = [
+  {
+    id: 'n-k2',
+    nameKh: 'មត្តេយ្យ N-K2 (Kindergarten N-K2)',
+    nameEn: 'Kindergarten N-K2',
+    isKindergarten: true,
+    sessions: [
+      { id: 'afternoon', nameKh: 'រសៀល (Afternoon)', nameEn: 'Afternoon', yearly: 2000, subAnnual: 580, monthly: 200, adminFee: 250 },
+      { id: 'morning', nameKh: 'ព្រឹក (Morning)', nameEn: 'Morning', yearly: 2200, subAnnual: 630, monthly: 220, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2400, subAnnual: 690, monthly: 240, adminFee: 250 }
+    ]
+  },
+  {
+    id: 'k3',
+    nameKh: 'មត្តេយ្យ K3 (Kindergarten K3)',
+    nameEn: 'Kindergarten K3',
+    isKindergarten: true,
+    sessions: [
+      { id: 'afternoon', nameKh: 'រសៀល (Afternoon)', nameEn: 'Afternoon', yearly: 2100, subAnnual: 600, monthly: 210, adminFee: 250 },
+      { id: 'morning', nameKh: 'ព្រឹក (Morning)', nameEn: 'Morning', yearly: 2300, subAnnual: 660, monthly: 230, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2500, subAnnual: 720, monthly: 250, adminFee: 250 }
+    ]
+  },
+  {
+    id: 'grades-1-3',
+    nameKh: 'ថ្នាក់ទី១-៣ (Grades 1-3)',
+    nameEn: 'Grades 1-3',
+    isKindergarten: false,
+    sessions: [
+      { id: 'halfday', nameKh: 'ព្រឹក ឬ រសៀល (Morning / Afternoon)', nameEn: 'Morning / Afternoon', yearly: 2000, subAnnual: 1120, monthly: 240, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2300, subAnnual: 1290, monthly: 280, adminFee: 250 }
+    ]
+  },
+  {
+    id: 'grades-4-5',
+    nameKh: 'ថ្នាក់ទី៤-៥ (Grades 4-5)',
+    nameEn: 'Grades 4-5',
+    isKindergarten: false,
+    sessions: [
+      { id: 'halfday', nameKh: 'ព្រឹក ឬ រសៀល (Morning / Afternoon)', nameEn: 'Morning / Afternoon', yearly: 2100, subAnnual: 1180, monthly: 250, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2400, subAnnual: 1340, monthly: 290, adminFee: 250 }
+    ]
+  },
+  {
+    id: 'grades-6-8',
+    nameKh: 'ថ្នាក់ទី៦-៨ (Grades 6-8)',
+    nameEn: 'Grades 6-8',
+    isKindergarten: false,
+    sessions: [
+      { id: 'halfday', nameKh: 'ព្រឹក ឬ រសៀល (Morning / Afternoon)', nameEn: 'Morning / Afternoon', yearly: 2200, subAnnual: 1230, monthly: 260, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2500, subAnnual: 1400, monthly: 300, adminFee: 250 }
+    ]
+  },
+  {
+    id: 'grades-9-11',
+    nameKh: 'ថ្នាក់ទី៩-១១ (Grades 9-11)',
+    nameEn: 'Grades 9-11',
+    isKindergarten: false,
+    sessions: [
+      { id: 'halfday', nameKh: 'ព្រឹក ឬ រសៀល (Morning / Afternoon)', nameEn: 'Morning / Afternoon', yearly: 2300, subAnnual: 1290, monthly: 280, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2600, subAnnual: 1460, monthly: 310, adminFee: 250 }
+    ]
+  },
+  {
+    id: 'grade-12',
+    nameKh: 'ថ្នាក់ទី១២ (Grade 12)',
+    nameEn: 'Grade 12',
+    isKindergarten: false,
+    sessions: [
+      { id: 'halfday', nameKh: 'ព្រឹក ឬ រសៀល (Morning / Afternoon)', nameEn: 'Morning / Afternoon', yearly: 2400, subAnnual: 1340, monthly: 290, adminFee: 250 },
+      { id: 'fulltime', nameKh: 'ពេញមួយថ្ងៃ (Full Time)', nameEn: 'Full Time', yearly: 2700, subAnnual: 1510, monthly: 320, adminFee: 250 }
+    ]
+  }
+];
+
 export default function WesternSchoolInfo() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedId, setExpandedId] = useState<number | null>(1); // default expand the first Q&A
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+
+  // States for tuition fee table 2026-2027 image upload and view
+  const [tuitionImage, setTuitionImage] = useState<string>(() => {
+    return localStorage.getItem('wis_tuition_fee_table_image') || '';
+  });
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  // Check if current user is admin
+  const [isAdmin] = useState<boolean>(() => {
+    try {
+      const currentUserRaw = sessionStorage.getItem('wis_current_user') || localStorage.getItem('wis_current_user');
+      if (currentUserRaw) {
+        const u = JSON.parse(currentUserRaw);
+        return u && u.role === 'admin';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return false;
+  });
+
+  // Tuition Calculator State
+  const [calcStudents, setCalcStudents] = useState<any[]>(() => {
+    const saved = localStorage.getItem('wis_tuition_calc_students');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return [
+      {
+        id: '1',
+        name: 'សិស្សទី ១',
+        programId: 'grades-1-3',
+        sessionId: 'halfday',
+        paymentPeriod: 'yearly',
+        discountPercent: 0,
+        includesAdminFee: true,
+        multiplyCount: 1,
+      }
+    ];
+  });
+
+  const [calcCopied, setCalcCopied] = useState(false);
+
+  const calculateStudentDetails = (student: any) => {
+    const program = TUITION_PROGRAMS.find(p => p.id === student.programId) || TUITION_PROGRAMS[0];
+    const session = program.sessions.find(s => s.id === student.sessionId) || program.sessions[0];
+    
+    let basePrice = session.yearly;
+    let termLabel = program.isKindergarten ? 'Term' : 'Semester';
+    let termLabelKh = program.isKindergarten ? 'ត្រីមាស (Term)' : 'ឆមាស (Semester)';
+    
+    if (student.paymentPeriod === 'subAnnual') {
+      basePrice = session.subAnnual;
+    } else if (student.paymentPeriod === 'monthly') {
+      basePrice = session.monthly;
+    }
+
+    const baseTotal = basePrice * student.multiplyCount;
+    const discountAmount = Math.round(baseTotal * (student.discountPercent / 100));
+    const netTuition = baseTotal - discountAmount;
+    const adminFee = student.includesAdminFee ? (session.adminFee * student.multiplyCount) : 0;
+    const total = netTuition + adminFee;
+
+    return {
+      programName: program.nameKh,
+      sessionName: session.nameKh,
+      periodLabel: student.paymentPeriod === 'yearly' ? 'ប្រចាំឆ្នាំ (Yearly)' : (student.paymentPeriod === 'subAnnual' ? termLabelKh : 'ប្រចាំខែ (Monthly)'),
+      basePrice,
+      baseTotal,
+      discountAmount,
+      netTuition,
+      adminFee,
+      total,
+      isKinder: program.isKindergarten,
+      termLabel
+    };
+  };
+
+  const handleCopyCalcSummary = (totals: any, breakdowns: any[]) => {
+    let text = `🏫 សាលាអន្តរជាតិ វេសស្ទើន (Western International School)\n`;
+    text += `📋 តារាងគណនាតម្លៃសិក្សាព្យាករណ៍ ២០២៦-២០២៧ (Tuition Estimate)\n`;
+    text += `-----------------------------------------------\n`;
+    
+    breakdowns.forEach((bd, idx) => {
+      const s = calcStudents[idx];
+      text += `🧒 សិស្ស៖ ${s.name || `សិស្សទី ${idx + 1}`} (${s.multiplyCount} នាក់)\n`;
+      text += `   • កម្រិតសិក្សា៖ ${bd.programName}\n`;
+      text += `   • ម៉ោងសិក្សា៖ ${bd.sessionName}\n`;
+      text += `   • របៀបបង់ថ្លៃ៖ ${bd.periodLabel}\n`;
+      text += `   • ថ្លៃសិក្សា៖ $${bd.basePrice} x ${s.multiplyCount} = $${bd.baseTotal}\n`;
+      if (s.discountPercent > 0) {
+        text += `   • ការបញ្ចុះតម្លៃ៖ -${s.discountPercent}% (-$${bd.discountAmount})\n`;
+      }
+      if (s.includesAdminFee) {
+        text += `   • កម្រៃរដ្ឋបាល៖ $${bd.adminFee}\n`;
+      }
+      text += `   • សរុបម្នាក់៖ $${bd.total}\n\n`;
+    });
+
+    text += `-----------------------------------------------\n`;
+    text += `💰 ថ្លៃសិក្សាសរុប (Total Tuition): $${totals.tuition}\n`;
+    if (totals.discounts > 0) {
+      text += `🎁 បញ្ចុះតម្លៃសរុប (Total Savings): -$${totals.discounts}\n`;
+    }
+    text += `📝 កម្រៃរដ្ឋបាលសរុប (Total Admin Fee): $${totals.adminFees}\n`;
+    text += `💵 ចំនួនត្រូវបង់សរុប (GRAND TOTAL): $${totals.grandTotal} (${totals.grandTotalRiel.toLocaleString()} រៀល)\n`;
+    text += `-----------------------------------------------\n`;
+    text += `* បញ្ជាក់៖ នេះជាតម្លៃប៉ាន់ស្មានផ្អែកលើតារាងតម្លៃផ្លូវការឆ្នាំ ២០២៦-២០២៧។\n`;
+    text += `* Exchange Rate: 1 USD = 4,100 KHR`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      setCalcCopied(true);
+      setTimeout(() => setCalcCopied(false), 2000);
+    });
+  };
+
+  const handleAddStudent = () => {
+    const newId = Date.now().toString();
+    const studentCount = calcStudents.length + 1;
+    const newStudent = {
+      id: newId,
+      name: `សិស្សទី ${studentCount}`,
+      programId: 'grades-1-3',
+      sessionId: 'halfday',
+      paymentPeriod: 'yearly',
+      discountPercent: 0,
+      includesAdminFee: true,
+      multiplyCount: 1,
+    };
+    const updated = [...calcStudents, newStudent];
+    setCalcStudents(updated);
+    localStorage.setItem('wis_tuition_calc_students', JSON.stringify(updated));
+  };
+
+  const handleRemoveStudent = (id: string) => {
+    if (calcStudents.length <= 1) {
+      alert('ត្រូវតែមានសិស្សយ៉ាងហោចណាស់ម្នាក់ដើម្បីគណនា! (Must have at least 1 student to calculate!)');
+      return;
+    }
+    const updated = calcStudents.filter(s => s.id !== id);
+    setCalcStudents(updated);
+    localStorage.setItem('wis_tuition_calc_students', JSON.stringify(updated));
+  };
+
+  const handleUpdateStudent = (id: string, field: string, value: any) => {
+    const updated = calcStudents.map(s => {
+      if (s.id === id) {
+        const updatedStudent = { ...s, [field]: value };
+        
+        // If program changed, make sure session exists in that program
+        if (field === 'programId') {
+          const prog = TUITION_PROGRAMS.find(p => p.id === value);
+          if (prog && prog.sessions.length > 0) {
+            const hasExistingSession = prog.sessions.some(sess => sess.id === s.sessionId);
+            if (!hasExistingSession) {
+              updatedStudent.sessionId = prog.sessions[0].id;
+            }
+          }
+        }
+        return updatedStudent;
+      }
+      return s;
+    });
+    setCalcStudents(updated);
+    localStorage.setItem('wis_tuition_calc_students', JSON.stringify(updated));
+  };
+
+  const handleTuitionUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Upload failed');
+      }
+
+      const data = await res.json();
+      if (data && data.url) {
+        setTuitionImage(data.url);
+        localStorage.setItem('wis_tuition_fee_table_image', data.url);
+      } else {
+        throw new Error('No download URL returned from server.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setUploadError(err.message || 'Error uploading file');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleClearTuitionImage = () => {
+    if (window.confirm('តើអ្នកពិតជាចង់លុបរូបភាពតារាងតម្លៃសិក្សានេះមែនទេ? (Are you sure you want to delete this tuition fee table image?)')) {
+      setTuitionImage('');
+      localStorage.removeItem('wis_tuition_fee_table_image');
+    }
+  };
 
   // 15 branches details for quick referencing
   const branchDetails = [
@@ -358,6 +671,22 @@ export default function WesternSchoolInfo() {
     }
   };
 
+  // Calculator totals calculation
+  const studentBreakdowns = calcStudents.map(s => calculateStudentDetails(s));
+  const totals = studentBreakdowns.reduce((acc, curr) => {
+    return {
+      tuition: acc.tuition + curr.baseTotal,
+      discounts: acc.discounts + curr.discountAmount,
+      adminFees: acc.adminFees + curr.adminFee,
+      grandTotal: acc.grandTotal + curr.total
+    };
+  }, { tuition: 0, discounts: 0, adminFees: 0, grandTotal: 0 });
+
+  const totalsWithRiel = {
+    ...totals,
+    grandTotalRiel: totals.grandTotal * 4100
+  };
+
   return (
     <div className="space-y-8 animate-fade-in text-left">
       
@@ -479,6 +808,452 @@ export default function WesternSchoolInfo() {
           </div>
 
           <div className="space-y-3.5">
+            {/* 2026-2027 Tuition Fee Table Section */}
+            {(selectedCategory === 'all' || selectedCategory === 'fees') && !searchQuery && (
+              <div id="tuition-fees-2026-2027-card" className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-teal-50 text-[#073B3A] rounded-2xl">
+                      <DollarSign className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-black text-slate-800 leading-tight">
+                        តារាងតម្លៃសិក្សាផ្លូវការ ២០២៦-២០២៧
+                      </h3>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                        Official Tuition Fees 2026-2027 Table
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {isAdmin && (
+                    <label className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5 shrink-0 select-none animate-none">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{isUploading ? 'កំពុងផ្ទុកឡើង...' : 'បញ្ចូលរូបភាពតារាងតម្លៃ'}</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        disabled={isUploading}
+                        onChange={handleTuitionUpload} 
+                        className="hidden" 
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {uploadError && (
+                  <div className="bg-rose-50 border border-rose-150 p-3 rounded-2xl text-xs font-bold text-rose-800 flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+
+                {/* Image display or placeholder */}
+                {tuitionImage ? (
+                  <div className="space-y-4">
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-150 bg-slate-50 group shadow-3xs">
+                      <img 
+                        src={tuitionImage} 
+                        alt="តារាងតម្លៃសិក្សាឆ្នាំ ២០២៦-២០២៧" 
+                        className="w-full max-h-[600px] object-contain mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-1">
+                      <a 
+                        href={`${tuitionImage}${tuitionImage.includes('?') ? '&' : '?'}preview=true`} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="inline-flex items-center gap-1.5 font-bold text-[#073B3A] hover:underline"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>មើលរូបភាពទំហំធំ (Open Original Image)</span>
+                      </a>
+                      
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={handleClearTuitionImage}
+                          className="text-rose-650 hover:text-rose-800 font-extrabold transition cursor-pointer flex items-center gap-1"
+                        >
+                          លុបរូបភាពនេះចេញ (Delete Table Image)
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-slate-200 rounded-3xl p-10 text-center space-y-4 bg-slate-50/50">
+                    <div className="mx-auto w-16 h-16 bg-slate-100 text-slate-405 rounded-full flex items-center justify-center">
+                      <Image className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-black text-slate-700">មិនទាន់មានរូបភាពតារាងតម្លៃឡើយ</h4>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                        {isAdmin 
+                          ? 'សូមចុចប៊ូតុងខាងលើ ដើម្បីផ្ទុកឡើងរូបភាពតារាងតម្លៃសិក្សាផ្លូវការ ២០២៦-២០២៧ ថ្មីមួយដើម្បីឱ្យបុគ្គលិករបស់លោកអ្នកអាចមើលឃើញ និងប្រើប្រាស់បាន។'
+                          : 'មិនទាន់មានរូបភាពតារាងតម្លៃសិក្សា ២០២៦-២០២៧ ត្រូវបានបញ្ចូលដោយអ្នកគ្រប់គ្រងនៅក្នុងប្រព័ន្ធនៅឡើយទេ។'}
+                      </p>
+                    </div>
+                    {isAdmin && (
+                      <div className="inline-flex items-center justify-center">
+                        <label className="bg-white hover:bg-slate-50 border border-slate-250 text-[#073B3A] font-black text-xs px-4 py-2.5 rounded-xl transition cursor-pointer shadow-2xs inline-flex items-center gap-1.5 shrink-0 select-none animate-none">
+                          <Upload className="w-3.5 h-3.5 text-[#073B3A]" />
+                          <span>ផ្ទុកឡើងឥឡូវនេះ (Upload Image Now)</span>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            disabled={isUploading}
+                            onChange={handleTuitionUpload} 
+                            className="hidden" 
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tuition Calculator Section */}
+            {(selectedCategory === 'all' || selectedCategory === 'fees') && !searchQuery && (
+              <div id="tuition-calculator-card" className="bg-gradient-to-br from-slate-50 to-teal-50/20 border border-teal-500/10 rounded-3xl p-6 sm:p-8 space-y-6 mt-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-teal-500/15">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-[#073B3A] text-white rounded-2xl shadow-xs">
+                      <Calculator className="w-5 h-5 stroke-[2.2]" />
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-800 leading-tight">
+                        គណនាតម្លៃសិក្សាព្យាករណ៍ និងការបញ្ចុះតម្លៃ ២០២៦-២០២៧
+                      </h3>
+                      <p className="text-xs text-slate-450 font-bold uppercase tracking-wider mt-0.5">
+                        Tuition Fees & Discounts Estimate Calculator 2026-2027
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    type="button"
+                    onClick={handleAddStudent}
+                    className="bg-[#073B3A] hover:bg-teal-900 active:scale-95 text-white font-extrabold text-xs px-4.5 py-3 rounded-xl transition shadow-2xs inline-flex items-center gap-2 select-none cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>បន្ថែមសិស្ស (Add Student)</span>
+                  </button>
+                </div>
+
+                {/* Main grid columns */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  
+                  {/* Left block: Students list editor */}
+                  <div className="lg:col-span-7 space-y-4">
+                    {calcStudents.map((student, idx) => {
+                      const selectedProgram = TUITION_PROGRAMS.find(p => p.id === student.programId) || TUITION_PROGRAMS[0];
+                      
+                      return (
+                        <div 
+                          key={student.id}
+                          className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-3xs relative space-y-4 transition-all duration-200 hover:border-teal-500/25"
+                        >
+                          <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2 flex-grow">
+                              <span className="text-[10px] bg-slate-100 text-slate-500 font-black px-2.5 py-1 rounded-lg">
+                                #{idx + 1}
+                              </span>
+                              <input 
+                                type="text"
+                                value={student.name}
+                                onChange={(e) => handleUpdateStudent(student.id, 'name', e.target.value)}
+                                placeholder="ឈ្មោះសិស្ស (Student Name)"
+                                className="font-bold text-sm text-slate-800 border-b border-transparent hover:border-slate-300 focus:border-[#073B3A] focus:outline-none transition px-1 py-0.5 w-full max-w-[220px]"
+                              />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {calcStudents.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveStudent(student.id)}
+                                  className="text-rose-500 hover:text-rose-750 hover:bg-rose-50 p-1.5 rounded-lg transition cursor-pointer"
+                                  title="លុបសិស្សនេះ (Delete this student)"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Student selection fields */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            
+                            {/* Grade selection */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-black text-slate-500 block uppercase tracking-wider">
+                                ថ្នាក់/កម្រិតសិក្សា (Grade Level)
+                              </label>
+                              <select
+                                value={student.programId}
+                                onChange={(e) => handleUpdateStudent(student.id, 'programId', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3 py-2.5 focus:border-[#073B3A] focus:bg-white focus:outline-none transition-colors"
+                              >
+                                {TUITION_PROGRAMS.map(p => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.nameKh}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Session selection */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-black text-slate-500 block uppercase tracking-wider">
+                                ម៉ោងសិក្សា/វេន (Session/Schedule)
+                              </label>
+                              <select
+                                value={student.sessionId}
+                                onChange={(e) => handleUpdateStudent(student.id, 'sessionId', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3 py-2.5 focus:border-[#073B3A] focus:bg-white focus:outline-none transition-colors"
+                              >
+                                {selectedProgram.sessions.map(s => (
+                                  <option key={s.id} value={s.id}>
+                                    {s.nameKh}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* Payment Period */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-black text-slate-500 block uppercase tracking-wider">
+                                របៀបបង់ថ្លៃ (Billing Period)
+                              </label>
+                              <select
+                                value={student.paymentPeriod}
+                                onChange={(e) => handleUpdateStudent(student.id, 'paymentPeriod', e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3 py-2.5 focus:border-[#073B3A] focus:bg-white focus:outline-none transition-colors"
+                              >
+                                <option value="yearly">បង់ប្រចាំឆ្នាំ (Yearly Plan)</option>
+                                <option value="subAnnual">
+                                  {selectedProgram.isKindergarten ? 'បង់ប្រចាំត្រីមាស (Term Plan)' : 'បង់ប្រចាំឆមាស (Semester Plan)'}
+                                </option>
+                                <option value="monthly">បង់ប្រចាំខែ (Monthly Plan)</option>
+                              </select>
+                            </div>
+
+                            {/* Discount Percent */}
+                            <div className="space-y-1">
+                              <label className="text-[11px] font-black text-slate-500 block uppercase tracking-wider">
+                                ការបញ្ចុះតម្លៃ (Discount Promo)
+                              </label>
+                              <select
+                                value={student.discountPercent}
+                                onChange={(e) => handleUpdateStudent(student.id, 'discountPercent', Number(e.target.value))}
+                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold rounded-xl px-3 py-2.5 focus:border-[#073B3A] focus:bg-white focus:outline-none transition-colors"
+                              >
+                                <option value="0">គ្មានការបញ្ចុះតម្លៃ (No Discount)</option>
+                                <option value="5">ប្រូម៉ូសិនពិសេស (Special Promo) - បញ្ចុះតម្លៃ ៥% (5% Off)</option>
+                                <option value="10">កូនទី២/ប្រូម៉ូសិន (Sibling 2nd Child / Promo) - បញ្ចុះតម្លៃ ១០% (10% Off)</option>
+                                <option value="15">កូនទី៣/បង់មុន (Sibling 3rd Child / Early Bird) - បញ្ចុះតម្លៃ ១៥% (15% Off)</option>
+                                <option value="20">កូនទី៤+/ករណីពិសេស (Sibling 4th+ Child / Special) - បញ្ចុះតម្លៃ ២០% (20% Off)</option>
+                                <option value="30">អាហារូបករណ៍ (Scholarship) - បញ្ចុះតម្លៃ ៣០% (30% Off)</option>
+                                <option value="50">ដៃគូសហការ (Partner) - បញ្ចុះតម្លៃ ៥០% (50% Off)</option>
+                              </select>
+                            </div>
+
+                            {/* Options block */}
+                            <div className="sm:col-span-2 pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs border-t border-slate-50 mt-1">
+                              <label className="flex items-center gap-2 font-bold text-slate-600 cursor-pointer select-none">
+                                <input 
+                                  type="checkbox"
+                                  checked={student.includesAdminFee}
+                                  onChange={(e) => handleUpdateStudent(student.id, 'includesAdminFee', e.target.checked)}
+                                  className="w-4 h-4 rounded border-slate-300 text-[#073B3A] focus:ring-[#073B3A] cursor-pointer"
+                                />
+                                <span className="text-slate-500">រួមបញ្ចូលថ្លៃចុះឈ្មោះដំបូង/រដ្ឋបាល (Add $250 Admin Fee)</span>
+                              </label>
+
+                              <div className="flex items-center gap-2">
+                                <span className="font-extrabold text-slate-500">គុណនឹង (Multiply):</span>
+                                <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateStudent(student.id, 'multiplyCount', Math.max(1, student.multiplyCount - 1))}
+                                    className="px-2 py-1 hover:bg-slate-100 font-extrabold text-slate-600 transition cursor-pointer"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="px-3 font-mono font-black text-slate-800 text-xs">{student.multiplyCount}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateStudent(student.id, 'multiplyCount', Math.min(10, student.multiplyCount + 1))}
+                                    className="px-2 py-1 hover:bg-slate-100 font-extrabold text-slate-600 transition cursor-pointer"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <span className="text-slate-400 font-bold">នាក់ (Student)</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    <button 
+                      type="button"
+                      onClick={handleAddStudent}
+                      className="w-full border-2 border-dashed border-teal-500/20 hover:border-teal-500/40 text-[#073B3A] bg-white hover:bg-slate-50/50 font-black text-xs py-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-3xs"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>បន្ថែមសិស្សម្នាក់ទៀត (Add Another Student)</span>
+                    </button>
+                  </div>
+
+                  {/* Right block: Receipt Preview & Combined Summary */}
+                  <div className="lg:col-span-5">
+                    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden sticky top-4 flex flex-col">
+                      
+                      {/* Receipt Header styling */}
+                      <div className="bg-[#073B3A] text-white px-5 py-4 text-center relative border-b border-teal-900">
+                        <h4 className="font-black text-sm uppercase tracking-wide">
+                          វិក្កយបត្រសិក្សាប៉ាន់ស្មាន
+                        </h4>
+                        <p className="text-[10px] text-teal-200/90 font-extrabold tracking-wider uppercase">
+                          Estimated School Invoice Statement
+                        </p>
+                      </div>
+
+                      {/* Receipt body */}
+                      <div className="p-5 flex-grow space-y-4 text-left">
+                        
+                        {/* Student breakdowns lists */}
+                        <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+                          {studentBreakdowns.map((bd, idx) => {
+                            const name = calcStudents[idx]?.name || `សិស្សទី ${idx + 1}`;
+                            const count = calcStudents[idx]?.multiplyCount || 1;
+                            
+                            return (
+                              <div key={idx} className="text-xs p-3 bg-slate-50/70 rounded-xl space-y-1 border border-slate-200/35">
+                                <div className="flex items-center justify-between font-black text-slate-800">
+                                  <span className="truncate max-w-[70%]">🧒 {name} {count > 1 ? `(x${count})` : ''}</span>
+                                  <span className="font-mono text-slate-900 shrink-0">${bd.total.toLocaleString()}</span>
+                                </div>
+                                <div className="text-[11px] text-slate-500 pl-4 space-y-0.5">
+                                  <div className="flex justify-between">
+                                    <span className="truncate text-[10.5px]">កម្រិត៖ {bd.programName}</span>
+                                    <span className="font-semibold">${bd.basePrice}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="truncate">របៀបបង់៖ {bd.periodLabel}</span>
+                                    <span>{bd.isKinder ? '(K)' : '(G)'}</span>
+                                  </div>
+                                  {bd.discountAmount > 0 && (
+                                    <div className="flex justify-between text-emerald-600 font-bold">
+                                      <span>បញ្ចុះតម្លៃ (-{calcStudents[idx]?.discountPercent}%):</span>
+                                      <span className="font-mono">-${bd.discountAmount.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                  {bd.adminFee > 0 && (
+                                    <div className="flex justify-between text-teal-800 font-medium">
+                                      <span>កម្រៃរដ្ឋបាល/ចុះឈ្មោះ៖</span>
+                                      <span className="font-mono">+${bd.adminFee.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Dashed separator */}
+                        <div className="border-t border-dashed border-slate-250 my-1"></div>
+
+                        {/* Combined Financial Table */}
+                        <div className="space-y-1.5 text-xs">
+                          <div className="flex justify-between text-slate-600 font-bold">
+                            <span>ថ្លៃសិក្សាសរុប (Tuition Subtotal):</span>
+                            <span className="font-mono text-slate-800">${totalsWithRiel.tuition.toLocaleString()}</span>
+                          </div>
+
+                          {totalsWithRiel.discounts > 0 && (
+                            <div className="flex justify-between text-emerald-600 font-extrabold">
+                              <span>សន្សំបានសរុប (Combined Savings):</span>
+                              <span className="font-mono">-${totalsWithRiel.discounts.toLocaleString()}</span>
+                            </div>
+                          )}
+
+                          <div className="flex justify-between text-slate-600 font-bold">
+                            <span>កម្រៃរដ្ឋបាលសាលា (Combined Admin Fee):</span>
+                            <span className="font-mono text-slate-800">${totalsWithRiel.adminFees.toLocaleString()}</span>
+                          </div>
+
+                          <div className="border-t border-slate-100 my-2 pt-2"></div>
+
+                          {/* Grand Total display */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between items-end">
+                              <span className="font-black text-[#073B3A] text-[11.5px] uppercase tracking-wide">សរុបត្រូវបង់ (GRAND TOTAL):</span>
+                              <span className="font-black text-[#073B3A] text-2xl font-mono leading-none">
+                                ${totalsWithRiel.grandTotal.toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-[11px] text-slate-500 font-bold pl-1.5 border-l-2 border-teal-600/30">
+                              <span>សរុបជាប្រាក់រៀល (Khmer Riel):</span>
+                              <span className="font-mono font-black text-slate-700">
+                                ៛{totalsWithRiel.grandTotalRiel.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Copy + Print Options */}
+                        <div className="grid grid-cols-2 gap-2 pt-2.5">
+                          <button
+                            type="button"
+                            onClick={() => handleCopyCalcSummary(totalsWithRiel, studentBreakdowns)}
+                            className="bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-extrabold text-[10.5px] py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-250 select-none"
+                          >
+                            {calcCopied ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                                <span className="text-emerald-700 font-black">បានចម្លង! (Copied)</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5 text-slate-500 font-bold" />
+                                <span>ចម្លងព័ត៌មាន (Copy)</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              window.print();
+                            }}
+                            className="bg-teal-50 hover:bg-teal-100 active:bg-teal-200 text-[#073B3A] font-extrabold text-[10.5px] py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-teal-150 select-none"
+                          >
+                            <span>បោះពុម្ព (Print/PDF)</span>
+                          </button>
+                        </div>
+
+                        {/* Footnote information badge */}
+                        <div className="bg-slate-50 text-[10px] text-slate-500 leading-relaxed p-3 rounded-xl border border-slate-150 flex items-start gap-1.5">
+                          <Info className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                          <p>
+                            អត្រាប្តូរប្រាក់ប៉ាន់ស្មាន <b>$1 = 4,100 រៀល</b>។ តម្លៃនេះសម្រាប់ការគណនាគ្រោងទុក និងជួយសម្រួលការពិភាក្សាជាមួយអាណាព្យាបាលប៉ុណ្ណោះ។
+                          </p>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
+
             {filteredFaq.length === 0 ? (
               <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-slate-300 space-y-3">
                 <div className="mx-auto w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">

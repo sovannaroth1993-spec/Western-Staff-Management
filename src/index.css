@@ -66,14 +66,14 @@
 }
 
 @theme {
-  --font-sans: "Kantumruy Pro", "Siemreap", "Khmer OS Siemreap", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-moul: "Moul", serif;
-  --font-niroth: "Khmer OS Niroth", "KhmerOSniroth", sans-serif;
-  --font-kbach: "AKbalthom Kbach", "Akbalthom Kbach", "AKbalthomKbach", sans-serif;
-  --font-content: "Content", "Content-Regular", sans-serif;
-  --font-writehand: "Kh Ang Writehand", "Khmer OS Ang Writehand", cursive, sans-serif;
-  --font-nitean: "Kh Ang NiTean 2", "Khmer OS Ang Nitean 2", "Khmer OS Ang Nitean", cursive, sans-serif;
-  --font-tapenh: "Kh Ang TaPenh", "Khmer OS Ang Tapenh", cursive, sans-serif;
+  --font-sans: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-moul: "Khmer OS Siemreap", "Siemreap", "Moul", serif;
+  --font-niroth: "Khmer OS Siemreap", "Siemreap", "Khmer OS Niroth", "KhmerOSniroth", sans-serif;
+  --font-kbach: "Khmer OS Siemreap", "Siemreap", "AKbalthom Kbach", "Akbalthom Kbach", "AKbalthomKbach", sans-serif;
+  --font-content: "Khmer OS Siemreap", "Siemreap", "Content", "Content-Regular", sans-serif;
+  --font-writehand: "Khmer OS Siemreap", "Siemreap", "Kh Ang Writehand", "Khmer OS Ang Writehand", cursive, sans-serif;
+  --font-nitean: "Khmer OS Siemreap", "Siemreap", "Kh Ang NiTean 2", "Khmer OS Ang Nitean 2", "Khmer OS Ang Nitean", cursive, sans-serif;
+  --font-tapenh: "Khmer OS Siemreap", "Siemreap", "Kh Ang TaPenh", "Khmer OS Ang Tapenh", cursive, sans-serif;
 }
 
 html {
