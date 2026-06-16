@@ -662,6 +662,8 @@ export default function UserDashboard({
                                     { key: 'otherlinks', labelKh: 'តំណភ្ជាប់ផ្សេងៗ', labelEn: 'Other Links', icon: '🔗' },
                                     { key: 'schoolinfo', labelKh: 'ព័ត៌មានសាលា', labelEn: 'School Info', icon: '🏛️' },
                                     { key: 'telegram', labelKh: 'Telegram Alert', labelEn: 'Telegram Alert', icon: '🤖' },
+                                    { key: 'schoolevents', labelKh: 'ផែនការសកម្មភាពសាលា', labelEn: 'School Events', icon: '📅' },
+                                    { key: 'monthlyreport', labelKh: 'របាយការណ៍សង្ខេបប្រចាំខែ', labelEn: 'Monthly Reports', icon: '📋' },
                                     { key: 'usermanager', labelKh: 'គ្រប់គ្រងអ្នកប្រើប្រាស់', labelEn: 'User Manager', icon: '⚙️' }
                                   ].map((perm) => {
                                     const hasAccess = u.role === 'admin' || (u.permissions && u.permissions.includes(perm.key));

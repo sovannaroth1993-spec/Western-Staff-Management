@@ -78,7 +78,9 @@ async function startAppWithHydration() {
         'wis_telegram_bot_token',
         'wis_telegram_chat_id',
         'wis_users_list',
-        'wis_user_requests'
+        'wis_user_requests',
+        'wis_school_events',
+        'wis_monthly_reports'
       ];
 
       for (const key of syncKeys) {

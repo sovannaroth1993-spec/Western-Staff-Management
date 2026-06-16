@@ -410,4 +410,84 @@ export interface UserRequest {
   remarks?: string;
 }
 
+export interface SchoolEvent {
+  id: string;
+  no: number;
+  eventActivity: string;
+  date: string;
+  involvement: string;
+  managedBy: string;
+  remarks: string;
+}
+
+// --- Monthly Report Types ---
+export interface LunchRecord {
+  id: string;
+  no: number;
+  description: string;
+  count: number;
+  total: number;
+  note: string;
+}
+
+export interface MosquitoSpraySchedule {
+  id: string;
+  date: string;
+  day: string;
+  time: string;
+}
+
+export interface AchievementRecord {
+  id: string;
+  no: number;
+  description: string;
+  remarks: string;
+}
+
+export interface InsuranceClaimRecord {
+  id: string;
+  no: number;
+  name: string;
+  grade: string;
+  sex: string;
+  dateAccident: string;
+  timeAccident: string;
+  dateClaim: string;
+  remarks: string;
+}
+
+export interface StudentAbsentRecord {
+  id: string;
+  no: number;
+  date: string;
+  male: number;
+  female: number;
+  total: number;
+  remarks: string;
+}
+
+export interface StudentSickRecord {
+  id: string;
+  no: number;
+  date: string;
+  male: number;
+  female: number;
+  total: number;
+  remarks: string;
+}
+
+export interface MonthlyReport {
+  id: string; // Month ID, e.g. "2026-06"
+  month: string; // "June-2026"
+  lunchList: LunchRecord[];
+  mosquitoList: MosquitoSpraySchedule[];
+  achievementList: AchievementRecord[];
+  insuranceClaimList: InsuranceClaimRecord[];
+  absentList: StudentAbsentRecord[];
+  sickList: StudentSickRecord[];
+  preparedBy: string;
+  preparedTitle: string;
+}
+
+
 

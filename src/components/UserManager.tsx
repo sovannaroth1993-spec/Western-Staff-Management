@@ -43,6 +43,8 @@ export const AVAILABLE_PERMISSIONS = [
   { key: 'otherlinks', labelKh: 'តំណភ្ជាប់ផ្សេងៗ (Other Links)', labelEn: 'Other Links' },
   { key: 'schoolinfo', labelKh: 'ព័ត៌មានសាលាវេស្ទើន (School Info)', labelEn: 'School Info' },
   { key: 'telegram', labelKh: 'ប្រព័ន្ធ Forward ទៅ Telegram', labelEn: 'Telegram Alert' },
+  { key: 'schoolevents', labelKh: 'ផែនការសកម្មភាពសាលា (School Events)', labelEn: 'School Annual Events' },
+  { key: 'monthlyreport', labelKh: 'របាយការណ៍សង្ខេបប្រចាំខែ (Monthly Report)', labelEn: 'Monthly Reports' },
   { key: 'usermanager', labelKh: 'គ្រប់គ្រងអ្នកប្រើប្រាស់ (User manager)', labelEn: 'User Manager' },
 ];
 

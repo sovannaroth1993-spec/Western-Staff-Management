@@ -65,9 +65,19 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Khmer OS Muol Light';
+  src: url('https://raw.githubusercontent.com/danyphea/khmer-unicode/master/fonts/KhmerOS_muol_light.ttf') format('truetype'),
+       url('https://raw.githubusercontent.com/sochiso/khmer-font/master/fonts/KhmerOS_muol_light.ttf') format('truetype'),
+       url('https://raw.githubusercontent.com/Khmer-Documentation/khmer-fonts/master/fonts/KhmerOS_muol_light.ttf') format('truetype'),
+       local('Khmer OS Muol Light'), local('KhmerOS_muol_light'), local('Khmer OS Muol'), local('KhmerOSmuollight');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
   --font-sans: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-moul: "Khmer OS Siemreap", "Siemreap", "Moul", serif;
+  --font-moul: "Khmer OS Muol Light", "Moul", "Khmer OS Muol", "KhmerOS_muol_light", serif;
   --font-niroth: "Khmer OS Siemreap", "Siemreap", "Khmer OS Niroth", "KhmerOSniroth", sans-serif;
   --font-kbach: "Khmer OS Siemreap", "Siemreap", "AKbalthom Kbach", "Akbalthom Kbach", "AKbalthomKbach", sans-serif;
   --font-content: "Khmer OS Siemreap", "Siemreap", "Content", "Content-Regular", sans-serif;

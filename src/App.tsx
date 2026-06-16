@@ -24,6 +24,8 @@ import RemoteScannerMobile from './components/RemoteScannerMobile';
 import DailyReportManager from './components/DailyReportManager';
 import StudentStatistics from './components/StudentStatistics';
 import WesternSchoolInfo from './components/WesternSchoolInfo';
+import { SchoolEventsManager } from './components/SchoolEventsManager';
+import { MonthlyReportManager } from './components/MonthlyReportManager';
 
 import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord, Student, UserAccount, UserRequest } from './types';
 import { DEFAULT_STAFF } from './data/defaultStaff';
@@ -137,11 +139,11 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal'>(() => {
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal' | 'schoolevents' | 'monthlyreport'>(() => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const tabParam = searchParams.get('tab');
-      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal'];
+      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal', 'schoolevents', 'monthlyreport'];
       if (tabParam && validTabs.includes(tabParam)) {
         return tabParam as any;
       }
@@ -684,6 +686,36 @@ export default function App() {
             </button>
           )}
 
+          {/* Tab 1.13: Annual School Events Plan */}
+          {hasPermission('schoolevents') && (
+            <button
+              onClick={() => setActiveTab('schoolevents')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'schoolevents'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Calendar className="w-4.5 h-4.5 text-emerald-400" />
+              <span className="flex-1">{t.schoolEvents}</span>
+            </button>
+          )}
+
+          {/* Tab 1.13.5: Monthly Performance Report */}
+          {hasPermission('monthlyreport') && (
+            <button
+              onClick={() => setActiveTab('monthlyreport')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'monthlyreport'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <FileText className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+              <span className="flex-1">{t.monthlyReport}</span>
+            </button>
+          )}
+
           {/* Tab 1.14: Other Web Links (Other) */}
           {hasPermission('otherlinks') && (
             <button
@@ -908,6 +940,14 @@ export default function App() {
 
               {activeTab === 'otherlinks' && (
                 <OtherLinksManager />
+              )}
+
+              {activeTab === 'schoolevents' && (
+                <SchoolEventsManager />
+              )}
+
+              {activeTab === 'monthlyreport' && (
+                <MonthlyReportManager />
               )}
 
               {activeTab === 'staff' && (
