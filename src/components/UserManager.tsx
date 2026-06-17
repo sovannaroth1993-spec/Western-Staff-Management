@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { UserAccount, UserRequest } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Users, UserPlus, Shield, UserCheck, UserX, Trash2, Edit2, Check, X, Search, Lock, FileText, BadgeAlert, Sparkles, MessageSquare, Plus, Clock, ThumbsUp, ThumbsDown, RefreshCw
+  Users, UserPlus, Shield, UserCheck, UserX, Trash2, Edit2, Check, X, Search, Lock, FileText, BadgeAlert, Sparkles, MessageSquare, Plus, Clock, ThumbsUp, ThumbsDown, RefreshCw,
+  Database, Download, UploadCloud, AlertTriangle, ChevronDown, CheckCircle
 } from 'lucide-react';
 
 export interface PasswordResetLog {
@@ -78,6 +79,46 @@ export default function UserManager({
   const [forcePasswordChange, setForcePasswordChange] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
+  // Backup & Safety confirmation modal states
+  const [importPreview, setImportPreview] = useState<{
+    fileName: string;
+    fileSize: string;
+    keysFound: { key: string; nameEn: string; nameKh: string; recordsCount: number }[];
+    rawJson: Record<string, any>;
+  } | null>(null);
+
+  const [backupConfirmModal, setBackupConfirmModal] = useState<{
+    isOpen: boolean;
+    type: 'clear_dataset' | 'restore_backup';
+    titleKh: string;
+    titleEn: string;
+    warningKh: string;
+    warningEn: string;
+    keyword?: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    type: 'clear_dataset',
+    titleKh: '',
+    titleEn: '',
+    warningKh: '',
+    warningEn: '',
+    onConfirm: () => {}
+  });
+
+  const [safetyConfirmInput, setSafetyConfirmInput] = useState('');
+
+  // Export progress & Toast state
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportPhase, setExportPhase] = useState<{ kh: string; en: string }>({ kh: '', en: '' });
+  const [toastNotification, setToastNotification] = useState<{
+    show: boolean;
+    type: 'success' | 'error';
+    messageKh: string;
+    messageEn: string;
+  } | null>(null);
+
   // Translations
   const t = {
     kh: {
@@ -140,7 +181,8 @@ export default function UserManager({
       btnApprove: "អនុម័ត",
       btnReject: "បដិសេធ",
       btnClearLogs: "សម្អាតប្រវត្តិទាំងអស់",
-      confirmClearLogs: "តើអ្នកប្រាកដជាចង់សម្អាតប្រវត្តិ និងកំណត់ត្រាទាំងអស់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ!"
+      confirmClearLogs: "តើអ្នកប្រាកដជាចង់សម្អាតប្រវត្តិ និងកំណត់ត្រាទាំងអស់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានឡើយ!",
+      tabBackup: "ទិន្នន័យ & ការចម្លងទុក (Data Backup)"
     },
     en: {
       title: "User Accounts & Permissions",
@@ -202,7 +244,8 @@ export default function UserManager({
       btnApprove: "Approve",
       btnReject: "Reject",
       btnClearLogs: "Clear All Logs",
-      confirmClearLogs: "Are you sure you want to clear all security logs and history? This action is irreversible!"
+      confirmClearLogs: "Are you sure you want to clear all security logs and history? This action is irreversible!",
+      tabBackup: "Data Backup & Recovery"
     }
   }[lang];
 
@@ -377,7 +420,7 @@ export default function UserManager({
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const [activeSubTab, setActiveSubTab] = useState<'users' | 'requests' | 'resetLogs'>('users');
+  const [activeSubTab, setActiveSubTab] = useState<'users' | 'requests' | 'resetLogs' | 'backup'>('users');
   const [resetLogs, setResetLogs] = useState<PasswordResetLog[]>([]);
 
   useEffect(() => {
@@ -491,6 +534,261 @@ export default function UserManager({
     }
   };
 
+  // ==========================================
+  // DATA BACKUP & SYSTEM PURGE METHODS
+  // ==========================================
+
+  const handleExportFullBackup = () => {
+    if (isExporting) return;
+    
+    setIsExporting(true);
+    setExportProgress(5);
+    setExportPhase({
+      kh: "កំពុងវិភាគពិនិត្យមើលសោទិន្នន័យប្រព័ន្ធ...",
+      en: "Analyzing local storage keyrings..."
+    });
+
+    const updateStage = (progress: number, phaseKh: string, phaseEn: string, delay: number) => {
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setExportProgress(progress);
+          setExportPhase({ kh: phaseKh, en: phaseEn });
+          resolve();
+        }, delay);
+      });
+    };
+
+    const runBackupSequence = async () => {
+      await updateStage(25, "កំពុងដកស្រង់សំណុំព័ត៌មានបុគ្គលិក និងសិស្ស...", "Extracting staff and student datasets...", 250);
+      await updateStage(55, "កំពុងបង្កើតរចនាសម្ព័ន្ធកំណត់ត្រាហិរញ្ញវត្ថុ និងឧបករណ៍...", "Formatting operations records and assets schema...", 300);
+      await updateStage(85, "កំពុងបំលែងសំណុំទិន្នន័យទៅជា JSON Stream...", "Packaging database entries into clean JSON stream...", 250);
+      await updateStage(100, "ការធ្វើសៀរៀលកម្មបានបញ្ចប់! ប្រព័ន្ធកំពុងចាប់ផ្តើមទាញយក...", "Serialization complete! Triggering local file browser download...", 200);
+
+      setTimeout(() => {
+        const backupObj: Record<string, any> = {};
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('wis_') || key.startsWith('school_')) {
+            try {
+              const val = localStorage.getItem(key);
+              if (val) backupObj[key] = JSON.parse(val);
+            } catch {
+              backupObj[key] = localStorage.getItem(key);
+            }
+          }
+        });
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        const dateStr = new Date().toISOString().split('T')[0];
+        downloadAnchor.setAttribute("download", `WIS_Full_System_Backup_${dateStr}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+
+        // End exporting state
+        setIsExporting(false);
+        setExportProgress(0);
+        setExportPhase({ kh: '', en: '' });
+
+        // Show Success Toast
+        setToastNotification({
+          show: true,
+          type: 'success',
+          messageKh: "ការបម្រុងទុកទិន្នន័យបានជោគជ័យ! ឯកសារ JSON ត្រូវបានរក្សាទុកក្នុងកុំព្យូទ័ររបស់អ្នករួចរាល់។",
+          messageEn: "Data backup successful! The full workspace state JSON file is now stored locally."
+        });
+
+        // Auto-dismiss toast
+        setTimeout(() => {
+          setToastNotification(prev => prev && prev.show ? null : prev);
+        }, 4500);
+
+      }, 300);
+    };
+
+    runBackupSequence();
+  };
+
+  const processImportJson = (jsonText: string, fileName: string, fileSize: number) => {
+    try {
+      const parsed = JSON.parse(jsonText);
+      if (typeof parsed !== 'object' || parsed === null) {
+        alert(lang === 'kh' ? "ឯកសារ Backup មិនត្រឹមត្រូវ!" : "Invalid backup file structure!");
+        return;
+      }
+
+      const keysFound: { key: string; nameEn: string; nameKh: string; recordsCount: number }[] = [];
+      
+      const translateKey = (k: string) => {
+        const mapping: Record<string, { kh: string; en: string }> = {
+          'wis_staff_list': { kh: 'ព័ត៌មានបុគ្គលិកសាលា (Staff Profiles)', en: 'Staff Profiles list' },
+          'wis_student_list': { kh: 'បញ្ជីរាយនាមសិស្ស (Student Profiles)', en: 'Student Profiles list' },
+          'wis_attendance_records': { kh: 'កំណត់ត្រាវត្តមានបុគ្គលិក (Attendance Logs)', en: 'Staff Attendance records' },
+          'wis_electricity_records': { kh: 'ទិន្នន័យម៉ែត្រអគ្គិសនី (Electricity Logs)', en: 'Electricity tracker audits' },
+          'wis_water_records': { kh: 'ទិន្នន័យម៉ែត្រទឹក (Water Logs)', en: 'Water tracker audits' },
+          'wis_daily_reports': { kh: 'របាយការណ៍ប្រតិបត្តិការប្រចាំថ្ងៃ (Daily Reports)', en: 'Daily Operations reports' },
+          'wis_monthly_reports': { kh: 'របាយការណ៍សង្ខេបប្រចាំខែ (Monthly Reports)', en: 'Monthly operation metrics' },
+          'wis_fixed_assets': { kh: 'ទ្រព្យសម្បត្តិថេរ (Fixed Assets)', en: 'Fixed Assets Registry' },
+          'wis_cctv_records': { kh: 'កំណត់ត្រាត្រួតពិនិត្យ CCTV', en: 'CCTV Checklogs' },
+          'wis_school_events': { kh: 'ផែនការសកម្មភាពសាលា (Events Calendar)', en: 'School Events Calendar' },
+          'school_admin_docs_files_v1': { kh: 'ឯកសាររដ្ឋបាល (Admin Documents)', en: 'Administration files' },
+          'school_admin_docs_status_v1': { kh: 'ស្ថានភាពឯកសាររដ្ឋបាល', en: 'Admin Categories statuses' },
+          'wis_khmer_calendar_notes': { kh: 'កំណត់សម្គាល់ប្រតិទិនខ្មែរ', en: 'Khmer Calendar comments' },
+          'wis_tuition_calc_students': { kh: 'សិស្សគណនាកម្រៃសិក្សា (Tuition Roster)', en: 'Tuition calculator records' },
+          'wis_users_list': { kh: 'គណនីប្រើប្រាស់ប្រព័ន្ធ (User Accounts)', en: 'System account credentials' },
+          'wis_user_requests': { kh: 'សំណើការអនុញ្ញាតពីបុគ្គលិក (Request Inbox)', en: 'User Requests Inbox' },
+          'wis_password_reset_logs': { kh: 'ប្រវត្តិកែលេខកូដសុវត្ថិភាព (Reset Logs)', en: 'Password reset logs' }
+        };
+        return mapping[k] || { kh: `ប្រភេទទិន្នន័យ៖ ${k}`, en: `Custom dataset: ${k}` };
+      };
+
+      Object.keys(parsed).forEach((k) => {
+        if (k.startsWith('wis_') || k.startsWith('school_')) {
+          let count = 0;
+          if (Array.isArray(parsed[k])) {
+            count = parsed[k].length;
+          } else if (typeof parsed[k] === 'object' && parsed[k] !== null) {
+            count = Object.keys(parsed[k]).length;
+          } else {
+            count = parsed[k] ? 1 : 0;
+          }
+          const trans = translateKey(k);
+          keysFound.push({
+            key: k,
+            nameKh: trans.kh,
+            nameEn: trans.en,
+            recordsCount: count
+          });
+        }
+      });
+
+      if (keysFound.length === 0) {
+        alert(lang === 'kh' ? "រកមិនឃើញទិន្នន័យប្រព័ន្ធនៅក្នុងឯកសារនេះទេ!" : "No system datasets detected in this backup file!");
+        return;
+      }
+
+      setImportPreview({
+        fileName,
+        fileSize: (fileSize / 1024).toFixed(1) + " KB",
+        keysFound,
+        rawJson: parsed
+      });
+    } catch (e) {
+      alert(lang === 'kh' ? "ការអានឯកសារ JSON បានបរាជ័យ!" : "Failed to parse JSON backup file!");
+    }
+  };
+
+  const handleImportFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string;
+      processImportJson(text, file.name, file.size);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleImportFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.json')) {
+      alert(lang === 'kh' ? "សូមបញ្ចូលតែឯកសារ .json ប៉ុណ្ណោះ!" : "Only JSON files are supported!");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string;
+      processImportJson(text, file.name, file.size);
+    };
+    reader.readAsText(file);
+  };
+
+  const getPurgeableDatasets = () => {
+    const getLen = (key: string) => {
+      try {
+        const saved = localStorage.getItem(key);
+        if (!saved) return 0;
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed.length : (typeof parsed === 'object' && parsed !== null ? Object.keys(parsed).length : 0);
+      } catch {
+        return 0;
+      }
+    };
+
+    return [
+      { key: 'wis_staff_list', nameKh: 'ព័ត៌មានបុគ្គលិកសាលា (Staff Profiles)', nameEn: 'WIS Staff Profiles', count: getLen('wis_staff_list'), defaultValue: '[]' },
+      { key: 'wis_student_list', nameKh: 'កាលវិភាគ/ព័ត៌មានសិស្ស (Student Profiles)', nameEn: 'WIS Student Profiles', count: getLen('wis_student_list'), defaultValue: '[]' },
+      { key: 'wis_attendance_records', nameKh: 'កំណត់ត្រាវត្តមានបុគ្គលិក (Attendance Logs)', nameEn: 'Staff Attendance Records', count: getLen('wis_attendance_records'), defaultValue: '[]' },
+      { key: 'wis_electricity_records', nameKh: 'របាយការណ៍ម៉ែត្រអគ្គិសនី (Electricity Logs)', nameEn: 'Electricity Tracker logs', count: getLen('wis_electricity_records'), defaultValue: '[]' },
+      { key: 'wis_water_records', nameKh: 'របាយការណ៍ម៉ែត្រទឹក (Water Logs)', nameEn: 'Water Tracker logs', count: getLen('wis_water_records'), defaultValue: '[]' },
+      { key: 'wis_daily_reports', nameKh: 'របាយការណ៍ប្រតិបត្តិការប្រចាំថ្ងៃ (Daily Reports)', nameEn: 'Daily Operations Reports', count: getLen('wis_daily_reports'), defaultValue: '[]' },
+      { key: 'wis_monthly_reports', nameKh: 'របាយការណ៍សង្ខេបប្រចាំខែ (Monthly Reports)', nameEn: 'Monthly operation metrics', count: getLen('wis_monthly_reports'), defaultValue: '[]' },
+      { key: 'wis_fixed_assets', nameKh: 'ទ្រព្យសម្បត្តិថេររបស់សាលា (Fixed Assets)', nameEn: 'School Fixed Assets', count: getLen('wis_fixed_assets'), defaultValue: '[]' },
+      { key: 'wis_cctv_records', nameKh: 'កំណត់ត្រាសវនកម្ម CCTV (CCTV Checklogs)', nameEn: 'CCTV Audit records', count: getLen('wis_cctv_records'), defaultValue: '[]' },
+      { key: 'wis_school_events', nameKh: 'ផែនការសកម្មភាពសាលា (School Events)', nameEn: 'WIS Events Calendar', count: getLen('wis_school_events'), defaultValue: '[]' },
+      { key: 'school_admin_docs_files_v1', nameKh: 'ឯកសាររដ្ឋបាល & ច្បាប់អនុវត្ត (Admin Docs)', nameEn: 'Admin Docs & Regulations', count: getLen('school_admin_docs_files_v1'), defaultValue: '[]' }
+    ];
+  };
+
+  const triggerClearDataset = (ds: { key: string; nameKh: string; nameEn: string; count: number; defaultValue: string }) => {
+    setSafetyConfirmInput('');
+    setBackupConfirmModal({
+      isOpen: true,
+      type: 'clear_dataset',
+      titleKh: `សម្អាតសំណុំទិន្នន័យ៖ ${ds.nameKh}`,
+      titleEn: `Clear Dataset: ${ds.nameEn}`,
+      warningKh: `តើអ្នកពិតជាចង់សម្អាតទិន្នន័យ "${ds.nameKh}" នេះមែនទេ? សកម្មភាពនេះនឹងលុបចោលទាំងស្រុងនូវកំណត់ត្រាចំនួន ${ds.count} របស់សាលាជាអចិន្ត្រៃយ៍ និងមិនអាចទាញមកវិញបានឡើយ!`,
+      warningEn: `Are you sure you want to completely clear the "${ds.nameEn}" dataset? This action will permanently wipe out all ${ds.count} active school records, and is absolutely irreversible!`,
+      keyword: 'WISDELETE',
+      onConfirm: () => {
+        try {
+          localStorage.setItem(ds.key, ds.defaultValue);
+          alert(lang === 'kh' 
+            ? `បានសម្អាតទិន្នន័យ "${ds.nameKh}" ដោយជោគជ័យ! ប្រព័ន្ធនឹងរៀបចំដំណើរការឡើងវិញជាស្វ័យប្រវត្តិ។` 
+            : `Successfully wiped out "${ds.nameEn}"! System will now restart dynamically.`);
+          setBackupConfirmModal(prev => ({ ...prev, isOpen: false }));
+          window.location.reload();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    });
+  };
+
+  const triggerRestoreConfirmation = (rawJson: Record<string, any>, datasetCount: number) => {
+    setSafetyConfirmInput('');
+    setBackupConfirmModal({
+      isOpen: true,
+      type: 'restore_backup',
+      titleKh: 'តម្លើងទិន្នន័យប្រព័ន្ធចាស់ឡើងវិញ',
+      titleEn: 'Restore System Backup File',
+      warningKh: `ការតម្លើងទិន្នន័យចម្លងនេះ នឹងជំនួស រាល់ទិន្នន័យសាលាដែលមានស្រាប់នៅក្នុងប្រព័ន្ធនាពេលបច្ចុប្បន្ន (សរុបមាន ${datasetCount} សំណុំទិន្នន័យរកឃើញ)! តើអ្នកប្រាកដថាចង់បន្តសកម្មភាពនេះមែនទេ?`,
+      warningEn: `Restoring this backup file will completely OVERWRITE and replace all current school records across ${datasetCount} school datasets! Are you sure you want to perform this operation?`,
+      keyword: 'WISRESTORE',
+      onConfirm: () => {
+        try {
+          Object.keys(rawJson).forEach((k) => {
+            if (k.startsWith('wis_') || k.startsWith('school_')) {
+              const val = rawJson[k];
+              localStorage.setItem(k, typeof val === 'object' ? JSON.stringify(val) : String(val));
+            }
+          });
+          alert(lang === 'kh' 
+            ? "បានស្តារ និងតម្លើងទិន្នន័យចម្លងប្រព័ន្ធឡើងវិញដោយជោគជ័យ! ប្រព័ន្ធកំពុងដំណើរការឡើងវិញ..." 
+            : "Restore complete! System is reloading dynamic records successfully now.");
+          setBackupConfirmModal(prev => ({ ...prev, isOpen: false }));
+          setImportPreview(null);
+          window.location.reload();
+        } catch (err) {
+          alert(lang === 'kh' ? "ការតម្លើងបរាជ័យ!" : "System recovery failed!");
+        }
+      }
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Title block */}
@@ -568,6 +866,19 @@ export default function UserManager({
                 {resetLogs.filter(l => l.status === 'Pending').length}New
               </span>
             )}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveSubTab('backup')}
+          className={`px-6 py-3 font-bold text-xs rounded-t-2xl border-t border-x transition-all cursor-pointer ${
+            activeSubTab === 'backup'
+              ? 'bg-white border-slate-200 border-b-white text-emerald-805 shadow-2xs'
+              : 'border-transparent text-slate-400 bg-transparent hover:text-slate-700'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-amber-500" />
+            {t.tabBackup}
           </span>
         </button>
       </div>
@@ -825,7 +1136,7 @@ export default function UserManager({
             )}
           </div>
         </div>
-      ) : (
+      ) : activeSubTab === 'resetLogs' ? (
         /* Password Reset Logs Tab panel */
         <div className="space-y-4">
           <div className="flex items-center justify-between col-span-full">
@@ -951,6 +1262,198 @@ export default function UserManager({
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Data Backup and Recovery Tab panel */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
+          {/* Left Side: Backup & Restore */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-white rounded-3xl p-6 border border-slate-205 shadow-3xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                <Database className="w-5 h-5 text-amber-500" />
+                <h3 className="text-sm font-black text-slate-850 uppercase tracking-tight">
+                  {lang === 'kh' ? 'នាំចេញ និងនាំចូលទិន្នន័យចម្លង' : 'Export & Import Full Database JSON Backup'}
+                </h3>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                {lang === 'kh'
+                  ? 'អ្នកអាចទាញយកទិន្នន័យ (រាល់បញ្ជីបុគ្គលិក សิស្ស របាយការណ៍ និងកំណត់ត្រាផ្សេងៗ) ទាំងអស់នៅក្នុង Workspace មកកុំព្យូទ័ររបស់អ្នកក្នុងទម្រង់ជា JSON ឬបង្ហោះឯកសារចម្លងនោះមកវិញដើម្បីទាញទិន្នន័យចាស់មកប្រើវិញ។'
+                  : 'You can download the entire workspace states (including all employee profiles, student registries, audit logs, and reports) locally as a single JSON file, or drag-and-drop a previous file to restore states.'}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={isExporting}
+                  onClick={handleExportFullBackup}
+                  className="inline-flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-100 disabled:text-slate-350 disabled:border-slate-200 text-white font-extrabold text-xs px-5 py-3 rounded-2xl shadow-lg shadow-amber-100 disabled:shadow-none transition-all duration-205 cursor-pointer flex-1"
+                >
+                  <Download className={`w-4 h-4 ${isExporting ? 'animate-spin' : ''}`} />
+                  <span>
+                    {isExporting 
+                      ? (lang === 'kh' ? 'កំពុងនាំចេញ...' : 'Exporting State...') 
+                      : (lang === 'kh' ? 'ទាញយកទិន្នន័យចម្លង (Export JSON)' : 'Full Backup (Export JSON)')
+                    }
+                  </span>
+                </button>
+              </div>
+
+              {/* Visual Export Progress Bar */}
+              {isExporting && (
+                <div className="bg-amber-50/50 border border-amber-150 rounded-2xl p-4 space-y-3 font-sans animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-amber-800 flex items-center gap-1.5 animate-pulse">
+                      <span className="flex h-2 w-2 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                      </span>
+                      {lang === 'kh' ? 'កំពុងនាំចេញទិន្នន័យ...' : 'Exporting System State...'}
+                    </span>
+                    <span className="text-xs font-mono font-black text-amber-600 bg-amber-100 px-2 py-0.5 rounded-md">
+                      {exportProgress}%
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] font-bold text-slate-500 min-h-[16px]">
+                    {lang === 'kh' ? exportPhase.kh : exportPhase.en}
+                  </p>
+
+                  {/* Progress tracks */}
+                  <div className="w-full bg-slate-150 h-2.5 rounded-full overflow-hidden">
+                    <motion.div
+                      className="bg-gradient-to-r from-amber-500 to-amber-600 h-full rounded-full"
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${exportProgress}%` }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Import Upload box */}
+              <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                <h4 className="text-xs font-black text-slate-700">
+                  {lang === 'kh' ? 'តម្លើងទិន្នន័យចាស់ឡើងវិញ (Import & Restore)' : 'Upload Backup File to Restore'}
+                </h4>
+
+                <div 
+                  className="border-2 border-dashed border-slate-200 hover:border-emerald-400 rounded-2xl p-6 text-center transition-all duration-200 cursor-pointer relative bg-slate-50 hover:bg-emerald-50/20"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleImportFileDrop}
+                >
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportFileSelect}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                  <UploadCloud className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-black text-slate-600">
+                    {lang === 'kh' ? 'អូសទម្លាក់ ឬ ចុចដើម្បីជ្រើសរើសឯកសារ JSON' : 'Drag & drop or click to select JSON backup file'}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                    {lang === 'kh' ? 'ឯកសារត្រូវតែជាទម្រង់ .json ដែលបាននាំចេញពីប្រព័ន្ធនេះ' : 'Must be a .json file exported from this application'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Import Preview if file exists */}
+              {importPreview && (
+                <div className="bg-emerald-50/50 border border-emerald-150 rounded-2xl p-4 space-y-3 font-sans animate-fadeIn">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-emerald-800 flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                      {lang === 'kh' ? 'ឯកសារត្រឹមត្រូវសម្រាប់ការតម្លើង' : 'Valid Backup File Spotted'}
+                    </span>
+                    <button 
+                      type="button" 
+                      onClick={() => setImportPreview(null)}
+                      className="text-slate-400 hover:text-rose-600 p-0.5 rounded-full hover:bg-slate-200 transition"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-1 text-xs">
+                    <div>
+                      <span className="font-extrabold text-slate-500">{lang === 'kh' ? 'ឈ្មោះឯកសារ៖ ' : 'Name: '}</span>
+                      <span className="font-black text-slate-800">{importPreview.fileName}</span>
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-slate-500">{lang === 'kh' ? 'ទំហំ៖ ' : 'Size: '}</span>
+                      <span className="font-semibold text-slate-600">{importPreview.fileSize}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl p-3 border border-emerald-100 max-h-48 overflow-y-auto space-y-1">
+                    <div className="text-[10px] text-slate-400 uppercase font-black tracking-wider border-b pb-1.5 mb-1.5">
+                      {lang === 'kh' ? 'ទិន្នន័យដែលរកឃើញ (Datasets Detected)' : 'Analyzed Records list'}
+                    </div>
+                    {importPreview.keysFound.map((k) => (
+                      <div key={k.key} className="flex justify-between items-center text-[11px] py-1">
+                        <span className="font-bold text-slate-600">{lang === 'kh' ? k.nameKh : k.nameEn}</span>
+                        <span className="bg-emerald-100 text-emerald-800 font-black px-1.5 py-px rounded font-mono">
+                          {k.recordsCount} {lang === 'kh' ? 'កំណត់ត្រា' : 'records'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => triggerRestoreConfirmation(importPreview.rawJson, importPreview.keysFound.length)}
+                    className="w-full inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow cursor-pointer"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>{lang === 'kh' ? 'តម្លើងទិន្នន័យចម្លងនេះ' : 'Restore Selected Backup'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side: Clear Records Datasets */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-3xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                <AlertTriangle className="w-5 h-5 text-rose-500" />
+                <h3 className="text-sm font-black text-slate-850 uppercase tracking-tight">
+                  {lang === 'kh' ? 'សម្អាតកំណត់ត្រាប្រព័ន្ធ និងទិន្នន័យ' : 'System Records Depuration & Cleanup'}
+                </h3>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                {lang === 'kh'
+                  ? 'លុបសម្អាតសំណុំទិន្នន័យជាក់លាក់ដោយឡែកជាអចិន្ត្រៃយ៍។ រាល់សកម្មភាពលុបត្រូវតែឆ្លងកាត់ផ្দেশেরបញ្ជាក់ Confirmation Modal ដោយវាយបញ្ចូលពាក្យសម្ងាត់សុវត្ថិភាពជាមុន ដើម្បីការពារការជ្រុលដៃលុបទិន្នន័យ។'
+                  : 'Permanently purge selected datasets from the workspace database. All clear triggers are fully guarded by an interactive confirmation modal, requiring safety-key input to avoid accidental click actions.'}
+              </p>
+
+              {/* Datasets purging grid */}
+              <div className="space-y-3">
+                {getPurgeableDatasets().map((ds) => (
+                  <div key={ds.key} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200 gap-3">
+                    <div>
+                      <h4 className="text-xs font-black text-slate-800">
+                        {lang === 'kh' ? ds.nameKh : ds.nameEn}
+                      </h4>
+                      <p className="text-[10.5px] font-bold text-slate-400 mt-0.5">
+                        {lang === 'kh' ? `សរុប៖ ${ds.count} កំណត់ត្រា (Key: ${ds.key})` : `Count: ${ds.count} lines (Storage key: ${ds.key})`}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={ds.count === 0}
+                      onClick={() => triggerClearDataset(ds)}
+                      className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 disabled:bg-slate-100 disabled:text-slate-300 hover:text-rose-700 text-rose-600 border border-rose-200 disabled:border-slate-200 font-extrabold text-[11px] rounded-xl transition cursor-pointer shrink-0"
+                    >
+                      {lang === 'kh' ? 'សម្អាត (Clear)' : 'Purge All'}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1406,6 +1909,109 @@ export default function UserManager({
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Backup & Purge Safety lock Confirmation Modal */}
+      <AnimatePresence>
+        {backupConfirmModal.isOpen && (
+          <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden font-sans"
+            >
+              {/* Header */}
+              <div className="bg-rose-50/50 p-6 flex items-start gap-4 border-b border-slate-100">
+                <div className="p-3 bg-rose-100 text-rose-600 rounded-2xl border border-rose-200 shrink-0">
+                  <AlertTriangle className="w-6 h-6 animate-bounce" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">
+                    {lang === 'kh' ? backupConfirmModal.titleKh : backupConfirmModal.titleEn}
+                  </h3>
+                  <p className="text-[10px] text-rose-650 font-black tracking-wider uppercase mt-1">
+                    {lang === 'kh' ? 'សកម្មភាពរដ្ឋបាលជាន់ខ្ពស់' : 'Critical Administrative Directive'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="p-6 space-y-4">
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  {lang === 'kh' ? backupConfirmModal.warningKh : backupConfirmModal.warningEn}
+                </p>
+
+                {backupConfirmModal.keyword && (
+                  <div className="space-y-1.5 p-4 bg-slate-50 rounded-2xl border border-slate-150">
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                      {lang === 'kh' ? `សូមវាយពាក្យ "${backupConfirmModal.keyword}" ដើម្បីបញ្ជាក់៖` : `Type keyword "${backupConfirmModal.keyword}" to confirm:`}
+                    </label>
+                    <input
+                      type="text"
+                      value={safetyConfirmInput}
+                      onChange={(e) => setSafetyConfirmInput(e.target.value)}
+                      placeholder={backupConfirmModal.keyword}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-black tracking-wider text-rose-650 text-center uppercase focus:outline-hidden focus:ring-2 focus:ring-rose-500/25 focus:border-rose-450 transition font-mono"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Actions Footer */}
+              <div className="bg-slate-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setBackupConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                  className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-700 border border-slate-200 font-bold text-xs rounded-xl transition cursor-pointer"
+                >
+                  {lang === 'kh' ? 'បោះបង់' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  disabled={backupConfirmModal.keyword ? safetyConfirmInput !== backupConfirmModal.keyword : false}
+                  onClick={backupConfirmModal.onConfirm}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold text-xs rounded-xl shadow-md disabled:shadow-none transition-all duration-150 cursor-pointer"
+                >
+                  {lang === 'kh' ? 'យល់ព្រមអនុវត្ត' : 'Confirm Action'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast notification banner */}
+      <AnimatePresence>
+        {toastNotification && toastNotification.show && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-6 right-6 z-150 max-w-sm w-full bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-800 p-4 font-sans"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 shrink-0">
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="space-y-1 flex-1">
+                <h4 className="text-xs font-black tracking-wider uppercase text-emerald-400">
+                  {lang === 'kh' ? 'នាំចេញដោយជោគជ័យ' : 'EXPORT COMPLETED'}
+                </h4>
+                <p className="text-[11px] text-slate-300 font-bold leading-relaxed">
+                  {lang === 'kh' ? toastNotification.messageKh : toastNotification.messageEn}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setToastNotification(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

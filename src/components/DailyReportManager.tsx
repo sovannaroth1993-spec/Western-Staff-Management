@@ -3,7 +3,7 @@ import {
   Clock, Calendar, User, ClipboardList, Plus, Trash2, Eye, Printer, 
   Edit3, Save, X, Check, FileText, ChevronRight, Search, Activity, 
   Sparkles, Filter, CheckCircle, AlertTriangle, Play, HelpCircle, Download,
-  Building
+  Building, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DailyReport, HourlyLog } from '../types';
@@ -141,6 +141,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
   // Inline editing states
   const [inlineEditingField, setInlineEditingField] = useState<string | null>(null);
   const [inlineEditValue, setInlineEditValue] = useState('');
+  const [isExportDropdownOpen, setIsExportDropdownOpen] = useState(false);
 
   // Form Fields
   const [formDate, setFormDate] = useState('');
@@ -302,8 +303,200 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
     );
   });
 
+  const handleExportCSV = () => {
+    if (!selectedReport) return;
+    
+    // Prepare header lines with UTF-8 BOM for perfect Khmer character sets support in MS Excel
+    let csvContent = "\uFEFF"; 
+    csvContent += "Western International School - Daily Operations Report\n";
+    csvContent += `Date: ${selectedReport.date}\n`;
+    csvContent += `Department: ${selectedReport.department || 'Operations'}\n`;
+    csvContent += `Prepared By: ${selectedReport.reporterName}\n\n`;
+    
+    // Headers for hourly tasks
+    csvContent += "No,Time Slot,Activity,Status\n";
+    selectedReport.hourlyLogs.forEach((log, idx) => {
+      const cleanActivity = log.activity.replace(/"/g, '""');
+      csvContent += `${idx + 1},"${log.timeSlot || '08:00 - 09:00'}","${cleanActivity}","${log.status}"\n`;
+    });
+    
+    csvContent += "\n";
+    csvContent += `Issues Encountered (បញ្ហាប្រឈម),"${(selectedReport.issuesEncountered || '').replace(/"/g, '""')}"\n`;
+    csvContent += `Actions Taken (ដំណោះស្រាយ),"${(selectedReport.actionsTaken || '').replace(/"/g, '""')}"\n`;
+    csvContent += `Plan for Tomorrow (ផែនការបន្ទាប់),"${(selectedReport.planForTomorrow || '').replace(/"/g, '""')}"\n`;
+    csvContent += `Remarks (កំណត់សម្គាល់ផ្សេងៗ),"${(selectedReport.remarks || '').replace(/"/g, '""')}"\n`;
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `WIS_Daily_Report_${selectedReport.date}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportJSON = () => {
+    if (!selectedReport) return;
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(selectedReport, null, 2)
+    )}`;
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', jsonString);
+    downloadAnchor.setAttribute('download', `WIS_Daily_Report_${selectedReport.date}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    document.body.removeChild(downloadAnchor);
+  };
+
   const handlePrint = () => {
-    window.print();
+    const reportSheet = document.getElementById('report-sheet');
+    if (!reportSheet) return;
+
+    // Create a temporary hidden iframe to isolate the printable report
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.zIndex = '-9999';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!iframeDoc) return;
+
+    // Collect all stylesheets and style blocks from the host document to replicate exact Tailwind utility classes
+    let stylesAndLinks = '';
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach((el) => {
+      stylesAndLinks += el.outerHTML;
+    });
+
+    iframeDoc.open();
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Daily Operations Report - Western International School</title>
+          <meta charset="utf-8" />
+          
+          <!-- Guarantee Noto Sans Khmer and Moul web fonts are fully imported so they don't default or get distorted -->
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Moul&family=Noto+Sans+Khmer:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+          
+          ${stylesAndLinks}
+          
+          <style>
+            /* Set accurate A4 size and margins to keep design perfect without cutoff */
+            @page {
+              size: A4 portrait;
+              margin: 1.2cm 1.0cm;
+            }
+            
+            body {
+              background-color: white !important;
+              color: #0f172a !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
+            /* Explicit high-contrast rules for Moul (Traditional Khmer Title Script) */
+            .font-moul {
+              font-family: 'Moul', serif !important;
+              text-shadow: none !important;
+              font-weight: normal !important;
+            }
+            
+            .font-sans {
+              font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
+            }
+
+            /* Prevent browser options from masking background colors or borders */
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+
+            /* Optimize container footprint for printing */
+            #printable-scope {
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+              border: none !important;
+              background-color: white !important;
+            }
+
+            #report-sheet {
+              border: none !important;
+              box-shadow: none !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              background-color: white !important;
+              min-height: auto !important;
+            }
+
+            /* Guard against clumsy page-breaks on tables and signature areas */
+            tr, .signature-section, .signature-section * {
+              page-break-inside: avoid !important;
+            }
+
+            thead {
+              display: table-header-group !important;
+            }
+            
+            /* Render input checklists in uniform size */
+            input[type="checkbox"] {
+              vertical-align: middle !important;
+            }
+
+            /* Hide general interactive helper components or editing widgets in vectors */
+            .no-print, [title="Upload custom logo"], .group\\/edit:hover svg {
+              display: none !important;
+            }
+          </style>
+        </head>
+        <body class="bg-white">
+          <div id="printable-scope">
+            ${reportSheet.outerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    iframeDoc.close();
+
+    let hasPrinted = false;
+    const triggerSystemPrint = () => {
+      if (hasPrinted) return;
+      hasPrinted = true;
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (error) {
+          console.error("Iframe printing exception occurred: ", error);
+        }
+        setTimeout(() => {
+          if (iframe.parentNode) {
+            iframe.parentNode.removeChild(iframe);
+          }
+        }, 1500);
+      }, 1000);
+    };
+
+    iframe.onload = triggerSystemPrint;
+    if (iframeDoc.readyState === 'complete') {
+      triggerSystemPrint();
+    }
   };
 
   const handleUpdateInlineField = (reportId: string, field: string, value: any) => {
@@ -591,21 +784,78 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                     <span>ចុចលើប្រអប់ព័ត៌មានខាងក្រោមក្រដាស A4 ផ្ទាល់ ដើម្បីកែសម្រួលរហ័ស។</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 self-end">
+                  <div className="flex items-center gap-2 self-end flex-wrap">
                     <button
                       onClick={() => handleOpenEditForm(selectedReport)}
-                      className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs rounded-xl flex items-center gap-1 transition"
+                      className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs rounded-xl flex items-center gap-1 transition cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>កែព័ត៌មានរួម (Form Edit)</span>
                     </button>
+                    
                     <button
                       onClick={handlePrint}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-sm font-sans"
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-750 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-sm font-sans cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5" />
                       <span>បោះពុម្ពរបាយការណ៍ (Print Report)</span>
                     </button>
+
+                    {/* Export Dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setIsExportDropdownOpen(!isExportDropdownOpen)}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl flex items-center gap-1 shadow-sm font-sans cursor-pointer"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>នាំចេញរបាយការណ៍ (Export)</span>
+                        <ChevronDown className="w-3 h-3 ml-0.5 shrink-0" />
+                      </button>
+                      
+                      {isExportDropdownOpen && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-[80]" 
+                            onClick={() => setIsExportDropdownOpen(false)} 
+                          />
+                          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-205 rounded-xl shadow-xl py-1.5 z-[90] font-sans text-xs shrink-0 transform origin-top-right transition-all">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handlePrint();
+                                setIsExportDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2 cursor-pointer"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-indigo-500" />
+                              <span>បោះពុម្ពឬរក្សាទុកជា PDF</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleExportCSV();
+                                setIsExportDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2 cursor-pointer border-t border-slate-100"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>ទាញយកជា Excel/CSV</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleExportJSON();
+                                setIsExportDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2 cursor-pointer border-t border-slate-100"
+                            >
+                              <Download className="w-3.5 h-3.5 text-amber-500" />
+                              <span>រក្សាទុកជា JSON Backup</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -950,7 +1200,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                     1. Summary of Activities Flow (បន្ថែមសកម្មភាពការងារ)
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                    <div className="sm:col-span-4 space-y-1">
+                    <div className="sm:col-span-6 space-y-1">
                       <label className="text-[10px] font-bold text-indigo-900 block">ម៉ោង (Time Slot) e.g. 07:30 - 08:30</label>
                       <input
                         type="text"
@@ -960,7 +1210,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                         className="w-full bg-white border border-indigo-200 p-2 rounded-xl text-xs font-bold font-mono outline-none focus:ring-1 focus:ring-indigo-500"
                       />
                     </div>
-                    <div className="sm:col-span-3 space-y-1">
+                    <div className="sm:col-span-6 space-y-1">
                       <label className="text-[10px] font-bold text-indigo-900 block">ស្ថានភាព (Status)</label>
                       <select
                         value={currentStatus}
@@ -971,27 +1221,26 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
                         <option value="In Progress">In Progress (កំពុងធ្វើ)</option>
                       </select>
                     </div>
-                    <div className="sm:col-span-5 text-right">
-                      <button
-                        type="button"
-                        onClick={handleAddHourlyLog}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shadow"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>បន្ថែមការងារ (Add Activity)</span>
-                      </button>
+                    <div className="col-span-12 space-y-1">
+                      <label className="text-[10px] font-black text-indigo-950 block">សេចក្តីពិពណ៌នាការងារ (Work Description) *</label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          placeholder="ឧ. ត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ និងកម្លាំងยាមល្បាតតាមច្រកទ្វារ..."
+                          value={currentActivity}
+                          onChange={(e) => setCurrentActivity(e.target.value)}
+                          className="flex-1 bg-white border border-indigo-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddHourlyLog}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                        >
+                          <Plus className="w-4 h-4 shrink-0" />
+                          <span>បន្ថែម (Add)</span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-indigo-900 block">សេចក្តីពិពណ៌នាការងារ (Work Description) *</label>
-                    <input
-                      type="text"
-                      placeholder="ឧ. ត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ និងកម្លាំងយាមល្បាតតាមច្រកទ្វារ..."
-                      value={currentActivity}
-                      onChange={(e) => setCurrentActivity(e.target.value)}
-                      className="w-full bg-white border border-indigo-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
-                    />
                   </div>
 
                   {/* Flow list table */}

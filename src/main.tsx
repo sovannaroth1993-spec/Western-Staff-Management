@@ -80,7 +80,9 @@ async function startAppWithHydration() {
         'wis_users_list',
         'wis_user_requests',
         'wis_school_events',
-        'wis_monthly_reports'
+        'wis_monthly_reports',
+        'wis_active_academic_year',
+        'wis_academic_years'
       ];
 
       for (const key of syncKeys) {

@@ -423,6 +423,8 @@ export interface SchoolEvent {
   involvement: string;
   managedBy: string;
   remarks: string;
+  attachments?: { name: string; url: string; size?: string; type?: string }[];
+  otherLinks?: { name: string; url: string; description?: string }[];
 }
 
 // --- Monthly Report Types ---
