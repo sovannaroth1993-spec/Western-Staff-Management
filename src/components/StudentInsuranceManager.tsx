@@ -9,7 +9,7 @@ import {
   User, HeartPulse, FileText, Phone, Landmark, Signpost, HelpCircle, Download, Upload, Eye,
   Send, Key, MessageSquare, AlertCircle, Settings2, Info
 } from 'lucide-react';
-import { StudentInsurance, InsuranceStatus } from '../types';
+import { StudentInsurance, InsuranceStatus, UserAccount } from '../types';
 import { StudentInsuranceViewModal } from './StudentInsuranceViewModal';
 import { StudentInsuranceFormModal } from './StudentInsuranceFormModal';
 
@@ -178,11 +178,21 @@ const DEFAULT_INSURANCES: StudentInsurance[] = [
   }
 ];
 
-export default function StudentInsuranceManager() {
+interface StudentInsuranceManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export default function StudentInsuranceManager({ currentUser }: StudentInsuranceManagerProps) {
   const [insurances, setInsurances] = useState<StudentInsurance[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusTab, setSelectedStatusTab] = useState<InsuranceStatus | 'All'>('All');
   const [selectedProvider, setSelectedProvider] = useState<string>('All');
+  
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedInsurances = React.useMemo(() => {
+    if (isAdmin) return insurances;
+    return insurances.filter(i => i.createdBy === currentUser?.username);
+  }, [insurances, currentUser, isAdmin]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'danger' | 'info' } | null>(null);
 
   // Form Modals Management
@@ -884,14 +894,14 @@ export default function StudentInsuranceManager() {
   };
 
   // Stats
-  const totalCount = insurances.length;
-  const approvedClaimsCount = insurances.filter(ins => ins.claimStatus === 'Approved').length;
-  const pendingClaimsCount = insurances.filter(ins => ins.claimStatus === 'Pending').length;
-  const rejectedClaimsCount = insurances.filter(ins => ins.claimStatus === 'Rejected').length;
-  const totalValueSumUsd = insurances.reduce((sum, item) => sum + (Number(item.premiumAmount) || 0), 0);
+  const totalCount = displayedInsurances.length;
+  const approvedClaimsCount = displayedInsurances.filter(ins => ins.claimStatus === 'Approved').length;
+  const pendingClaimsCount = displayedInsurances.filter(ins => ins.claimStatus === 'Pending').length;
+  const rejectedClaimsCount = displayedInsurances.filter(ins => ins.claimStatus === 'Rejected').length;
+  const totalValueSumUsd = displayedInsurances.reduce((sum, item) => sum + (Number(item.premiumAmount) || 0), 0);
 
   // Filter list
-  const filteredList = insurances.filter(item => {
+  const filteredList = displayedInsurances.filter(item => {
     const statusMatch = selectedStatusTab === 'All' || item.claimStatus === selectedStatusTab;
     const providerMatch = selectedProvider === 'All' || item.provider === selectedProvider;
     
@@ -1242,7 +1252,7 @@ export default function StudentInsuranceManager() {
                 : 'bg-slate-50 text-emerald-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            បានយល់ព្រម ({insurances.filter(i => i.claimStatus === 'Approved').length})
+            បានយល់ព្រម ({displayedInsurances.filter(i => i.claimStatus === 'Approved').length})
           </button>
 
           <button
@@ -1253,7 +1263,7 @@ export default function StudentInsuranceManager() {
                 : 'bg-slate-50 text-amber-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            រង់ចាំ ({insurances.filter(i => i.claimStatus === 'Pending').length})
+            រង់ចាំ ({displayedInsurances.filter(i => i.claimStatus === 'Pending').length})
           </button>
 
           <button
@@ -1264,7 +1274,7 @@ export default function StudentInsuranceManager() {
                 : 'bg-slate-50 text-rose-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            បដិសេធ ({insurances.filter(i => i.claimStatus === 'Rejected').length})
+            បដិសេធ ({displayedInsurances.filter(i => i.claimStatus === 'Rejected').length})
           </button>
         </div>
 
@@ -1460,8 +1470,12 @@ export default function StudentInsuranceManager() {
         editingPolicy={editingPolicy}
         showToastMsg={showToastMsg}
         onSave={(payload) => {
+          const payloadWithCreatedBy = {
+            ...payload,
+            createdBy: editingPolicy?.createdBy || currentUser?.username || 'admin'
+          };
           if (editingPolicy) {
-            const updated = insurances.map(ins => ins.id === editingPolicy.id ? payload : ins);
+            const updated = insurances.map(ins => ins.id === editingPolicy.id ? payloadWithCreatedBy : ins);
             saveAndSyncInsurances(updated);
             showToastMsg(`ព័ត៌មានធានារ៉ាប់រងសិស្ស ${payload.studentName} ត្រូវបានកែប្រែស្វ័យប្រវត្ត (Auto-Saved)`, 'success');
           } else {
@@ -1470,7 +1484,7 @@ export default function StudentInsuranceManager() {
               showToastMsg(`កូដសម្គាល់ធានារ៉ាប់រង "${payload.id}" នេះមានរួចរាល់ហើយក្នុងប្រព័ន្ធ។`, 'danger');
               return;
             }
-            const updated = [payload, ...insurances];
+            const updated = [payloadWithCreatedBy, ...insurances];
             saveAndSyncInsurances(updated);
             showToastMsg(`បានបង្កើតទម្រង់ធានារ៉ាប់រងសិស្សថ្មី [${payload.id}] រួចរាល់!`, 'success');
           }

@@ -6,7 +6,7 @@ import {
   Building, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { DailyReport, HourlyLog } from '../types';
+import { DailyReport, HourlyLog, UserAccount } from '../types';
 
 // Standard English & Khmer default activities preset
 const DEFAULT_HOURLY_LOGS_DEMO: HourlyLog[] = [
@@ -96,9 +96,10 @@ const INITIAL_REPORTS_MOCK: DailyReport[] = [
 interface DailyReportManagerProps {
   initialDate?: string | null;
   onClearInitialDate?: () => void;
+  currentUser?: UserAccount | null;
 }
 
-export default function DailyReportManager({ initialDate, onClearInitialDate }: DailyReportManagerProps = {}) {
+export default function DailyReportManager({ initialDate, onClearInitialDate, currentUser }: DailyReportManagerProps) {
   const [reports, setReports] = useState<DailyReport[]>(() => {
     const saved = localStorage.getItem('wis_daily_reports');
     if (saved) {
@@ -110,6 +111,12 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
     }
     return INITIAL_REPORTS_MOCK;
   });
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedReports = React.useMemo(() => {
+    if (isAdmin) return reports;
+    return reports.filter(r => r.createdBy === currentUser?.username);
+  }, [reports, currentUser, isAdmin]);
 
   // School logo state
   const [logo, setLogo] = useState<string>(() => {
@@ -260,7 +267,8 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
       issuesEncountered: formIssuesEncountered,
       actionsTaken: formActionsTaken,
       planForTomorrow: formPlanForTomorrow,
-      remarks: formRemarks
+      remarks: formRemarks,
+      createdBy: editingReport?.createdBy || currentUser?.username || 'admin'
     };
 
     if (editingReport) {
@@ -292,7 +300,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate }: 
     }
   };
 
-  const filteredReports = reports.filter(r => {
+  const filteredReports = displayedReports.filter(r => {
     const q = searchTerm.toLowerCase();
     return (
       r.date.includes(q) ||

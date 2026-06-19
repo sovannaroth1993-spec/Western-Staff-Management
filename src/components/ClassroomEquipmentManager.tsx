@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { UserAccount } from '../types';
 import { 
   School, Layers, Laptop, Tv, Wind, Volume2, HardDrive, 
   Trash2, Plus, Edit3, Save, X, Search, ChevronRight, Check,
@@ -90,6 +91,7 @@ export interface ClassroomRecord {
   equipment: EquipmentQuantities;
   remarks: string;
   maintenanceLogs?: MaintenanceLog[];
+  createdBy?: string;
 }
 
 const CONST_FLOORS = [
@@ -273,7 +275,11 @@ const DEFAULT_ROOMS: ClassroomRecord[] = [
   }
 ];
 
-export default function ClassroomEquipmentManager() {
+interface ClassroomEquipmentManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export default function ClassroomEquipmentManager({ currentUser }: ClassroomEquipmentManagerProps = {}) {
   const [equipmentTypes, setEquipmentTypes] = useState<EquipmentItemType[]>(() => {
     try {
       const saved = localStorage.getItem('wis_classroom_equipment_types');
@@ -300,6 +306,12 @@ export default function ClassroomEquipmentManager() {
       return DEFAULT_ROOMS;
     }
   });
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedRooms = React.useMemo(() => {
+    if (isAdmin) return rooms;
+    return rooms.filter(r => r.createdBy === currentUser?.username);
+  }, [rooms, currentUser, isAdmin]);
 
   // Keep saved
   useEffect(() => {
@@ -1028,7 +1040,8 @@ export default function ClassroomEquipmentManager() {
         location,
         floor,
         remarks,
-        equipment: initialQty
+        equipment: initialQty,
+        createdBy: r.createdBy || currentUser?.username || 'admin'
       } : r);
       setRooms(updated);
       showToast(`បានកែប្រែព័ត៌មានថ្នាក់ "${roomNumber}" ដោយស្វ័យប្រវត្ត!`, 'success');
@@ -1044,7 +1057,8 @@ export default function ClassroomEquipmentManager() {
         location,
         floor,
         remarks,
-        equipment: initialQty
+        equipment: initialQty,
+        createdBy: currentUser?.username || 'admin'
       };
       setRooms([...rooms, newRoom]);
       setSelectedRoom(newRoom);
@@ -1076,7 +1090,7 @@ export default function ClassroomEquipmentManager() {
   };
 
   // Room search filtering
-  const filteredRooms = rooms.filter(r => {
+  const filteredRooms = displayedRooms.filter(r => {
     const matchesSearch = r.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           r.location.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (r.remarks && r.remarks.toLowerCase().includes(searchTerm.toLowerCase()));

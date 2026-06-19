@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { ElectricityRecord } from '../types';
+import { ElectricityRecord, UserAccount } from '../types';
 import { 
   Zap, Calendar, Plus, Edit2, Trash2, TrendingUp, TrendingDown, 
   Calculator, Info, AlertCircle, ArrowUpRight, ArrowDownRight, X, HelpCircle, User
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'motion/react';
 interface ElectricityTrackerProps {
   electricityRecords: ElectricityRecord[];
   setElectricityRecords: (records: ElectricityRecord[]) => void;
+  currentUser?: UserAccount | null;
 }
 
 // Format number with USD currency style
@@ -36,13 +37,20 @@ const formatKhmerMonth = (monthYearStr: string) => {
 
 export default function ElectricityTracker({
   electricityRecords,
-  setElectricityRecords
+  setElectricityRecords,
+  currentUser
 }: ElectricityTrackerProps) {
   
   // Local interface states
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedRecords = useMemo(() => {
+    if (isAdmin) return electricityRecords;
+    return electricityRecords.filter(r => r.recordedBy === currentUser?.fullName || r.recordedBy === currentUser?.username);
+  }, [electricityRecords, currentUser, isAdmin]);
 
   // Form states
   const [formMonthYear, setFormMonthYear] = useState(() => {
@@ -52,26 +60,26 @@ export default function ElectricityTracker({
   const [formCostBeforeUsd, setFormCostBeforeUsd] = useState<string>('');
   const [formCostAfterUsd, setFormCostAfterUsd] = useState<string>('');
   const [formNotes, setFormNotes] = useState<string>('');
-  const [formRecordedBy, setFormRecordedBy] = useState<string>('LOUNG Veasna');
+  const [formRecordedBy, setFormRecordedBy] = useState<string>(() => currentUser?.fullName || 'LOUNG Veasna');
   const [formError, setFormError] = useState<string>('');
 
   // Chronologically sorted records helper
   const sortedRecords = useMemo(() => {
-    return [...electricityRecords].sort((a, b) => a.monthYear.localeCompare(b.monthYear));
-  }, [electricityRecords]);
+    return [...displayedRecords].sort((a, b) => a.monthYear.localeCompare(b.monthYear));
+  }, [displayedRecords]);
 
   // Overall statistics summaries based on USD $
   const stats = useMemo(() => {
-    if (electricityRecords.length === 0) return null;
+    if (displayedRecords.length === 0) return null;
     
-    const totalCostUsd = electricityRecords.reduce((sum, r) => sum + r.costAfterUsd, 0);
-    const averageCostUsd = totalCostUsd / electricityRecords.length;
+    const totalCostUsd = displayedRecords.reduce((sum, r) => sum + r.costAfterUsd, 0);
+    const averageCostUsd = totalCostUsd / displayedRecords.length;
     
     // Find the record with extreme costAfterUsd
-    let highestRecord = electricityRecords[0];
-    let lowestRecord = electricityRecords[0];
+    let highestRecord = displayedRecords[0];
+    let lowestRecord = displayedRecords[0];
     
-    electricityRecords.forEach(r => {
+    displayedRecords.forEach(r => {
       if (r.costAfterUsd > highestRecord.costAfterUsd) highestRecord = r;
       if (r.costAfterUsd < lowestRecord.costAfterUsd) lowestRecord = r;
     });
@@ -86,7 +94,7 @@ export default function ElectricityTracker({
       lowestRecord,
       latestRecord
     };
-  }, [electricityRecords, sortedRecords]);
+  }, [displayedRecords, sortedRecords]);
 
   // Reset Form states
   const handleResetForm = () => {
@@ -95,7 +103,7 @@ export default function ElectricityTracker({
     setFormCostBeforeUsd('');
     setFormCostAfterUsd('');
     setFormNotes('');
-    setFormRecordedBy('LOUNG Veasna');
+    setFormRecordedBy(currentUser?.fullName || 'LOUNG Veasna');
     setFormError('');
     setEditingId(null);
   };

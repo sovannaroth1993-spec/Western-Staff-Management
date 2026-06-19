@@ -4,12 +4,13 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Staff, Department, AttendanceRecord, AttendanceStatus, DEPARTMENT_NAMES_KM, ATTENDANCE_STATUS_KM, ALL_DEPARTMENTS } from '../types';
+import { Staff, Department, AttendanceRecord, AttendanceStatus, DEPARTMENT_NAMES_KM, ATTENDANCE_STATUS_KM, ALL_DEPARTMENTS, UserAccount } from '../types';
 import { exportAttendanceToExcel } from '../utils/excelHelper';
 import { exportAttendanceToPdf } from '../utils/pdfHelper';
+import { exportAttendanceToCsv } from '../utils/csvHelper';
 import { 
   Users, Calendar, CheckSquare, ShieldAlert, FileSpreadsheet, 
-  FileText, ArrowRight, UserCheck, AlertCircle, Save, HelpCircle, X,
+  FileText, File, ArrowRight, UserCheck, AlertCircle, Save, HelpCircle, X,
   Search, BarChart3, ChevronDown, ChevronUp, QrCode, Printer, Camera, 
   Upload, Play, Sparkles, CheckCircle2, RefreshCw, Download
 } from 'lucide-react';
@@ -33,6 +34,7 @@ interface AttendanceTrackerProps {
   setAttendanceRecords: (records: AttendanceRecord[]) => void;
   selectedDate: string;
   setSelectedDate: (date: string) => void;
+  currentUser?: UserAccount | null;
 }
 
 export default function AttendanceTracker({
@@ -40,15 +42,24 @@ export default function AttendanceTracker({
   attendanceRecords,
   setAttendanceRecords,
   selectedDate,
-  setSelectedDate
+  setSelectedDate,
+  currentUser
 }: AttendanceTrackerProps) {
   
   const [activeDept, setActiveDept] = useState<Department>('Security');
   const [localRecords, setLocalRecords] = useState<Record<string, { status: AttendanceStatus; notes: string }>>({});
 
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedStaff = React.useMemo(() => {
+    if (isAdmin) return staffList;
+    return staffList.filter(s => s.createdBy === currentUser?.username);
+  }, [staffList, currentUser, isAdmin]);
+
   // QR Check-In Station states
   const [isQrStationOpen, setIsQrStationOpen] = useState(false);
   const [isQrGeneratorOpen, setIsQrGeneratorOpen] = useState(false);
+  const [isSelfCheckinQrOpen, setIsSelfCheckinQrOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const [scannerActive, setScannerActive] = useState(false);
   const [scanState, setScanState] = useState<{
     status: 'idle' | 'success' | 'error';
@@ -132,7 +143,7 @@ export default function AttendanceTracker({
   };
 
   // Filter staff members for the summary view
-  const summaryFilteredStaff = staffList.filter(staff => {
+  const summaryFilteredStaff = displayedStaff.filter(staff => {
     const matchesDept = summaryDept === 'All' || staff.department === summaryDept;
     const matchesSearch = 
       staff.name.toLowerCase().includes(summarySearch.toLowerCase()) ||
@@ -172,7 +183,7 @@ export default function AttendanceTracker({
   };
 
   // Filter staff for the active department
-  const deptStaff = staffList.filter(s => s.department === activeDept);
+  const deptStaff = displayedStaff.filter(s => s.department === activeDept);
 
   // Load existing records for the active date & department from parent state
   useEffect(() => {
@@ -189,7 +200,7 @@ export default function AttendanceTracker({
     });
     
     setLocalRecords(recordsMap);
-  }, [activeDept, selectedDate, staffList]);
+  }, [activeDept, selectedDate, displayedStaff]);
 
   // Mobile Wireless Remotescan Database Poller
   useEffect(() => {
@@ -244,6 +255,7 @@ export default function AttendanceTracker({
 
     const newRecords: AttendanceRecord[] = deptStaff.map(staff => {
       const state = updatedLocal[staff.staffId] || { status: 'Present', notes: '' };
+      const originalRecord = attendanceRecords.find(r => r.date === selectedDate && r.staffId === staff.staffId);
       return {
         id: `${activeDept}_${selectedDate}_${staff.staffId}`,
         staffId: staff.staffId,
@@ -251,7 +263,8 @@ export default function AttendanceTracker({
         department: activeDept,
         date: selectedDate,
         status: state.status,
-        notes: state.notes
+        notes: state.notes,
+        createdBy: originalRecord?.createdBy || currentUser?.username || 'admin'
       };
     });
 
@@ -328,7 +341,8 @@ export default function AttendanceTracker({
         department: staff.department,
         date: selectedDate,
         status: 'Present',
-        notes: displayTimeLog
+        notes: displayTimeLog,
+        createdBy: currentUser?.username || 'admin'
       };
 
       // Set parent state
@@ -499,6 +513,7 @@ export default function AttendanceTracker({
 
     const newRecords: AttendanceRecord[] = deptStaff.map(staff => {
       const state = localRecords[staff.staffId] || { status: 'Present', notes: '' };
+      const originalRecord = attendanceRecords.find(r => r.date === selectedDate && r.staffId === staff.staffId);
       return {
         id: `${activeDept}_${selectedDate}_${staff.staffId}`,
         staffId: staff.staffId,
@@ -506,7 +521,8 @@ export default function AttendanceTracker({
         department: activeDept,
         date: selectedDate,
         status: state.status,
-        notes: state.notes
+        notes: state.notes,
+        createdBy: originalRecord?.createdBy || currentUser?.username || 'admin'
       };
     });
 
@@ -565,6 +581,157 @@ export default function AttendanceTracker({
     showToast(`បានរក្សាទុក និងទាញយកឯកសារ PDF ផ្នែក "${DEPARTMENT_NAMES_KM[activeDept]}" ស្វ័យប្រវត្តិចូល Downloads!`, 'success');
   };
 
+  const handleCsvExport = () => {
+    // Automatically save to local database first
+    commitToRegistrySilent();
+
+    const currentRecordsForExport: AttendanceRecord[] = deptStaff.map(s => {
+      const statusObj = localRecords[s.staffId] || { status: 'Present', notes: '' };
+      return {
+        id: '',
+        staffId: s.staffId,
+        staffName: s.name,
+        department: activeDept,
+        date: selectedDate,
+        status: statusObj.status,
+        notes: statusObj.notes
+      };
+    });
+    exportAttendanceToCsv(currentRecordsForExport, staffList, selectedDate, activeDept);
+    showToast(`បានរក្សាទុក និងទាញយកឯកសារ CSV ផ្នែក "${DEPARTMENT_NAMES_KM[activeDept]}" ស្វ័យប្រវត្តិចូល Downloads!`, 'success');
+  };
+
+  const handlePrintSelfCheckinPoster = () => {
+    const checkinUrl = `${window.location.origin}${window.location.pathname}?self_checkin=true`;
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Western International School - Self Attendance Check-In Portal</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Khmer+OS+Battambang:wght@400;700&display=swap" rel="stylesheet">
+            <style>
+              body {
+                font-family: 'Inter', 'Khmer OS Battambang', 'Segoe UI', Arial, sans-serif;
+                margin: 0;
+                padding: 40px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: calc(100vh - 80px);
+                background-color: #ffffff;
+                color: #0f172a;
+                text-align: center;
+              }
+              .poster-card {
+                border: 15px solid #0d5c5a;
+                border-radius: 40px;
+                padding: 60px 40px;
+                max-width: 600px;
+                width: 100%;
+                box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+                box-sizing: border-box;
+              }
+              .logo {
+                font-size: 26px;
+                font-weight: 900;
+                color: #0d5c5a;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 5px;
+                font-family: 'Inter', sans-serif;
+              }
+              .sublogo {
+                font-size: 16px;
+                font-weight: bold;
+                color: #d97706;
+                text-transform: uppercase;
+                margin-bottom: 30px;
+              }
+              .title {
+                font-size: 32px;
+                font-weight: 900;
+                color: #1e293b;
+                margin: 10px 0;
+                line-height: 1.3;
+              }
+              .subtitle {
+                font-size: 18px;
+                font-weight: bold;
+                color: #64748b;
+                margin-bottom: 35px;
+              }
+              .qr-container {
+                background: #f8fafc;
+                border: 4px solid #e2e8f0;
+                padding: 24px;
+                display: inline-block;
+                border-radius: 30px;
+                margin-bottom: 35px;
+              }
+              .qr-image {
+                width: 250px;
+                height: 250px;
+                display: block;
+              }
+              .instruction-title {
+                font-size: 20px;
+                font-weight: 950;
+                color: #0d5c5a;
+                margin-bottom: 12px;
+              }
+              .instruction-text {
+                font-size: 13.5px;
+                font-weight: bold;
+                color: #475569;
+                max-width: 480px;
+                margin: 0 auto;
+                line-height: 1.7;
+              }
+              .footer {
+                margin-top: 45px;
+                font-size: 11px;
+                font-weight: bold;
+                color: #94a3b8;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              }
+              @media print {
+                body { padding: 0; }
+                .poster-card { box-shadow: none; border-width: 10px; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="poster-card">
+              <div class="logo">Western International School</div>
+              <div class="sublogo">សាលាវេស្ទើនអន្តរជាតិ</div>
+              
+              <div class="title">ចុះវត្តមានបុគ្គលិកដោយខ្លួនឯង</div>
+              <div class="subtitle">STAFF ATTENDANCE SELF-CHECK-IN</div>
+              
+              <div class="qr-container">
+                <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(checkinUrl)}" alt="Check-In QR" />
+              </div>
+              
+              <div class="instruction-title">👉 ស្កេនដើម្បីចុះវត្តមានទូរសព្ទដៃ 👈</div>
+              <div class="instruction-text">
+                សូមបើកកាមេរ៉ាទូរស័ព្ទរបស់អ្នក រួចស្កេន QR Code នេះដើម្បីបំពេញការចុះឈ្មោះវត្តមានដោយផ្ទាល់ខ្លួនបានត្រឹមត្រូវ និងមានសុវត្ថិភាពខ្ពស់។
+              </div>
+              
+              <div class="footer">Western International School • Self-Service Portal</div>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
+  };
+
   return (
     <div id="attendance-tracker-container" className="bg-white rounded-2xl border border-slate-100 shadow-xl p-6">
       
@@ -587,6 +754,7 @@ export default function AttendanceTracker({
             onClick={() => {
               setIsQrStationOpen(!isQrStationOpen);
               if (isQrGeneratorOpen) setIsQrGeneratorOpen(false);
+              if (isSelfCheckinQrOpen) setIsSelfCheckinQrOpen(false);
             }}
             className={`flex items-center gap-2 text-xs font-black px-4 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer shadow-sm ${
               isQrStationOpen 
@@ -602,6 +770,7 @@ export default function AttendanceTracker({
             type="button"
             onClick={() => {
               setIsQrGeneratorOpen(!isQrGeneratorOpen);
+              if (isSelfCheckinQrOpen) setIsSelfCheckinQrOpen(false);
               if (isQrStationOpen) {
                 setIsQrStationOpen(false);
                 setScannerActive(false);
@@ -615,6 +784,26 @@ export default function AttendanceTracker({
           >
             <Printer className={`w-4 h-4 ${isQrGeneratorOpen ? 'text-slate-900' : 'text-amber-500'}`} />
             <span>កាត QR បុគ្គលិក (Staff QR Badges)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsSelfCheckinQrOpen(!isSelfCheckinQrOpen);
+              if (isQrGeneratorOpen) setIsQrGeneratorOpen(false);
+              if (isQrStationOpen) {
+                setIsQrStationOpen(false);
+                setScannerActive(false);
+              }
+            }}
+            className={`flex items-center gap-2 text-xs font-black px-4 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer shadow-sm ${
+              isSelfCheckinQrOpen 
+                ? 'bg-indigo-650 border-indigo-500 text-white shadow-indigo-150/40' 
+                : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
+            }`}
+          >
+            <Sparkles className={`w-4 h-4 ${isSelfCheckinQrOpen ? 'text-amber-300' : 'text-indigo-600'}`} />
+            <span>QR ចុះវត្តមានដោយខ្លួនឯង (Self Check-In QR)</span>
           </button>
 
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl">
@@ -634,7 +823,7 @@ export default function AttendanceTracker({
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 my-6">
         {ALL_DEPARTMENTS.map(dept => {
           const isActive = activeDept === dept;
-          const count = staffList.filter(s => s.department === dept).length;
+          const count = displayedStaff.filter(s => s.department === dept).length;
           
           return (
             <button
@@ -1165,6 +1354,135 @@ export default function AttendanceTracker({
         )}
       </AnimatePresence>
 
+      {/* 3. 📱 Self Check-In QR Station Poster Maker */}
+      <AnimatePresence>
+        {isSelfCheckinQrOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden mb-6"
+          >
+            <div className="bg-slate-50 text-slate-800 rounded-2xl border border-slate-200 p-5 shadow-xl relative">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <span className="p-2 bg-indigo-500/10 text-indigo-600 rounded-xl border border-indigo-500/20">
+                    <Sparkles className="w-5 h-5 animate-pulse text-indigo-500" />
+                  </span>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-800 font-sans tracking-tight">
+                      បង្កើត QR Code សម្រាប់បុគ្គលិកចុះវត្តមានផ្ទាល់ខ្លួន (Self Check-In Station QR Maker)
+                    </h3>
+                    <p className="text-[10.5px] font-bold text-slate-500 mt-0.5">
+                      ទាញយក ឬបោះពុម្ពបដាស្កេនវត្តមានដោយខ្លួនឯង ដើម្បីបិទផ្សព្វផ្សាយនៅតាមច្រកចូលសាលា
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsSelfCheckinQrOpen(false)}
+                  className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-800 rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                
+                {/* Left Controller Panel */}
+                <div className="md:col-span-6 space-y-4">
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200/80 space-y-4 shadow-xs">
+                    <div>
+                      <h4 className="text-xs font-black text-slate-700 tracking-wide uppercase">ព័ត៌មានលម្អិត និងការណែនាំ (Instructions)</h4>
+                      <p className="text-xs font-semibold text-slate-500 mt-2 leading-relaxed">
+                        សេវាកម្មចុះវត្តមានស្វ័យសេវានេះ អនុញ្ញាតឱ្យបុគ្គលិកប្រើប្រាស់ទូរស័ព្ទផ្ទាល់ខ្លួនស្កេនវត្តមានបានយ៉ាងមានសុវត្ថិភាព។ នៅពេលបុគ្គលិកស្កេន ពួកគេនឹងបំពេញទិន្នន័យ ID និងកំណត់ចំណាំ ដោយមិនចាំបាច់មានការឡុកអ៊ីនគណនីឡើយ។
+                      </p>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      <label className="block text-[11px] font-black text-slate-650 tracking-wider">តំណភ្ជាប់ទំព័រចុះវត្តមាន (Check-In Web Link)៖</label>
+                      <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                        <input
+                          type="text"
+                          readOnly
+                          value={`${window.location.origin}${window.location.pathname}?self_checkin=true`}
+                          className="w-full bg-transparent border-none text-[10.5px] font-mono font-bold text-indigo-700 focus:outline-none select-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?self_checkin=true`);
+                            setIsCopied(true);
+                            setTimeout(() => setIsCopied(false), 2000);
+                          }}
+                          className={`px-3 py-1.5 text-[10.5px] font-black rounded-lg transition cursor-pointer shrink-0 border ${
+                            isCopied 
+                              ? 'bg-emerald-600 border-emerald-500 text-white' 
+                              : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {isCopied ? 'បានចម្លង!' : 'ចម្លងតំណ'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={handlePrintSelfCheckinPoster}
+                        className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 border border-indigo-500/25 md:flex-1 text-white font-extrabold text-xs py-3 px-4 rounded-xl shadow-md cursor-pointer transition duration-150"
+                      >
+                        <Printer className="w-4 h-4" /> បោះពុម្ពបដា QR (Print Poster)
+                      </button>
+                      
+                      <a
+                        href={`${window.location.origin}${window.location.pathname}?self_checkin=true`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-300/60 md:flex-1 text-slate-705 font-extrabold text-xs py-3 px-4 rounded-xl cursor-pointer transition duration-150"
+                      >
+                        <ArrowRight className="w-4 h-4 text-slate-500" /> សាកល្បងបើកទំព័រ (Test Link)
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Interactive Mockup Visual */}
+                <div className="md:col-span-6 flex justify-center py-2 bg-slate-100/50 rounded-2xl border border-slate-200/60">
+                  <div className="bg-white border-[8px] border-slate-800 rounded-[30px] p-6 text-center w-full max-w-[280px] shadow-lg flex flex-col justify-between relative overflow-hidden">
+                    {/* Camera speaker strip */}
+                    <div className="w-20 h-4 bg-slate-800 rounded-full mx-auto mb-4" />
+                    
+                    <div>
+                      <div className="text-[11px] font-black text-[#0d5c5a] uppercase tracking-wider">WESTERN SCHOOL</div>
+                      <div className="text-[9px] font-bold text-amber-600 tracking-widest uppercase mt-0.5">Campus Sign-in Station</div>
+                      
+                      <div className="bg-slate-50 border border-slate-200 p-3 rounded-2xl inline-block mt-4 mb-4">
+                        <img 
+                          className="w-[125px] h-[125px] block object-contain" 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.origin}${window.location.pathname}?self_checkin=true`)}`}
+                          alt="Self check-in QR" 
+                        />
+                      </div>
+                      
+                      <div className="text-[10px] font-black text-slate-700">👉 Scan QR to Check-In 👈</div>
+                      <p className="text-[8.5px] font-bold text-slate-400 mt-1 max-w-[180px] mx-auto leading-relaxed">
+                        សូមស្កេនដើម្បីចុះឈ្មោះវត្តមានដោយផ្ទាល់ខ្លួនតាមរយៈទូរស័ព្ទដៃ
+                      </p>
+                    </div>
+
+                    <div className="mt-5 text-[7px] font-mono tracking-widest text-slate-350">
+                      WIS SELF-SERVICE ATTENDANCE
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Warning/Guideline for Empty staff list */}
       {deptStaff.length === 0 ? (
         <div className="text-center py-20 bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl p-6">
@@ -1497,6 +1815,12 @@ export default function AttendanceTracker({
                 className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-[11px] px-3.5 py-2.5 rounded-xl transition"
               >
                 <FileSpreadsheet className="w-4 h-4" /> Excel ({DEPARTMENT_NAMES_KM[activeDept]})
+              </button>
+              <button 
+                onClick={handleCsvExport}
+                className="flex items-center gap-1.5 bg-amber-700 hover:bg-amber-800 text-white font-extrabold text-[11px] px-3.5 py-2.5 rounded-xl transition"
+              >
+                <File className="w-4 h-4" /> CSV ({DEPARTMENT_NAMES_KM[activeDept]})
               </button>
               <button 
                 onClick={handlePdfExport}

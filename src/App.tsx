@@ -21,6 +21,7 @@ import KhmerCalendarManager from './components/KhmerCalendarManager';
 import CctvManager from './components/CctvManager';
 import ClassroomEquipmentManager from './components/ClassroomEquipmentManager';
 import RemoteScannerMobile from './components/RemoteScannerMobile';
+import SelfCheckinPortal from './components/SelfCheckinPortal';
 import DailyReportManager from './components/DailyReportManager';
 import StudentStatistics from './components/StudentStatistics';
 import WesternSchoolInfo from './components/WesternSchoolInfo';
@@ -318,6 +319,16 @@ export default function App() {
     }
   });
 
+  // Intercept self-checkin routing for QR scan direct access
+  const [selfCheckinMode, setSelfCheckinMode] = useState<boolean>(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      return searchParams.get('self_checkin') === 'true' || searchParams.get('tab') === 'self-checkin';
+    } catch {
+      return false;
+    }
+  });
+
   // Save language to localStorage on change
   useEffect(() => {
     try {
@@ -436,6 +447,33 @@ export default function App() {
   // Quick statistics for Header
   const todayAttendance = attendanceRecords.filter(r => r.date === selectedDate);
   const totalPresentToday = todayAttendance.filter(r => r.status === 'Present').length;
+
+  // Bypass to Public Self-Service Check-In Portal
+  if (selfCheckinMode) {
+    return (
+      <SelfCheckinPortal 
+        staffList={staffList}
+        attendanceRecords={attendanceRecords}
+        lang={lang === 'en' ? 'en' : 'kh'}
+        onCheckinSuccess={(record) => {
+          setAttendanceRecords(prev => {
+            const exists = prev.some(r => r.date === record.date && r.staffId === record.staffId);
+            if (exists) {
+              return prev.map(r => r.date === record.date && r.staffId === record.staffId ? record : r);
+            }
+            return [record, ...prev];
+          });
+        }}
+        onExit={() => {
+          try {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } catch {}
+          setSelfCheckinMode(false);
+          setActiveTab('dashboard');
+        }}
+      />
+    );
+  }
 
   // Bypass to Mobile QR Camera Scanner client
   if (remoteScanChannel) {
@@ -909,6 +947,7 @@ export default function App() {
                 <ElectricityTracker 
                   electricityRecords={electricityRecords}
                   setElectricityRecords={setElectricityRecords}
+                  currentUser={currentUser}
                 />
               )}
 
@@ -916,6 +955,7 @@ export default function App() {
                 <WaterTracker 
                   waterRecords={waterRecords}
                   setWaterRecords={setWaterRecords}
+                  currentUser={currentUser}
                 />
               )}
 
@@ -925,37 +965,39 @@ export default function App() {
                     setPendingReportDate(date);
                     setActiveTab('dailyreport');
                   }}
+                  currentUser={currentUser}
                 />
               )}
 
               {activeTab === 'fixedassets' && (
-                <FixedAssetManager />
+                <FixedAssetManager currentUser={currentUser} />
               )}
 
               {activeTab === 'insurance' && (
-                <StudentInsuranceManager />
+                <StudentInsuranceManager currentUser={currentUser} />
               )}
 
               {activeTab === 'admindocs' && (
-                <AdminDocumentationManager />
+                <AdminDocumentationManager currentUser={currentUser} />
               )}
 
               {activeTab === 'otherlinks' && (
-                <OtherLinksManager />
+                <OtherLinksManager currentUser={currentUser} />
               )}
 
               {activeTab === 'schoolevents' && (
-                <SchoolEventsManager />
+                <SchoolEventsManager currentUser={currentUser} />
               )}
 
               {activeTab === 'monthlyreport' && (
-                <MonthlyReportManager />
+                <MonthlyReportManager currentUser={currentUser} />
               )}
 
               {activeTab === 'staff' && (
                 <StaffManager 
                   staffList={staffList} 
                   setStaffList={setStaffList} 
+                  currentUser={currentUser}
                 />
               )}
 
@@ -964,6 +1006,7 @@ export default function App() {
                   studentList={studentList} 
                   setStudentList={setStudentList} 
                   lang={lang}
+                  currentUser={currentUser}
                 />
               )}
 
@@ -982,6 +1025,7 @@ export default function App() {
                   setAttendanceRecords={setAttendanceRecords}
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
+                  currentUser={currentUser}
                 />
               )}
 
@@ -996,17 +1040,18 @@ export default function App() {
               )}
 
               {activeTab === 'cctv' && (
-                <CctvManager />
+                <CctvManager currentUser={currentUser} />
               )}
 
               {activeTab === 'classroomequipment' && (
-                <ClassroomEquipmentManager />
+                <ClassroomEquipmentManager currentUser={currentUser} />
               )}
 
               {activeTab === 'dailyreport' && (
                 <DailyReportManager 
                   initialDate={pendingReportDate}
                   onClearInitialDate={() => setPendingReportDate(null)}
+                  currentUser={currentUser}
                 />
               )}
 

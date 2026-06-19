@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Student, StudentGrade, GRADE_NAMES_KM, ALL_GRADES } from '../types';
+import { Student, StudentGrade, GRADE_NAMES_KM, ALL_GRADES, UserAccount } from '../types';
 import * as XLSX from 'xlsx';
 import { transliterateKhmerToLatin } from '../utils/pdfHelper';
 import { jsPDF } from 'jspdf';
@@ -25,6 +25,7 @@ interface StudentManagerProps {
   studentList: Student[];
   setStudentList: (list: Student[]) => void;
   lang: 'kh' | 'en';
+  currentUser?: UserAccount | null;
 }
 
 interface BulkRow {
@@ -37,13 +38,19 @@ interface BulkRow {
   grade: StudentGrade;
 }
 
-export default function StudentManager({ studentList, setStudentList, lang }: StudentManagerProps) {
+export default function StudentManager({ studentList, setStudentList, lang, currentUser }: StudentManagerProps) {
   const isKh = lang === 'kh';
 
   // Filters & State
   const [search, setSearch] = useState('');
   const [selectedGrade, setSelectedGrade] = useState<StudentGrade | 'All'>('All');
   const [selectedGender, setSelectedGender] = useState<'All' | 'ប្រុស' | 'ស្រី'>('All');
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedStudents = React.useMemo(() => {
+    if (isAdmin) return studentList;
+    return studentList.filter(s => s.createdBy === currentUser?.username);
+  }, [studentList, currentUser, isAdmin]);
   
   // Handlers for Add / Edit Modal
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -323,7 +330,8 @@ export default function StudentManager({ studentList, setStudentList, lang }: St
             phoneNumber: formPhone.trim() || s.phoneNumber,
             photo: formPhoto || s.photo,
             grade: formGrade,
-            responsibleLocation: formResponsibleLocation.trim()
+            responsibleLocation: formResponsibleLocation.trim(),
+            createdBy: s.createdBy || currentUser?.username || 'admin'
           };
         }
         return s;
@@ -359,7 +367,8 @@ export default function StudentManager({ studentList, setStudentList, lang }: St
         phoneNumber: formPhone.trim() || 'N/A',
         photo: formPhoto,
         grade: formGrade,
-        responsibleLocation: formResponsibleLocation.trim()
+        responsibleLocation: formResponsibleLocation.trim(),
+        createdBy: currentUser?.username || 'admin'
       };
 
       setStudentList([...studentList, newStudent]);
@@ -418,6 +427,7 @@ export default function StudentManager({ studentList, setStudentList, lang }: St
         phoneNumber: row.phoneNumber.trim() || 'N/A',
         photo: '', // Bypasses photo for speed in bulk registration
         grade: row.grade,
+        createdBy: currentUser?.username || 'admin'
       };
 
       updatedList.push(newStudent);
@@ -862,7 +872,8 @@ export default function StudentManager({ studentList, setStudentList, lang }: St
   };
 
   // Searching & Filtering dataset
-  const filteredStudents = studentList.filter((student) => {
+  // Filtered student list calculation
+  const filteredStudents = displayedStudents.filter((student) => {
     const matchesSearch = 
       student.name.toLowerCase().includes(search.toLowerCase()) ||
       student.studentId.toLowerCase().includes(search.toLowerCase()) ||

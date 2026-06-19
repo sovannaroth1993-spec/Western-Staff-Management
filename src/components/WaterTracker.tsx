@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { WaterRecord } from '../types';
+import { WaterRecord, UserAccount } from '../types';
 import { 
   Droplet, Calendar, Plus, Edit2, Trash2, TrendingUp, TrendingDown, 
   Calculator, Info, AlertCircle, ArrowUpRight, ArrowDownRight, X, HelpCircle, User,
@@ -17,6 +17,7 @@ import { exportWaterToExcel } from '../utils/excelHelper';
 interface WaterTrackerProps {
   waterRecords: WaterRecord[];
   setWaterRecords: (records: WaterRecord[]) => void;
+  currentUser?: UserAccount | null;
 }
 
 // Format number with USD currency style
@@ -39,13 +40,20 @@ const formatKhmerMonth = (monthYearStr: string) => {
 
 export default function WaterTracker({
   waterRecords,
-  setWaterRecords
+  setWaterRecords,
+  currentUser
 }: WaterTrackerProps) {
   
   // Local interface states
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedRecords = useMemo(() => {
+    if (isAdmin) return waterRecords;
+    return waterRecords.filter(r => r.recordedBy === currentUser?.fullName || r.recordedBy === currentUser?.username);
+  }, [waterRecords, currentUser, isAdmin]);
 
   // Form states
   const [formMonthYear, setFormMonthYear] = useState(() => {
@@ -55,26 +63,26 @@ export default function WaterTracker({
   const [formCostBeforeUsd, setFormCostBeforeUsd] = useState<string>('');
   const [formCostAfterUsd, setFormCostAfterUsd] = useState<string>('');
   const [formNotes, setFormNotes] = useState<string>('');
-  const [formRecordedBy, setFormRecordedBy] = useState<string>('LOUNG Veasna');
+  const [formRecordedBy, setFormRecordedBy] = useState<string>(() => currentUser?.fullName || 'LOUNG Veasna');
   const [formError, setFormError] = useState<string>('');
 
   // Chronologically sorted records helper
   const sortedRecords = useMemo(() => {
-    return [...waterRecords].sort((a, b) => a.monthYear.localeCompare(b.monthYear));
-  }, [waterRecords]);
+    return [...displayedRecords].sort((a, b) => a.monthYear.localeCompare(b.monthYear));
+  }, [displayedRecords]);
 
   // Overall statistics summaries based on USD $
   const stats = useMemo(() => {
-    if (waterRecords.length === 0) return null;
+    if (displayedRecords.length === 0) return null;
     
-    const totalCostUsd = waterRecords.reduce((sum, r) => sum + r.costAfterUsd, 0);
-    const averageCostUsd = totalCostUsd / waterRecords.length;
+    const totalCostUsd = displayedRecords.reduce((sum, r) => sum + r.costAfterUsd, 0);
+    const averageCostUsd = totalCostUsd / displayedRecords.length;
     
     // Find the record with extreme costAfterUsd
-    let highestRecord = waterRecords[0];
-    let lowestRecord = waterRecords[0];
+    let highestRecord = displayedRecords[0];
+    let lowestRecord = displayedRecords[0];
     
-    waterRecords.forEach(r => {
+    displayedRecords.forEach(r => {
       if (r.costAfterUsd > highestRecord.costAfterUsd) highestRecord = r;
       if (r.costAfterUsd < lowestRecord.costAfterUsd) lowestRecord = r;
     });
@@ -89,7 +97,7 @@ export default function WaterTracker({
       lowestRecord,
       latestRecord
     };
-  }, [waterRecords, sortedRecords]);
+  }, [displayedRecords, sortedRecords]);
 
   // Reset Form states
   const handleResetForm = () => {
@@ -98,7 +106,7 @@ export default function WaterTracker({
     setFormCostBeforeUsd('');
     setFormCostAfterUsd('');
     setFormNotes('');
-    setFormRecordedBy('LOUNG Veasna');
+    setFormRecordedBy(currentUser?.fullName || 'LOUNG Veasna');
     setFormError('');
     setEditingId(null);
   };
@@ -392,7 +400,7 @@ export default function WaterTracker({
               
               {/* Save PDF Link Button */}
               <button
-                onClick={() => exportWaterToPdf(waterRecords)}
+                onClick={() => exportWaterToPdf(displayedRecords)}
                 className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 text-xs font-black px-3 py-1.5 rounded-xl border border-rose-100 transition cursor-pointer shadow-sm"
               >
                 <FileText className="w-4 h-4 text-rose-600" />
@@ -401,7 +409,7 @@ export default function WaterTracker({
 
               {/* Save Excel Link Button */}
               <button
-                onClick={() => exportWaterToExcel(waterRecords)}
+                onClick={() => exportWaterToExcel(displayedRecords)}
                 className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-800 text-xs font-black px-3 py-1.5 rounded-xl border border-emerald-100 transition cursor-pointer shadow-sm"
               >
                 <FileSpreadsheet className="w-4 h-4 text-emerald-650 text-emerald-600" />

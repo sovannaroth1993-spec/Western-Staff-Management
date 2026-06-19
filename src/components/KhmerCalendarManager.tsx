@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { UserAccount } from '../types';
 import { 
   Calendar, Info, Plus, Trash2, ChevronLeft, ChevronRight, 
   Search, Download, Check, Sparkles, Printer, FileSpreadsheet, List, Trash, Clock
@@ -19,6 +20,7 @@ interface CalendarNote {
   time?: string;
   recordedBy: string;
   createdAt: string;
+  createdBy?: string;
 }
 
 interface Holiday {
@@ -102,9 +104,10 @@ const NOTE_CATEGORIES = [
 
 interface KhmerCalendarManagerProps {
   onNavigateToDailyReport?: (date: string) => void;
+  currentUser?: UserAccount | null;
 }
 
-export default function KhmerCalendarManager({ onNavigateToDailyReport }: KhmerCalendarManagerProps = {}) {
+export default function KhmerCalendarManager({ onNavigateToDailyReport, currentUser }: KhmerCalendarManagerProps = {}) {
   const [currentDate, setCurrentDate] = useState(() => new Date(2026, 5, 8)); // June 2026 as starting base
   const [selectedDateStr, setSelectedDateStr] = useState('2026-06-08');
   
@@ -119,11 +122,17 @@ export default function KhmerCalendarManager({ onNavigateToDailyReport }: KhmerC
     }
   });
 
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedNotes = React.useMemo(() => {
+    if (isAdmin) return notesList;
+    return notesList.filter(n => n.createdBy === currentUser?.username);
+  }, [notesList, currentUser, isAdmin]);
+
   // Note entry editor states
   const [newNoteText, setNewNoteText] = useState('');
   const [newNoteCategory, setNewNoteCategory] = useState<CalendarNote['category']>('general');
   const [newNoteTime, setNewNoteTime] = useState('08:00');
-  const [noteAuthor, setNoteAuthor] = useState('LOUNG Veasna');
+  const [noteAuthor, setNoteAuthor] = useState(currentUser?.fullName || currentUser?.username || 'LOUNG Veasna');
 
   // Search and filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -207,7 +216,8 @@ export default function KhmerCalendarManager({ onNavigateToDailyReport }: KhmerC
       category: newNoteCategory,
       time: newNoteTime || undefined,
       recordedBy: noteAuthor || 'LOUNG Veasna',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      createdBy: currentUser?.username || 'admin'
     };
 
     setNotesList(prev => [newNote, ...prev]);
@@ -220,11 +230,11 @@ export default function KhmerCalendarManager({ onNavigateToDailyReport }: KhmerC
   };
 
   // Notes specifically for the selected date
-  const selectedDateNotes = notesList.filter(n => n.date === selectedDateStr);
+  const selectedDateNotes = displayedNotes.filter(n => n.date === selectedDateStr);
 
   // Search filtered month-wide notes
   const monthPrefix = `${year}-${(month + 1) < 10 ? `0${month + 1}` : `${month + 1}`}`;
-  const monthlyNotes = notesList.filter(n => n.date.startsWith(monthPrefix));
+  const monthlyNotes = displayedNotes.filter(n => n.date.startsWith(monthPrefix));
 
   const filteredMonthlyNotes = monthlyNotes.filter(n => {
     const matchesSearch = n.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -398,7 +408,7 @@ export default function KhmerCalendarManager({ onNavigateToDailyReport }: KhmerC
                 const isWeekend = dayOfWeekIdx === 0 || dayOfWeekIdx === 6;
 
                 // Calendar Notes Count for this cell
-                const cellNotes = notesList.filter(n => n.date === cellDateStr);
+                const cellNotes = displayedNotes.filter(n => n.date === cellDateStr);
                 const hasNotes = cellNotes.length > 0;
 
                 return (

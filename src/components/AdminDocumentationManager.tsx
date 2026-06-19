@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { UserAccount } from '../types';
 import * as XLSX from 'xlsx';
 import { 
   FileText, FileSpreadsheet, UploadCloud, Trash2, Download, Search, 
@@ -174,7 +175,11 @@ interface DocMonthStatus {
   updatedBy: string;
 }
 
-export default function AdminDocumentationManager() {
+interface AdminDocumentationManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export default function AdminDocumentationManager({ currentUser }: AdminDocumentationManagerProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<DocCategory>(CATEGORIES[0]);
   const [currentYear, setCurrentYear] = useState<number>(2026);
   const [selectedMonthIndex, setSelectedMonthIndex] = useState<number>(4); // Default to May (0-indexed, so 4 is May)
@@ -182,6 +187,13 @@ export default function AdminDocumentationManager() {
   
   // Database States
   const [files, setFiles] = useState<DocFileRecord[]>([]);
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedFiles = React.useMemo(() => {
+    if (isAdmin) return files;
+    return files.filter(f => f.uploadedBy === currentUser?.username);
+  }, [files, currentUser, isAdmin]);
+
   const [statusRegistry, setStatusRegistry] = useState<Record<string, DocMonthStatus>>({});
   
   // Interactive UI States
@@ -553,7 +565,7 @@ export default function AdminDocumentationManager() {
           fileSize: file.size,
           fileType: isExcel ? 'excel' : isPdf ? 'pdf' : isPhoto ? 'image' : 'pdf',
           uploadedAt: new Date().toISOString(),
-          uploadedBy: 'រដ្ឋបាលសាលា (School Admin)',
+          uploadedBy: currentUser?.fullName || currentUser?.username || 'រដ្ឋបាលសាលា (School Admin)',
           fileData: data.url // e.g. /download/171584...-file.xlsx
         };
 
@@ -576,7 +588,7 @@ export default function AdminDocumentationManager() {
           isDone: true,
           notes: 'ឯកសារត្រូវបានបញ្ចូលរួចរាល់ និងបានធ្វើបច្ចុប្បន្នភាពកាលបរិច្ឆេទដោយជោគជ័យ។',
           updatedAt: new Date().toISOString(),
-          uploadedBy: 'រដ្ឋបាលសាលា (School Admin)'
+          updatedBy: currentUser?.fullName || currentUser?.username || 'រដ្ឋបាលសាលា (School Admin)'
         };
       } else {
         updatedStatus[currentStatusKey].isDone = true;
@@ -722,7 +734,7 @@ export default function AdminDocumentationManager() {
   };
 
   // Get filtered files for the current category and month
-  const activeFiles = files.filter(f => {
+  const activeFiles = displayedFiles.filter(f => {
     const isCategory = f.categoryId === selectedCategory.id;
     const isMonth = f.month === activeMonthString;
     const matchesSearch = searchQuery 
@@ -732,7 +744,7 @@ export default function AdminDocumentationManager() {
   });
 
   const getFilesCountForCategory = (catId: string, monthStr: string) => {
-    return files.filter(f => f.categoryId === catId && f.month === monthStr).length;
+    return displayedFiles.filter(f => f.categoryId === catId && f.month === monthStr).length;
   };
 
   const getStatusForCategory = (catId: string, monthStr: string) => {

@@ -8,7 +8,7 @@ import {
   Laptop, Monitor, Tv, Camera, Box, Search, PlusCircle, Edit2, Trash2, 
   X, Check, AlertTriangle, Download, Info, FileText, BarChart3, HardDrive, RefreshCw
 } from 'lucide-react';
-import { FixedAsset, AssetCategory, AssetStatus, ASSET_CATEGORIES_KM, ASSET_STATUSES_KM } from '../types';
+import { FixedAsset, AssetCategory, AssetStatus, ASSET_CATEGORIES_KM, ASSET_STATUSES_KM, UserAccount } from '../types';
 
 // Default mock assets to make the UI look spectacular right out of the box
 const DEFAULT_ASSETS: FixedAsset[] = [
@@ -126,11 +126,21 @@ const DEFAULT_ASSETS: FixedAsset[] = [
   }
 ];
 
-export default function FixedAssetManager() {
+interface FixedAssetManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export default function FixedAssetManager({ currentUser }: FixedAssetManagerProps) {
   const [assets, setAssets] = useState<FixedAsset[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<AssetCategory | 'All'>('All');
   const [selectedStatus, setSelectedStatus] = useState<AssetStatus | 'All'>('All');
+  
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedAssets = React.useMemo(() => {
+    if (isAdmin) return assets;
+    return assets.filter(a => a.createdBy === currentUser?.username);
+  }, [assets, currentUser, isAdmin]);
   
   // Toast notifications
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'danger' | 'info' } | null>(null);
@@ -247,7 +257,8 @@ export default function FixedAssetManager() {
       status: formStatus,
       purchaseDate: formPurchaseDate || new Date().toISOString().split('T')[0],
       costUsd: Number(formCostUsd) || 0,
-      notes: formNotes.trim()
+      notes: formNotes.trim(),
+      createdBy: editingAsset?.createdBy || currentUser?.username || 'admin'
     };
 
     if (editingAsset) {
@@ -291,14 +302,14 @@ export default function FixedAssetManager() {
   };
 
   // Get statistics calculation
-  const totalAssetsNum = assets.length;
-  const operationalNum = assets.filter(a => a.status === 'Operational').length;
-  const maintenanceNum = assets.filter(a => a.status === 'Maintenance').length;
-  const brokenNum = assets.filter(a => a.status === 'Broken').length;
-  const totalValueUsd = assets.reduce((sum, a) => sum + (Number(a.costUsd) || 0), 0);
+  const totalAssetsNum = displayedAssets.length;
+  const operationalNum = displayedAssets.filter(a => a.status === 'Operational').length;
+  const maintenanceNum = displayedAssets.filter(a => a.status === 'Maintenance').length;
+  const brokenNum = displayedAssets.filter(a => a.status === 'Broken').length;
+  const totalValueUsd = displayedAssets.reduce((sum, a) => sum + (Number(a.costUsd) || 0), 0);
 
   // Filtered Assets list
-  const filteredAssetsList = assets.filter(item => {
+  const filteredAssetsList = displayedAssets.filter(item => {
     const categoryMatch = selectedCategory === 'All' || item.category === selectedCategory;
     const statusMatch = selectedStatus === 'All' || item.status === selectedStatus;
     
@@ -482,7 +493,7 @@ export default function FixedAssetManager() {
           </button>
           
           {(Object.keys(ASSET_CATEGORIES_KM) as AssetCategory[]).map((cat) => {
-            const count = assets.filter(a => a.category === cat).length;
+            const count = displayedAssets.filter(a => a.category === cat).length;
             return (
               <button
                 key={cat}

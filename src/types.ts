@@ -33,6 +33,7 @@ export interface Staff {
   contractStatus?: string; // ស្ថានភាពកិច្ចសន្យា (Contract Status) e.g. "ពេញសិទ្ធិ", "សាកល្បង"
   email?: string; // អ៊ីមែល (Email)
   attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
+  createdBy?: string;
 }
 
 export type AttendanceStatus = 'Present' | 'Excused' | 'Absent'; // មក, ច្បាប់, អវត្តមាន
@@ -51,6 +52,7 @@ export interface AttendanceRecord {
   date: string; // YYYY-MM-DD
   status: AttendanceStatus;
   notes?: string;
+  createdBy?: string;
 }
 
 export interface CleaningTask {
@@ -63,6 +65,7 @@ export interface CleaningTask {
   status: 'Completed' | 'Pending'; // រួចរាល់ | កំពុងធ្វើ
   completedAt?: string;
   notes?: string;
+  createdBy?: string;
 }
 
 export const CLEANING_AREAS_DEFAULT = [
@@ -135,6 +138,7 @@ export interface FixedAsset {
   purchaseDate: string; // Purchase date (YYYY-MM-DD)
   costUsd: number; // Purchase price in USD
   notes?: string;
+  createdBy?: string;
 }
 
 export type InsuranceStatus = 'Pending' | 'Approved' | 'Rejected' | 'None';
@@ -152,6 +156,7 @@ export interface StudentInsurance {
   academicYear: string;
   nationality: string;
   photo?: string; // base64 or link or initials
+  createdBy?: string;
 
   // 2. Parent/Guardian Information (ព័ត៌មានអាណាព្យាបាល)
   guardianName: string; // ឈ្មោះអាណាព្យាបាល / Parent's Name
@@ -361,6 +366,7 @@ export interface Student {
   responsibleLocation?: string; // Classroom room number, e.g., "Room 102"
   icom?: string; // Optionally keep same structure " walkie / extra card " or status
   attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
+  createdBy?: string;
 }
 
 export interface HourlyLog {
@@ -385,6 +391,7 @@ export interface DailyReport {
   actionsTaken?: string; // ដំណោះស្រាយដែលបានអនុវត្ត
   planForTomorrow?: string; // ផែនការសម្រាប់ថ្ងៃស្អែក
   remarks?: string; // កំណត់សម្គាល់
+  createdBy?: string;
 }
 
 export type UserRole = 'admin' | 'user';
@@ -425,6 +432,7 @@ export interface SchoolEvent {
   remarks: string;
   attachments?: { name: string; url: string; size?: string; type?: string }[];
   otherLinks?: { name: string; url: string; description?: string }[];
+  createdBy?: string;
 }
 
 // --- Monthly Report Types ---
@@ -494,6 +502,7 @@ export interface MonthlyReport {
   sickList: StudentSickRecord[];
   preparedBy: string;
   preparedTitle: string;
+  createdBy?: string;
 }
 
 

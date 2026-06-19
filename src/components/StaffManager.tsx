@@ -4,9 +4,10 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Staff, Department, DEPARTMENT_NAMES_KM, ALL_DEPARTMENTS } from '../types';
+import { Staff, Department, DEPARTMENT_NAMES_KM, ALL_DEPARTMENTS, UserAccount } from '../types';
 import { parseStaffExcel, exportStaffToExcel } from '../utils/excelHelper';
 import { exportStaffToPdf } from '../utils/pdfHelper';
+import { exportStaffToCsv } from '../utils/csvHelper';
 import { 
   Plus, Edit2, Trash2, FileSpreadsheet, FileText, Upload, 
   Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, User, X, Info,
@@ -17,6 +18,7 @@ import { motion, AnimatePresence } from 'motion/react';
 interface StaffManagerProps {
   staffList: Staff[];
   setStaffList: (list: Staff[]) => void;
+  currentUser?: UserAccount | null;
 }
 
 interface BulkRow {
@@ -61,11 +63,17 @@ export const calculateYearsOfWork = (joinDateStr?: string): string => {
   return `${years} ឆ្នាំ`;
 };
 
-export default function StaffManager({ staffList, setStaffList }: StaffManagerProps) {
+export default function StaffManager({ staffList, setStaffList, currentUser }: StaffManagerProps) {
   // Filters & State
   const [search, setSearch] = useState('');
   const [selectedDept, setSelectedDept] = useState<Department | 'All'>('All');
   const [selectedGender, setSelectedGender] = useState<'All' | 'ប្រុស' | 'ស្រី'>('All');
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedStaff = React.useMemo(() => {
+    if (isAdmin) return staffList;
+    return staffList.filter(s => s.createdBy === currentUser?.username);
+  }, [staffList, currentUser, isAdmin]);
   
   // Handlers for Add / Edit Modal
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -218,6 +226,10 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
   // Open modal for editing
   const openEditForm = (staff: Staff) => {
+    if (!isAdmin && staff.createdBy && staff.createdBy !== currentUser?.username) {
+      showNotice('អ្នកមិនមានសិទ្ធិកែប្រែព័ត៌មានបុគ្គលិកនេះទេ! (You do not have permission to edit this record)', 'error');
+      return;
+    }
     resetForm();
     setEditingStaffId(staff.id);
     setFormStaffId(staff.staffId);
@@ -353,7 +365,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
             photo: formPhoto || s.photo,
             department: formDept,
             icom: formIcom.trim(),
-            responsibleLocation: formResponsibleLocation.trim()
+            responsibleLocation: formResponsibleLocation.trim(),
+            createdBy: s.createdBy || currentUser?.username || 'admin'
           };
         }
         return s;
@@ -390,7 +403,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         photo: formPhoto,
         department: formDept,
         icom: formIcom.trim(),
-        responsibleLocation: formResponsibleLocation.trim()
+        responsibleLocation: formResponsibleLocation.trim(),
+        createdBy: currentUser?.username || 'admin'
       };
 
       setStaffList([...staffList, newStaff]);
@@ -453,7 +467,8 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
         joinDate: row.joinDate || '2026-01-01',
         phoneNumber: row.phoneNumber.trim() || 'N/A',
         photo: '', // Speed bypasses image upload
-        department: row.department
+        department: row.department,
+        createdBy: currentUser?.username || 'admin'
       };
 
       updatedList.push(newStaff);
@@ -528,11 +543,22 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
 
   // Delete staff member
   const handleDeleteStaff = (id: string, name: string, staffId: string) => {
+    const targetStaff = staffList.find(s => s.id === id);
+    if (!isAdmin && targetStaff && targetStaff.createdBy !== currentUser?.username) {
+      showNotice('អ្នកមិនមានសិទ្ធិលុបព័ត៌មានបុគ្គលិកនេះទេ! (You do not have permission to delete this record)', 'error');
+      return;
+    }
     setDeleteTarget({ id, name, staffId });
   };
 
   const confirmDeleteStaff = () => {
     if (deleteTarget) {
+      const targetStaff = staffList.find(s => s.id === deleteTarget.id);
+      if (!isAdmin && targetStaff && targetStaff.createdBy !== currentUser?.username) {
+        showNotice('អ្នកមិនមានសិទ្ធិលុបព័ត៌មានបុគ្គលិកនេះទេ! (You do not have permission to delete this record)', 'error');
+        setDeleteTarget(null);
+        return;
+      }
       setStaffList(staffList.filter(s => s.id !== deleteTarget.id));
       setDeleteTarget(null);
     }
@@ -541,6 +567,10 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   // Attachment managers
   const openAttachmentModal = (staff: Staff, defaultTab: 'upload' | 'link' = 'upload') => {
     const activeStaff = staffList.find(s => s.id === staff.id) || staff;
+    if (!isAdmin && activeStaff && activeStaff.createdBy !== currentUser?.username) {
+      showNotice('អ្នកមិនមានសិទ្ធិកែប្រែឯកសារភ្ជាប់របស់បុគ្គលិកនេះទេ! (You do not have permission to modify attachments)', 'error');
+      return;
+    }
     setSelectedStaffForAttachments(activeStaff);
     setActiveAttachmentTab(defaultTab);
     setIsAttachmentModalOpen(true);
@@ -691,6 +721,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
       const updatedList = [...staffList];
       filteredNew.forEach((p, idx) => {
         p.no = updatedList.length + 1;
+        p.createdBy = currentUser?.username || 'admin';
         updatedList.push(p);
       });
       
@@ -733,7 +764,7 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
   };
 
   // Filtered staff enumeration
-  const filteredStaff = staffList.filter(s => {
+  const filteredStaff = displayedStaff.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
                           s.staffId.toLowerCase().includes(search.toLowerCase()) || 
                           s.phoneNumber.includes(search);
@@ -834,6 +865,14 @@ export default function StaffManager({ staffList, setStaffList }: StaffManagerPr
               className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-3.5 py-2 rounded-xl border border-emerald-500 transition"
             >
               <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel (.xlsx)
+            </button>
+            <button 
+              onClick={() => {
+                exportStaffToCsv(filteredStaff, selectedDept);
+              }}
+              className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-[11px] px-3.5 py-2 rounded-xl border border-amber-500 transition"
+            >
+              <File className="w-3.5 h-3.5" /> Export CSV (.csv)
             </button>
             <button 
               onClick={() => {

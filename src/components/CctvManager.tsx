@@ -10,6 +10,7 @@ import {
   Printer, Download, Layers, Shield, Settings, Info, Save
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { UserAccount } from '../types';
 
 // Define CCTV Record type
 export interface CctvRecord {
@@ -23,6 +24,7 @@ export interface CctvRecord {
   repairDate: string;
   followUpDate: string;
   remarks: string;
+  createdBy?: string;
 }
 
 const CONST_FLOORS = [
@@ -96,7 +98,11 @@ const DEFAULT_CCTV: CctvRecord[] = [
   }
 ];
 
-export default function CctvManager() {
+interface CctvManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export default function CctvManager({ currentUser }: CctvManagerProps = {}) {
   const [records, setRecords] = useState<CctvRecord[]>(() => {
     try {
       const saved = localStorage.getItem('wis_cctv_records');
@@ -105,6 +111,12 @@ export default function CctvManager() {
       return DEFAULT_CCTV;
     }
   });
+
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedRecords = React.useMemo(() => {
+    if (isAdmin) return records;
+    return records.filter(r => r.createdBy === currentUser?.username);
+  }, [records, currentUser, isAdmin]);
 
   // Keep synced to LocalStorage
   useEffect(() => {
@@ -194,7 +206,8 @@ export default function CctvManager() {
         reportDate: status === 'Normal' ? '' : reportDate,
         repairDate,
         followUpDate: status === 'Normal' ? '' : followUpDate,
-        remarks
+        remarks,
+        createdBy: r.createdBy || currentUser?.username || 'admin'
       } : r);
       setRecords(updated);
       showToast(`បានកែប្រែកាមេរ៉ា "${cameraName}" រួចរាល់!`, 'success');
@@ -210,7 +223,8 @@ export default function CctvManager() {
         reportDate: status === 'Normal' ? '' : reportDate,
         repairDate,
         followUpDate: status === 'Normal' ? '' : followUpDate,
-        remarks
+        remarks,
+        createdBy: currentUser?.username || 'admin'
       };
       setRecords([newRecord, ...records]);
       showToast(`បានបន្ថែមវត្តមានកាមេរ៉ាថ្មី "${cameraName}" ជោគជ័យ!`, 'success');
@@ -227,13 +241,13 @@ export default function CctvManager() {
   };
 
   // Statistics calculations
-  const totalCams = records.length;
-  const normalCams = records.filter(r => r.status === 'Normal').length;
-  const faultyCams = records.filter(r => r.status === 'Faulty').length;
-  const repairingCams = records.filter(r => r.status === 'Under Repair').length;
+  const totalCams = displayedRecords.length;
+  const normalCams = displayedRecords.filter(r => r.status === 'Normal').length;
+  const faultyCams = displayedRecords.filter(r => r.status === 'Faulty').length;
+  const repairingCams = displayedRecords.filter(r => r.status === 'Under Repair').length;
 
   // Filter & Search application
-  const filteredRecords = records.filter(r => {
+  const filteredRecords = displayedRecords.filter(r => {
     const matchesSearch = r.cameraName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           r.location.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (r.issueDescription && r.issueDescription.toLowerCase().includes(searchTerm.toLowerCase()));

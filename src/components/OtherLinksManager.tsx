@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { UserAccount } from '../types';
 import { 
   Link2, Globe, Plus, Edit2, Trash2, Search, ExternalLink, Bookmark, 
   Tag, Filter, X, Check, AlertCircle, Sparkles, Copy, Trash, Folder, RefreshCw, Layers,
@@ -90,7 +91,11 @@ const DEFAULT_LINKS: OtherLink[] = [
   }
 ];
 
-export default function OtherLinksManager() {
+interface OtherLinksManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export default function OtherLinksManager({ currentUser }: OtherLinksManagerProps = {}) {
   const [links, setLinks] = useState<OtherLink[]>(() => {
     try {
       const saved = localStorage.getItem('wis_school_other_links');
@@ -115,6 +120,12 @@ export default function OtherLinksManager() {
     }
   });
 
+  const isAdmin = currentUser?.role === 'admin';
+  const displayedLinks = React.useMemo(() => {
+    if (isAdmin) return links;
+    return links.filter(l => l.addedBy === currentUser?.username);
+  }, [links, currentUser, isAdmin]);
+
   // Keep state updated in local storage
   useEffect(() => {
     localStorage.setItem('wis_school_other_links', JSON.stringify(links));
@@ -136,7 +147,7 @@ export default function OtherLinksManager() {
   const [url, setUrl] = useState('');
   const [category, setCategory] = useState('PR-System');
   const [description, setDescription] = useState('');
-  const [addedBy, setAddedBy] = useState('LOUNG Veasna (Admin Supervisor)');
+  const [addedBy, setAddedBy] = useState(currentUser?.fullName || currentUser?.username || 'LOUNG Veasna (Admin Supervisor)');
   const [selectedIcon, setSelectedIcon] = useState('link');
 
   // Feed/Toast alert feedback
@@ -253,7 +264,7 @@ export default function OtherLinksManager() {
   };
 
   // Filter links logic
-  const filteredLinks = links.filter(link => {
+  const filteredLinks = displayedLinks.filter(link => {
     const matchesSearch = 
       link.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (link.description && link.description.toLowerCase().includes(searchTerm.toLowerCase())) ||

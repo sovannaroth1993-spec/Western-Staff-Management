@@ -34,7 +34,8 @@ import {
   AchievementRecord, 
   InsuranceClaimRecord, 
   StudentAbsentRecord, 
-  StudentSickRecord 
+  StudentSickRecord,
+  UserAccount
 } from '../types';
 import { exportMonthlyReportToPdf } from '../utils/pdfHelper';
 
@@ -129,7 +130,11 @@ const DEFAULT_SICK_SEEDS: StudentSickRecord[] = [
   }
 ];
 
-export const MonthlyReportManager: React.FC = () => {
+interface MonthlyReportManagerProps {
+  currentUser?: UserAccount | null;
+}
+
+export const MonthlyReportManager: React.FC<MonthlyReportManagerProps> = ({ currentUser }) => {
   // Store all monthly reports keyed by month id, e.g. "2026-06"
   const [reportsMap, setReportsMap] = useState<Record<string, MonthlyReport>>({});
   
@@ -231,7 +236,7 @@ export const MonthlyReportManager: React.FC = () => {
   };
 
   // Get current active report object
-  const activeReport: MonthlyReport = reportsMap[selectedMonthId] || {
+  const rawActiveReport: MonthlyReport = reportsMap[selectedMonthId] || {
     id: selectedMonthId,
     month: getReadableMonthLabel(selectedMonthId),
     lunchList: [],
@@ -243,6 +248,27 @@ export const MonthlyReportManager: React.FC = () => {
     preparedBy: preparedBy,
     preparedTitle: preparedTitle
   };
+
+  const isAdmin = currentUser?.role === 'admin';
+  const activeReport = React.useMemo(() => {
+    if (isAdmin) return rawActiveReport;
+    if (rawActiveReport.createdBy && rawActiveReport.createdBy !== currentUser?.username) {
+      return {
+        id: selectedMonthId,
+        month: getReadableMonthLabel(selectedMonthId),
+        lunchList: [],
+        mosquitoList: [],
+        achievementList: [],
+        insuranceClaimList: [],
+        absentList: [],
+        sickList: [],
+        preparedBy: currentUser?.fullName || currentUser?.username || '',
+        preparedTitle: 'User',
+        createdBy: currentUser?.username
+      };
+    }
+    return rawActiveReport;
+  }, [rawActiveReport, currentUser, isAdmin, selectedMonthId]);
 
   // Update dynamic prepared by / title in active report on-the-fly
   useEffect(() => {
@@ -266,7 +292,8 @@ export const MonthlyReportManager: React.FC = () => {
       [selectedMonthId]: {
         ...activeReport,
         preparedBy: pBy,
-        preparedTitle: pTitle
+        preparedTitle: pTitle,
+        createdBy: activeReport.createdBy || currentUser?.username || 'admin'
       }
     };
     setReportsMap(updated);
@@ -277,7 +304,10 @@ export const MonthlyReportManager: React.FC = () => {
   const saveReportState = (newReport: MonthlyReport) => {
     const updated = {
       ...reportsMap,
-      [selectedMonthId]: newReport
+      [selectedMonthId]: {
+        ...newReport,
+        createdBy: newReport.createdBy || currentUser?.username || 'admin'
+      }
     };
     setReportsMap(updated);
     window.localStorage.setItem('wis_monthly_reports', JSON.stringify(updated));

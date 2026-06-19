@@ -28,10 +28,10 @@ import {
   Share2,
   AlertTriangle
 } from 'lucide-react';
-import { SchoolEvent } from '../types';
+import { SchoolEvent, UserAccount } from '../types';
 
 interface SchoolEventsManagerProps {
-  // We can add props here if we need, but standard self-contained using main localStorage sync is excellent.
+  currentUser?: UserAccount | null;
 }
 
 const SEED_EVENTS: SchoolEvent[] = [
@@ -192,7 +192,7 @@ const STANDARD_DEPTS = [
   'SP, Registrar, Academics'
 ];
 
-export const SchoolEventsManager: React.FC<SchoolEventsManagerProps> = () => {
+export const SchoolEventsManager: React.FC<SchoolEventsManagerProps> = ({ currentUser }) => {
   const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [managedByFilter, setManagedByFilter] = useState('all');
@@ -360,6 +360,10 @@ export const SchoolEventsManager: React.FC<SchoolEventsManagerProps> = () => {
       // Edit mode
       const updated = events.map(evt => {
         if (evt.id === editingId) {
+          const isAdmin = currentUser?.role === 'admin';
+          if (!isAdmin && evt.createdBy && evt.createdBy !== currentUser?.username) {
+            return evt;
+          }
           return {
             ...evt,
             eventActivity: eventActivity.trim(),
@@ -382,7 +386,8 @@ export const SchoolEventsManager: React.FC<SchoolEventsManagerProps> = () => {
         date,
         involvement: involvement.trim(),
         managedBy: managedBy.trim(),
-        remarks: remarks.trim()
+        remarks: remarks.trim(),
+        createdBy: currentUser?.username || 'admin'
       };
       saveToStorage([...events, newEvent]);
       showNotice('បានបន្ថែមកម្មវិធីសកម្មភាពថ្មីដោយជោគជ័យ! (Created new school activity event)', 'success');
@@ -623,6 +628,11 @@ export const SchoolEventsManager: React.FC<SchoolEventsManagerProps> = () => {
 
   // Filters logic
   const filteredEvents = events.filter(evt => {
+    const isAdmin = currentUser?.role === 'admin';
+    if (!isAdmin && evt.createdBy !== currentUser?.username) {
+      return false;
+    }
+
     const textMatch = 
       evt.eventActivity.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evt.involvement.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -711,14 +721,16 @@ export const SchoolEventsManager: React.FC<SchoolEventsManagerProps> = () => {
               <Printer className="w-4 h-4 text-emerald-300" />
               <span>បោះពុម្ព (Print SOP Table)</span>
             </button>
-            <button
-              onClick={handleResetToSeeds}
-              title="កំណត់ឡើងវិញនូវទិន្នន័យគំរូ"
-              className="bg-slate-900/45 hover:bg-rose-950/40 text-emerald-100 hover:text-white font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1 transition-all duration-200 cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
-              <span>លំនាំដើម (Default Seeds)</span>
-            </button>
+            {currentUser?.role === 'admin' && (
+              <button
+                onClick={handleResetToSeeds}
+                title="កំណត់ឡើងវិញនូវទិន្នន័យគំរូ"
+                className="bg-slate-900/45 hover:bg-rose-950/40 text-emerald-100 hover:text-white font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1 transition-all duration-200 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+                <span>លំនាំដើម (Default Seeds)</span>
+              </button>
+            )}
           </div>
         </div>
 
