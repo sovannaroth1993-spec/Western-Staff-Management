@@ -144,7 +144,7 @@ export default function RemoteScannerMobile({ staffList, channelId, onExit }: Re
         staffName: staff.name,
         staffId: staff.staffId,
         photo: staff.photo,
-        dept: DEPARTMENT_NAMES_KM[staff.department],
+        dept: staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : DEPARTMENT_NAMES_KM[staff.department],
         time: timeStr
       });
 

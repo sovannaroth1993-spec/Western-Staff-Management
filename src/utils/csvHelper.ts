@@ -55,7 +55,7 @@ export function exportStaffToCsv(staffList: Staff[], department: string) {
     s.dob,
     s.joinDate || 'N/A',
     s.phoneNumber,
-    DEPARTMENT_NAMES_KM[s.department] || s.department,
+    (s.department === 'Other' && s.customDepartment) ? s.customDepartment : (DEPARTMENT_NAMES_KM[s.department] || s.department),
     s.icom || 'គ្មាន',
     s.responsibleLocation || 'គ្មាន',
     '4x6 ' + (s.photo ? 'មានរូបថត' : 'គ្មានរូបថត')
@@ -89,7 +89,7 @@ export function exportAttendanceToCsv(records: AttendanceRecord[], staffList: St
       record.staffId,
       record.staffName,
       staff?.gender || 'N/A',
-      DEPARTMENT_NAMES_KM[record.department] || record.department,
+      (staff && staff.department === 'Other' && staff.customDepartment) ? staff.customDepartment : (DEPARTMENT_NAMES_KM[record.department] || record.department),
       date,
       statusId,
       record.notes || ''

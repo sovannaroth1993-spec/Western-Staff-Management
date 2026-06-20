@@ -161,7 +161,7 @@ export function exportStaffToPdf(staffList: Staff[], department: Department | 'A
       s.phoneNumber,
     ];
     if (showDept) {
-      row.push(s.department);
+      row.push(s.department === 'Other' && s.customDepartment ? s.customDepartment : (DEPARTMENT_NAMES_KM[s.department] || s.department));
     }
     row.push(s.icom ? transliterateKhmerToLatin(s.icom) : '-');
     row.push(s.responsibleLocation ? transliterateKhmerToLatin(s.responsibleLocation) : '-');

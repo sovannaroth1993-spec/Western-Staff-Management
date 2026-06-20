@@ -363,7 +363,7 @@ export default function AttendanceTracker({
         staffName: staff.name,
         staffId: staff.staffId,
         photo: staff.photo,
-        dept: DEPARTMENT_NAMES_KM[staff.department],
+        dept: staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : DEPARTMENT_NAMES_KM[staff.department],
         time: timeStr
       });
 
@@ -373,7 +373,7 @@ export default function AttendanceTracker({
         staffName: staff.name,
         staffId: staff.staffId,
         photo: staff.photo,
-        departmentName: DEPARTMENT_NAMES_KM[staff.department],
+        departmentName: staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : DEPARTMENT_NAMES_KM[staff.department],
         time: timeStr,
         status: 'success',
         message: 'ឆែកចូលជោគជ័យ (Check-In OK)'
@@ -1020,7 +1020,7 @@ export default function AttendanceTracker({
                           <option value="">-- ជ្រើសរើសបុគ្គលិកដើម្បីសាកល្បង --</option>
                           {staffList.map(s => (
                             <option key={s.staffId} value={s.staffId}>
-                              [{s.staffId}] {s.name} - {DEPARTMENT_NAMES_KM[s.department]}
+                              [{s.staffId}] {s.name} - {s.department === 'Other' && s.customDepartment ? s.customDepartment : DEPARTMENT_NAMES_KM[s.department]}
                             </option>
                           ))}
                         </select>
@@ -1193,7 +1193,7 @@ export default function AttendanceTracker({
                       <option value="">-- ជ្រើសរើសបុគ្គលិក --</option>
                       {staffList.map(s => (
                         <option key={s.staffId} value={s.staffId}>
-                          [{s.staffId}] {s.name} ({DEPARTMENT_NAMES_KM[s.department]})
+                          [{s.staffId}] {s.name} ({s.department === 'Other' && s.customDepartment ? s.customDepartment : DEPARTMENT_NAMES_KM[s.department]})
                         </option>
                       ))}
                     </select>
@@ -1240,7 +1240,12 @@ export default function AttendanceTracker({
                                           })()}
                                         </div>
                                         <div class="name">${staffList.find(st => st.staffId === selectedBadgeStaffId)?.name}</div>
-                                        <div class="dept">${DEPARTMENT_NAMES_KM[staffList.find(st => st.staffId === selectedBadgeStaffId)?.department || 'Security']}</div>
+                                        <div class="dept">${(() => {
+                                          const sObj = staffList.find(st => st.staffId === selectedBadgeStaffId);
+                                          return sObj && sObj.department === 'Other' && sObj.customDepartment
+                                            ? sObj.customDepartment
+                                            : DEPARTMENT_NAMES_KM[sObj?.department || 'Security'];
+                                        })()}</div>
                                         <div class="details">
                                           <div><strong>លេខសម្គាល់ / ID:</strong> ${selectedBadgeStaffId}</div>
                                           <div><strong>ភេទ / Gender:</strong> ${staffList.find(st => st.staffId === selectedBadgeStaffId)?.gender}</div>
@@ -1312,7 +1317,7 @@ export default function AttendanceTracker({
 
                           {/* Profile metadata */}
                           <h4 className="text-base font-black text-slate-900">{staff.name}</h4>
-                          <p className="text-xs font-extrabold text-emerald-600 mt-0.5">{DEPARTMENT_NAMES_KM[staff.department]}</p>
+                          <p className="text-xs font-extrabold text-emerald-600 mt-0.5">{staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : DEPARTMENT_NAMES_KM[staff.department]}</p>
 
                           {/* Detail Grid */}
                           <div className="border-t border-b border-dashed border-slate-200/80 py-3 my-4 text-left text-[11px] font-semibold text-slate-500 space-y-1">
@@ -1771,7 +1776,7 @@ export default function AttendanceTracker({
                                   </div>
                                 </td>
                                 <td className="py-2 px-3 text-slate-500 font-bold text-[10.5px]">
-                                  {DEPARTMENT_NAMES_KM[staff.department]}
+                                  {staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : DEPARTMENT_NAMES_KM[staff.department]}
                                 </td>
                                 <td className="py-2 px-3 text-center text-sm font-black text-emerald-600 bg-emerald-50/30">
                                   {stats.present}

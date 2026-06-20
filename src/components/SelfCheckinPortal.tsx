@@ -349,7 +349,7 @@ export default function SelfCheckinPortal({
                             </span>
                           </div>
                           <div className="text-[10px] font-bold text-slate-500 mt-1">
-                            {DEPARTMENT_NAMES_KM[staff.department] || staff.department}
+                            {staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : (DEPARTMENT_NAMES_KM[staff.department] || staff.department)}
                           </div>
                         </div>
                       </div>
@@ -410,7 +410,7 @@ export default function SelfCheckinPortal({
                       ID: {selectedStaff.staffId}
                     </span>
                     <p className="text-[10px] font-bold text-slate-500 mt-1">
-                      {DEPARTMENT_NAMES_KM[selectedStaff.department] || selectedStaff.department}
+                      {selectedStaff.department === 'Other' && selectedStaff.customDepartment ? selectedStaff.customDepartment : (DEPARTMENT_NAMES_KM[selectedStaff.department] || selectedStaff.department)}
                     </p>
                   </div>
 

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type Department = 'Security' | 'Cleaner' | 'Librarian' | 'Nurse' | 'Customer Service' | 'Lab Assistant' | 'Admin Head';
+export type Department = 'Security' | 'Cleaner' | 'Librarian' | 'Nurse' | 'Customer Service' | 'Lab Assistant' | 'Admin Head' | 'Other';
 
-export const ALL_DEPARTMENTS: Department[] = ['Security', 'Cleaner', 'Librarian', 'Nurse', 'Customer Service', 'Lab Assistant', 'Admin Head'];
+export const ALL_DEPARTMENTS: Department[] = ['Security', 'Cleaner', 'Librarian', 'Nurse', 'Customer Service', 'Lab Assistant', 'Admin Head', 'Other'];
 
 export const DEPARTMENT_NAMES_KM: Record<Department, string> = {
   Security: 'ផ្នែកសន្តិសុខ',
@@ -14,7 +14,8 @@ export const DEPARTMENT_NAMES_KM: Record<Department, string> = {
   Nurse: 'ផ្នែកគិលានុបដ្ឋាយិកា (Nurse)',
   'Customer Service': 'ផ្នែកបម្រើសេវាកម្មអតិថិជន',
   'Lab Assistant': 'ផ្នែកជំនួយការបន្ទប់ពិសោធន៍',
-  'Admin Head': 'ប្រធានផ្នែករដ្ឋបាល'
+  'Admin Head': 'ប្រធានផ្នែករដ្ឋបាល',
+  Other: 'ផ្សេងៗ (Other)'
 };
 
 export interface Staff {
@@ -27,6 +28,7 @@ export interface Staff {
   phoneNumber: string;
   photo: string; // Base64 Data URL or URL or generated clean initials-avatar
   department: Department;
+  customDepartment?: string; // Additional custom department/role input
   icom?: string; // មុខងារ អាយកូម (Icom) - e.g. "មាន (Yes)" or custom label
   responsibleLocation?: string; // ទីតាំងទទួលខុសត្រូវ (Responsible Location)
   joinDate?: string; // ថ្ងៃខែឆ្នាំចូលធ្វើការ (Hire Date)

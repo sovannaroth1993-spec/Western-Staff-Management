@@ -29,6 +29,7 @@ interface BulkRow {
   joinDate?: string;
   phoneNumber: string;
   department: Department;
+  customDepartment?: string;
 }
 
 /**
@@ -66,8 +67,26 @@ export const calculateYearsOfWork = (joinDateStr?: string): string => {
 export default function StaffManager({ staffList, setStaffList, currentUser }: StaffManagerProps) {
   // Filters & State
   const [search, setSearch] = useState('');
-  const [selectedDept, setSelectedDept] = useState<Department | 'All'>('All');
+  const [selectedDept, setSelectedDept] = useState<string>('All');
   const [selectedGender, setSelectedGender] = useState<'All' | 'ប្រុស' | 'ស្រី'>('All');
+
+  const [customPositions, setCustomPositions] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('wis_custom_positions');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [showAddPositionInput, setShowAddPositionInput] = useState(false);
+  const [newPositionName, setNewPositionName] = useState('');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('wis_custom_positions', JSON.stringify(customPositions));
+    } catch {}
+  }, [customPositions]);
 
   const isAdmin = currentUser?.role === 'admin';
   const displayedStaff = React.useMemo(() => {
@@ -101,12 +120,47 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
   const [formName, setFormName] = useState('');
   const [formGender, setFormGender] = useState<'ប្រុស' | 'ស្រី'>('ប្រុស');
   const [formDob, setFormDob] = useState('');
+  const [formAge, setFormAge] = useState('');
+
+  const handleDobChange = (dobVal: string) => {
+    setFormDob(dobVal);
+    if (dobVal) {
+      const birth = new Date(dobVal);
+      if (!isNaN(birth.getTime())) {
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        setFormAge(String(age));
+      } else {
+        setFormAge('');
+      }
+    } else {
+      setFormAge('');
+    }
+  };
+
+  const handleAgeChange = (ageVal: string) => {
+    setFormAge(ageVal);
+    const parsedAge = parseInt(ageVal, 10);
+    if (!isNaN(parsedAge) && parsedAge >= 0) {
+      const today = new Date();
+      const estBirthYear = today.getFullYear() - parsedAge;
+      // Set default birth month and day to January 1st of that birth year
+      setFormDob(`${estBirthYear}-01-01`);
+    } else {
+      setFormDob('');
+    }
+  };
   const [formJoinDate, setFormJoinDate] = useState('');
   const [formContractStatus, setFormContractStatus] = useState('ពេញសិទ្ធិ (Full-Time)');
   const [formEmail, setFormEmail] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formPhoto, setFormPhoto] = useState('');
   const [formDept, setFormDept] = useState<Department>('Security');
+  const [formCustomDept, setFormCustomDept] = useState('');
   const [formIcom, setFormIcom] = useState('');
   const [formResponsibleLocation, setFormResponsibleLocation] = useState('');
 
@@ -165,7 +219,8 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
       Nurse: 'WIS-NUR',
       'Customer Service': 'WIS-CS',
       'Lab Assistant': 'WIS-LAB',
-      'Admin Head': 'WIS-ADM'
+      'Admin Head': 'WIS-ADM',
+      Other: 'WIS-OTH'
     };
     const prefix = prefixMap[dept] || 'WIS';
     
@@ -197,12 +252,14 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
     setFormName('');
     setFormGender('ប្រុស');
     setFormDob('');
+    setFormAge('');
     setFormJoinDate('');
     setFormContractStatus('ពេញសិទ្ធិ (Full-Time)');
     setFormEmail('');
     setFormPhone('');
     setFormPhoto('');
     setFormDept('Security');
+    setFormCustomDept('');
     setFormIcom('');
     setFormResponsibleLocation('');
     setLastInsertedStaff(null);
@@ -236,12 +293,32 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
     setFormName(staff.name);
     setFormGender(staff.gender as 'ប្រុស' | 'ស្រី');
     setFormDob(staff.dob);
+    
+    // Calculate and set age immediately
+    if (staff.dob) {
+      const birth = new Date(staff.dob);
+      if (!isNaN(birth.getTime())) {
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        setFormAge(String(age));
+      } else {
+        setFormAge('');
+      }
+    } else {
+      setFormAge('');
+    }
+
     setFormJoinDate(staff.joinDate || '');
     setFormContractStatus(staff.contractStatus || 'ពេញសិទ្ធិ (Full-Time)');
     setFormEmail(staff.email || '');
     setFormPhone(staff.phoneNumber);
     setFormPhoto(staff.photo);
     setFormDept(staff.department);
+    setFormCustomDept(staff.customDepartment || '');
     setFormIcom(staff.icom || '');
     setFormResponsibleLocation(staff.responsibleLocation || '');
     setEntryMode('single');
@@ -364,6 +441,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
             phoneNumber: formPhone.trim() || s.phoneNumber,
             photo: formPhoto || s.photo,
             department: formDept,
+            customDepartment: formDept === 'Other' ? formCustomDept.trim() : '',
             icom: formIcom.trim(),
             responsibleLocation: formResponsibleLocation.trim(),
             createdBy: s.createdBy || currentUser?.username || 'admin'
@@ -402,6 +480,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
         phoneNumber: formPhone.trim() || 'N/A',
         photo: formPhoto,
         department: formDept,
+        customDepartment: formDept === 'Other' ? formCustomDept.trim() : '',
         icom: formIcom.trim(),
         responsibleLocation: formResponsibleLocation.trim(),
         createdBy: currentUser?.username || 'admin'
@@ -468,6 +547,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
         phoneNumber: row.phoneNumber.trim() || 'N/A',
         photo: '', // Speed bypasses image upload
         department: row.department,
+        customDepartment: row.customDepartment,
         createdBy: currentUser?.username || 'admin'
       };
 
@@ -768,7 +848,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
     const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
                           s.staffId.toLowerCase().includes(search.toLowerCase()) || 
                           s.phoneNumber.includes(search);
-    const matchesDept = selectedDept === 'All' || s.department === selectedDept;
+    const matchesDept = selectedDept === 'All' || s.department === selectedDept || (s.department === 'Other' && s.customDepartment === selectedDept);
     const matchesGender = selectedGender === 'All' || s.gender === selectedGender;
     return matchesSearch && matchesDept && matchesGender;
   });
@@ -828,13 +908,22 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
               <label className="text-xs font-black text-slate-600">តម្រងផ្នែក (Department)</label>
               <select 
                 value={selectedDept} 
-                onChange={(e) => setSelectedDept(e.target.value as Department | 'All')}
+                onChange={(e) => setSelectedDept(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 p-2 text-xs font-semibold rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
               >
                 <option value="All">គ្រប់ផ្នែកទាំងអស់</option>
-                {ALL_DEPARTMENTS.map(d => (
-                  <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
-                ))}
+                <optgroup label="ផ្នែកធម្មតា (Standard Department)">
+                  {ALL_DEPARTMENTS.map(d => (
+                    <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
+                  ))}
+                </optgroup>
+                {customPositions.length > 0 && (
+                  <optgroup label="ផ្នែកបន្ថែម (Custom Positions)">
+                    {customPositions.map(pos => (
+                      <option key={pos} value={pos}>{pos}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
 
@@ -932,7 +1021,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
                   
                   {/* Department description tag */}
                   <span className="inline-block bg-slate-250 text-slate-800 font-extrabold text-[9px] px-2 py-0.5 rounded-full mt-2 uppercase tracking-wide border border-slate-300 shadow-3xs">
-                    {DEPARTMENT_NAMES_KM[staff.department]}
+                    {staff.department === 'Other' && staff.customDepartment ? staff.customDepartment : DEPARTMENT_NAMES_KM[staff.department]}
                   </span>
                 </div>
 
@@ -1184,6 +1273,31 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
                       </select>
                     </div>
                     <div>
+                      <label className="text-xs font-bold text-slate-700">ថ្ងៃខែឆ្នាំកំណើត (Date of Birth / DOB)</label>
+                      <input 
+                        type="date"
+                        value={formDob}
+                        onChange={(e) => handleDobChange(e.target.value)}
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Age & Years of Work row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700">អាយុ (Age - វាយបញ្ចូល ឬគណនាស្វ័យប្រវត្ត)</label>
+                      <input 
+                        type="number"
+                        min="0"
+                        max="120"
+                        value={formAge}
+                        onChange={(e) => handleAgeChange(e.target.value)}
+                        placeholder="ឧទាហរណ៍៖ 30"
+                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                      />
+                    </div>
+                    <div>
                       <label className="text-xs font-bold text-slate-700">ចំនួនឆ្នាំធ្វើការ (Years of Work)</label>
                       <div className="w-full bg-slate-100 text-xs font-black p-2.5 border border-slate-200 text-emerald-800 rounded-lg mt-1 select-none font-sans min-h-[38px] flex items-center">
                         {calculateYearsOfWork(formJoinDate)} (គណនាស្វ័យប្រវត្ត)
@@ -1242,23 +1356,122 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-700">ផ្នែកការងារ (Department)</label>
-                      <select
-                        value={formDept}
-                        onChange={(e) => {
-                          const newDept = e.target.value as Department;
-                          setFormDept(newDept);
-                          if (!editingStaffId) {
-                            const suggestedId = generateUniqueStaffId(newDept);
-                            setFormStaffId(suggestedId);
-                          }
-                        }}
-                        className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
-                      >
-                        {ALL_DEPARTMENTS.map(d => (
-                          <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
-                        ))}
-                      </select>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700">ផ្នែកការងារ (Department)</label>
+                        {!showAddPositionInput && (
+                          <button
+                            type="button"
+                            onClick={() => setShowAddPositionInput(true)}
+                            className="text-[10px] font-black text-emerald-700 hover:text-emerald-800 underline transition"
+                          >
+                            + បង្កើតតួនាទីថ្មិ (Add Position)
+                          </button>
+                        )}
+                      </div>
+                      
+                      {showAddPositionInput ? (
+                        <div className="mt-1 p-2 border border-emerald-150 rounded-lg bg-emerald-50/50 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                          <span className="text-[10px] font-bold text-emerald-800">✍️ បញ្ចូលឈ្មោះតួនាទីថ្មី (Add New Position)</span>
+                          <div className="flex gap-1.5">
+                            <input
+                              type="text"
+                              value={newPositionName}
+                              onChange={(e) => setNewPositionName(e.target.value)}
+                              placeholder="IT Support, Guard, Driver..."
+                              className="flex-1 bg-white text-xs font-semibold p-1.5 border border-emerald-250 rounded focus:ring-1 focus:ring-emerald-700 focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const trimmed = newPositionName.trim();
+                                if (!trimmed) return;
+                                if (customPositions.includes(trimmed)) {
+                                  showNotice('តួនាទីនេះមានរួចហើយ! (This position already exists)', 'error');
+                                  return;
+                                }
+                                setCustomPositions([...customPositions, trimmed]);
+                                setFormDept('Other');
+                                setFormCustomDept(trimmed);
+                                setNewPositionName('');
+                                setShowAddPositionInput(false);
+                                showNotice(`បានបន្ថែមផ្នែកការងារ "${trimmed}" ជោគជ័យ!`);
+                              }}
+                              className="bg-emerald-800 hover:bg-emerald-900 text-white text-[10px] font-bold px-2.5 py-1.5 rounded transition"
+                            >
+                              រក្សាទុក
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowAddPositionInput(false);
+                                setNewPositionName('');
+                              }}
+                              className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-[10px] font-semibold px-2.5 py-1.5 rounded transition"
+                            >
+                              បិទ
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <select
+                          value={formDept === 'Other' ? (customPositions.includes(formCustomDept) ? formCustomDept : 'Other_Custom_Manual') : formDept}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'Other_Custom_Manual') {
+                              setFormDept('Other');
+                              setFormCustomDept('');
+                            } else if (customPositions.includes(val)) {
+                              setFormDept('Other');
+                              setFormCustomDept(val);
+                              if (!editingStaffId) {
+                                const suggestedId = generateUniqueStaffId('Other');
+                                setFormStaffId(suggestedId);
+                              }
+                            } else {
+                              const newDept = val as Department;
+                              setFormDept(newDept);
+                              setFormCustomDept('');
+                              if (!editingStaffId) {
+                                const suggestedId = generateUniqueStaffId(newDept);
+                                setFormStaffId(suggestedId);
+                              }
+                            }
+                          }}
+                          className="w-full bg-slate-50 text-xs font-semibold p-2.5 border border-slate-200 rounded-lg mt-1 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                        >
+                          <optgroup label="ផ្នែកធម្មតា (Standard Department)">
+                            {ALL_DEPARTMENTS.filter(d => d !== 'Other').map(d => (
+                              <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
+                            ))}
+                          </optgroup>
+                          {customPositions.length > 0 && (
+                            <optgroup label="ផ្នែកបន្ថែមដែលបានបង្កើត (Custom Positions)">
+                              {customPositions.map(pos => (
+                                <option key={pos} value={pos}>{pos}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                          <optgroup label="ផ្សេងៗ (Other Options)">
+                            <option value="Other_Custom_Manual">✍️ បញ្ចូលដោយផ្ទាល់ (Type custom position...)</option>
+                          </optgroup>
+                        </select>
+                      )}
+
+                      {formDept === 'Other' && !showAddPositionInput && (
+                        <div className="mt-2 text-left animate-in fade-in duration-150">
+                          <label className="text-[10px] font-black text-indigo-700 flex items-center gap-1">
+                            <span>✍️ ឈ្មោះផ្នែកបន្ថែម (Custom Department Name) *</span>
+                          </label>
+                          <input 
+                            type="text"
+                            value={formCustomDept}
+                            onChange={(e) => setFormCustomDept(e.target.value)}
+                            placeholder="ឧ. ផ្នែកព័ត៌មានវិទ្យា (IT Support)"
+                            className="w-full bg-white text-xs font-semibold p-2 border border-indigo-200 rounded-lg mt-0.5 focus:ring-2 focus:ring-indigo-600 focus:outline-none"
+                            required
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1514,13 +1727,34 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
                             </td>
                             <td className="py-2 px-3">
                               <select
-                                value={row.department}
-                                onChange={(e) => handleBulkRowChange(index, 'department', e.target.value as Department)}
+                                value={row.department === 'Other' ? (row.customDepartment || 'Other') : row.department}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (customPositions.includes(val)) {
+                                    handleBulkRowChange(index, 'department', 'Other');
+                                    handleBulkRowChange(index, 'customDepartment', val);
+                                  } else {
+                                    handleBulkRowChange(index, 'department', val as Department);
+                                    handleBulkRowChange(index, 'customDepartment', undefined);
+                                  }
+                                }}
                                 className="w-full bg-slate-50 text-xs font-bold p-2 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-700"
                               >
-                                {ALL_DEPARTMENTS.map(d => (
-                                  <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
-                                ))}
+                                <optgroup label="ផ្នែកធម្មតា (Standard Department)">
+                                  {ALL_DEPARTMENTS.filter(d => d !== 'Other').map(d => (
+                                    <option key={d} value={d}>{DEPARTMENT_NAMES_KM[d]}</option>
+                                  ))}
+                                </optgroup>
+                                {customPositions.length > 0 && (
+                                  <optgroup label="ផ្នែកបន្ថែម (Custom Positions)">
+                                    {customPositions.map(pos => (
+                                      <option key={pos} value={pos}>{pos}</option>
+                                    ))}
+                                  </optgroup>
+                                )}
+                                <optgroup label="ផ្សេងៗ">
+                                  <option value="Other">ផ្សេងៗ (Other)</option>
+                                </optgroup>
                               </select>
                             </td>
                             <td className="py-2 px-3 text-center">
@@ -2071,7 +2305,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
                     {/* Quick Badges */}
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                       <span className="bg-slate-100 text-slate-850 hover:bg-slate-200 border border-slate-200 font-extrabold text-[10px] px-3 py-1 rounded-lg">
-                        📂 {DEPARTMENT_NAMES_KM[selectedStaffProfile.department]}
+                        📂 {selectedStaffProfile.department === 'Other' && selectedStaffProfile.customDepartment ? selectedStaffProfile.customDepartment : DEPARTMENT_NAMES_KM[selectedStaffProfile.department]}
                       </span>
                       <span className={`border font-extrabold text-[10px] px-3 py-1 rounded-lg ${
                         selectedStaffProfile.contractStatus?.includes('Probation') || selectedStaffProfile.contractStatus?.includes('សាកល្បង')
@@ -2088,7 +2322,7 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
 
                     {/* Summary row */}
                     <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-md">
-                      បុគ្គលិកបម្រើការងារនៅក្នុងផ្នែក <span className="text-slate-850 font-extrabold">{DEPARTMENT_NAMES_KM[selectedStaffProfile.department]}</span> នៃសាលាមីលតិន (Milton School/WIS)។ ព័ត៌មានលម្អិត និងឯកសារភ្ជាប់ត្រូវបានដាក់តាំងបង្ហាញខាងក្រោម។
+                      បុគ្គលិកបម្រើការងារនៅក្នុងផ្នែក <span className="text-slate-850 font-extrabold">{selectedStaffProfile.department === 'Other' && selectedStaffProfile.customDepartment ? selectedStaffProfile.customDepartment : DEPARTMENT_NAMES_KM[selectedStaffProfile.department]}</span> នៃសាលាវេស្ទើនអន្តរជាតិ (Western International School/WIS)។ ព័ត៌មានលម្អិត និងឯកសារភ្ជាប់ត្រូវបានដាក់តាំងបង្ហាញខាងក្រោម។
                     </p>
                   </div>
                 </div>

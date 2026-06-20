@@ -135,7 +135,7 @@ export function exportStaffToExcel(staffList: Staff[], department: Department | 
     'ថ្ងៃខែឆ្នាំកំណើត (DOB)': s.dob,
     'ថ្ងៃចូលធ្វើការ (Joining Date)': s.joinDate || 'N/A',
     'លេខទូរស័ព្ទ (Phone Number)': s.phoneNumber,
-    'ផ្នែក (Department)': DEPARTMENT_NAMES_KM[s.department] || s.department,
+    'ផ្នែក (Department)': (s.department === 'Other' && s.customDepartment) ? s.customDepartment : (DEPARTMENT_NAMES_KM[s.department] || s.department),
     'អាយកូម (Icom)': s.icom || 'គ្មាន',
     'ទីតាំងទទួលខុសត្រូវ (Location)': s.responsibleLocation || 'គ្មាន',
     'ទំហំរូបថត (Photo Info)': '4x6 ' + (s.photo ? 'មានរូបថត' : 'គ្មានរូបថត')
@@ -164,7 +164,7 @@ export function exportAttendanceToExcel(records: AttendanceRecord[], staffList: 
       'លេខសម្គាល់ (Staff ID)': record.staffId,
       'ឈ្មោះ (Name)': record.staffName,
       'ភេទ (Gender)': staff?.gender || 'N/A',
-      'ផ្នែក (Department)': DEPARTMENT_NAMES_KM[record.department],
+      'ផ្នែក (Department)': (staff && staff.department === 'Other' && staff.customDepartment) ? staff.customDepartment : DEPARTMENT_NAMES_KM[record.department],
       'កាលបរិច្ឆេទ (Date)': date,
       'វត្តមាន (Status)': statusId,
       'សម្គាល់ (Notes)': record.notes || ''
