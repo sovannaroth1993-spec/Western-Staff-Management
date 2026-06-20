@@ -71,11 +71,35 @@ export default function StaffManager({ staffList, setStaffList, currentUser }: S
   const [selectedGender, setSelectedGender] = useState<'All' | 'ប្រុស' | 'ស្រី'>('All');
 
   const [customPositions, setCustomPositions] = useState<string[]>(() => {
+    const defaultPositions = [
+      'Teacher Assistant (ជំនួយការគ្រូ)',
+      'Nanny (អ្នកមើលថែក្មេង)',
+      'HR (ផ្នែកធនធានមនុស្ស)',
+      'VSP (Vice School Principal / នាយករងសាលា)',
+      'Teacher (គ្រូបង្រៀន)',
+      'Academic Coordinator (អ្នកសម្របសម្រួលការសិក្សា)',
+      'IT Support (ផ្នែកបច្ចេកវិទ្យា IT)',
+      'Accountant (ផ្នែកគណនេយ្យ)',
+      'Driver (អ្នកបើកបរ)'
+    ];
     try {
       const saved = localStorage.getItem('wis_custom_positions');
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Dynamic merge: Ensure all default positions are present, and any user-created custom ones are preserved
+          const merged = [...defaultPositions];
+          parsed.forEach(pos => {
+            if (!merged.includes(pos)) {
+              merged.push(pos);
+            }
+          });
+          return merged;
+        }
+      }
+      return defaultPositions;
     } catch {
-      return [];
+      return defaultPositions;
     }
   });
 

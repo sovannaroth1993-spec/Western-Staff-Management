@@ -3,10 +3,25 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// 1. Intercept window.localStorage.setItem to sync automatically to server
+// Initialize a robust, virtual in-memory fallback store to bypass localStorage 5MB browser quota limits
+(window as any).__INITIAL_SERVER_DB__ = {};
+
+// 1. Intercept window.localStorage.setItem to sync automatically to server with quota exception safety
 const originalSetItem = window.localStorage.setItem;
 window.localStorage.setItem = function (key, value) {
-  originalSetItem.call(window.localStorage, key, value);
+  // Update virtual in-memory fallback store
+  try {
+    (window as any).__INITIAL_SERVER_DB__[key] = JSON.parse(value);
+  } catch {
+    (window as any).__INITIAL_SERVER_DB__[key] = value;
+  }
+
+  // Write through to localStorage with quota safety
+  try {
+    originalSetItem.call(window.localStorage, key, value);
+  } catch (err) {
+    console.warn(`[Local Storage Cache Quota Exceeded] Failed to cache key "${key}" locally. Keeping it in memory-fallback store and sync with remote database:`, err);
+  }
   
   // Synchronize keys relating to school administration system
   if (
@@ -143,8 +158,15 @@ async function startAppWithHydration() {
 
         // Apply resolution
         if (resolvedValue !== null && resolvedValue !== undefined) {
+          // Store in our virtual fallback database
+          (window as any).__INITIAL_SERVER_DB__[key] = resolvedValue;
+
           const stringified = typeof resolvedValue === 'object' ? JSON.stringify(resolvedValue) : String(resolvedValue);
-          originalSetItem.call(window.localStorage, key, stringified);
+          try {
+            originalSetItem.call(window.localStorage, key, stringified);
+          } catch (err) {
+            console.warn(`[WIS Hydration Cache Quota Exceeded] Key "${key}" failed to cache locally. Retaining in-memory master state:`, err);
+          }
           
           if (source === 'local') {
             console.log(`[WIS Database Sync] Uploading local newer state for: ${key}`);
@@ -160,8 +182,13 @@ async function startAppWithHydration() {
       // Hydrate all other non-tracked keys directly from the server
       for (const [key, val] of Object.entries(serverDb)) {
         if (!syncKeys.includes(key) && val !== null && val !== undefined) {
+          (window as any).__INITIAL_SERVER_DB__[key] = val;
           const stringified = typeof val === 'object' ? JSON.stringify(val) : String(val);
-          originalSetItem.call(window.localStorage, key, stringified);
+          try {
+            originalSetItem.call(window.localStorage, key, stringified);
+          } catch (err) {
+            console.warn(`[WIS Hydration Cache Quota Exceeded] Non-tracked key "${key}" failed to cache locally:`, err);
+          }
         }
       }
     }

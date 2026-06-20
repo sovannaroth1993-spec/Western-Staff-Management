@@ -129,6 +129,11 @@ const DEFAULT_ELECTRICITY: ElectricityRecord[] = [
 export default function App() {
   // Language switcher state (loaded from or saved to localStorage)
   const [lang, setLang] = useState<Language>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_lang']) {
+      const dbLang = initialDb['wis_lang'];
+      return (dbLang === 'en' || dbLang === 'kh') ? dbLang : 'kh';
+    }
     try {
       const savedLang = localStorage.getItem('wis_lang');
       return (savedLang === 'en' || savedLang === 'kh') ? savedLang : 'kh';
@@ -155,6 +160,10 @@ export default function App() {
 
   // Authentication & Role-based Access States
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_current_user']) {
+      return initialDb['wis_current_user'];
+    }
     try {
       const savedUser = sessionStorage.getItem('wis_current_user') || localStorage.getItem('wis_current_user');
       return savedUser ? JSON.parse(savedUser) : null;
@@ -164,6 +173,10 @@ export default function App() {
   });
 
   const [usersList, setUsersList] = useState<UserAccount[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_users_list']) {
+      return initialDb['wis_users_list'];
+    }
     try {
       const savedUsersList = localStorage.getItem('wis_users_list');
       if (savedUsersList) {
@@ -193,6 +206,10 @@ export default function App() {
   });
 
   const [userRequests, setUserRequests] = useState<UserRequest[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_user_requests']) {
+      return initialDb['wis_user_requests'];
+    }
     try {
       const savedReqs = localStorage.getItem('wis_user_requests');
       if (savedReqs) {
@@ -350,6 +367,10 @@ export default function App() {
 
   // Key Global states representing the workspace data - Hydrated immediately from pre-populated localStorage
   const [staffList, setStaffList] = useState<Staff[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_staff_list']) {
+      return initialDb['wis_staff_list'];
+    }
     try {
       const saved = localStorage.getItem('wis_staff_list');
       return saved ? JSON.parse(saved) : DEFAULT_STAFF;
@@ -359,6 +380,10 @@ export default function App() {
   });
 
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_attendance_records']) {
+      return initialDb['wis_attendance_records'];
+    }
     try {
       const saved = localStorage.getItem('wis_attendance_records');
       return saved ? JSON.parse(saved) : [];
@@ -368,6 +393,10 @@ export default function App() {
   });
 
   const [electricityRecords, setElectricityRecords] = useState<ElectricityRecord[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_electricity_records']) {
+      return initialDb['wis_electricity_records'];
+    }
     try {
       const saved = localStorage.getItem('wis_electricity_records');
       return saved ? JSON.parse(saved) : DEFAULT_ELECTRICITY;
@@ -377,6 +406,10 @@ export default function App() {
   });
 
   const [waterRecords, setWaterRecords] = useState<WaterRecord[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_water_records']) {
+      return initialDb['wis_water_records'];
+    }
     try {
       const saved = localStorage.getItem('wis_water_records');
       return saved ? JSON.parse(saved) : DEFAULT_WATER;
@@ -386,6 +419,10 @@ export default function App() {
   });
 
   const [studentList, setStudentList] = useState<Student[]>(() => {
+    const initialDb = (window as any).__INITIAL_SERVER_DB__;
+    if (initialDb && initialDb['wis_student_list']) {
+      return initialDb['wis_student_list'];
+    }
     try {
       const saved = localStorage.getItem('wis_student_list');
       return saved ? JSON.parse(saved) : DEFAULT_STUDENTS;
