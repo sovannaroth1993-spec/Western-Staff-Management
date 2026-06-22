@@ -273,32 +273,28 @@ export default function AttendanceTracker({
 
   // Handle single attendance toggle
   const handleStatusChange = (staffId: string, status: AttendanceStatus) => {
-    setLocalRecords(prev => {
-      const next = {
-        ...prev,
-        [staffId]: {
-          ...prev[staffId],
-          status
-        }
-      };
-      syncToParentInstant(next);
-      return next;
-    });
+    const next = {
+      ...localRecords,
+      [staffId]: {
+        ...(localRecords[staffId] || { status: 'Present', notes: '' }),
+        status
+      }
+    };
+    setLocalRecords(next);
+    syncToParentInstant(next);
   };
 
   // Handle commentary note changes
   const handleNoteChange = (staffId: string, notes: string) => {
-    setLocalRecords(prev => {
-      const next = {
-        ...prev,
-        [staffId]: {
-          ...prev[staffId],
-          notes
-        }
-      };
-      syncToParentInstant(next);
-      return next;
-    });
+    const next = {
+      ...localRecords,
+      [staffId]: {
+        ...(localRecords[staffId] || { status: 'Present', notes: '' }),
+        notes
+      }
+    };
+    setLocalRecords(next);
+    syncToParentInstant(next);
   };
 
   // Core handler for successful barcode/QR-code decodes

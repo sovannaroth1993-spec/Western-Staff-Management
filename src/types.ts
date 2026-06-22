@@ -507,5 +507,85 @@ export interface MonthlyReport {
   createdBy?: string;
 }
 
+export type FollowupTaskStatus = 'Completed' | 'InProgress' | 'Pending' | 'FollowUp' | 'Cancelled';
+
+export interface FollowupTask {
+  id: string;
+  dateRequest: string;
+  issueRequest: string;
+  issueCategory: string; // e.g., 'Westec', 'Student Insurance', 'Other' (or customizable)
+  location: string;
+  requestedBy: string;
+  pic: string;
+  status: FollowupTaskStatus;
+  followupDate: string;
+  remark: string;
+  createdBy?: string;
+}
+
+export type InsuranceFollowupStatus = 
+  | 'PendingSubmission' 
+  | 'UnderReview' 
+  | 'AdditionalDocRequired' 
+  | 'Approved' 
+  | 'Rejected' 
+  | 'Completed';
+
+export interface InsuranceFollowupRecord {
+  id: string;
+  dateIncident: string;
+  studentName: string;
+  gradeClass: string;
+  incidentDetails: string;
+  hospitalClinic: string;
+  insuranceClaimNo: string;
+  documentsSubmitted: string;
+  status: InsuranceFollowupStatus;
+  remark?: string;
+  createdBy?: string;
+}
+
+export interface Medicine {
+  id: string;
+  photo: string; // JPG / PNG Format or Base64 data-url
+  name: string;
+  category: string; // e.g., Tablet, Capsule, Syrup, etc.
+  strength: string; // e.g., 500mg, 400mg
+  stock: number;
+  purchaseDate: string; // YYYY-MM-DD
+  expiryDate: string; // YYYY-MM-DD
+  location: string; // e.g., Cabinet A, Cabinet B
+  status: 'Active' | 'Inactive';
+  unitPrice?: number; // for "តម្លៃស្តុកសរុប" calculation (e.g., $0.15)
+  reorderPoint?: number; // Predefined limit when stock is critically low
+}
+
+export interface MedicineStockIn {
+  id: string;
+  date: string;
+  medicineId: string;
+  medicineName: string;
+  qtyIn: number;
+  supplier: string;
+  batchNo: string;
+  expiryDate: string;
+  receivedBy: string;
+}
+
+export interface MedicineUsageLog {
+  id: string;
+  date: string;
+  studentName: string;
+  grade: string;
+  medicineId: string;
+  medicineName: string;
+  qtyUsed: number;
+  reason: string;
+  nurse: string;
+}
+
+
+
+
 
 

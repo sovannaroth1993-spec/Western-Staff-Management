@@ -120,11 +120,9 @@ export default function OtherLinksManager({ currentUser }: OtherLinksManagerProp
     }
   });
 
-  const isAdmin = currentUser?.role === 'admin';
   const displayedLinks = React.useMemo(() => {
-    if (isAdmin) return links;
-    return links.filter(l => l.addedBy === currentUser?.username);
-  }, [links, currentUser, isAdmin]);
+    return links;
+  }, [links]);
 
   // Keep state updated in local storage
   useEffect(() => {
@@ -179,7 +177,7 @@ export default function OtherLinksManager({ currentUser }: OtherLinksManagerProp
     setUrl('');
     setCategory('PR-System');
     setDescription('');
-    setAddedBy('LOUNG Veasna (Admin Supervisor)');
+    setAddedBy(currentUser?.fullName || currentUser?.username || 'LOUNG Veasna (Admin Supervisor)');
     setSelectedIcon('link');
     setIsFormOpen(true);
   };

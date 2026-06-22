@@ -27,13 +27,16 @@ import StudentStatistics from './components/StudentStatistics';
 import WesternSchoolInfo from './components/WesternSchoolInfo';
 import { SchoolEventsManager } from './components/SchoolEventsManager';
 import { MonthlyReportManager } from './components/MonthlyReportManager';
+import TaskFollowupManager from './components/TaskFollowupManager';
+import MedicineManager from './components/MedicineManager';
 
 import { Staff, AttendanceRecord, ElectricityRecord, WaterRecord, Student, UserAccount, UserRequest } from './types';
 import { DEFAULT_STAFF } from './data/defaultStaff';
 import { DEFAULT_STUDENTS } from './data/defaultStudents';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
-  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video, Clock, BarChart2, Shield, UserX, FileText
+  HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video, Clock, BarChart2, Shield, UserX, FileText,
+  Monitor, Laptop, Tablet, RefreshCw, Pill
 } from 'lucide-react';
 import LoginScreen from './components/LoginScreen';
 import UserManager from './components/UserManager';
@@ -145,11 +148,11 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal' | 'schoolevents' | 'monthlyreport'>(() => {
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal' | 'schoolevents' | 'monthlyreport' | 'followup' | 'medicine'>(() => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const tabParam = searchParams.get('tab');
-      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal', 'schoolevents', 'monthlyreport'];
+      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal', 'schoolevents', 'monthlyreport', 'followup', 'medicine'];
       if (tabParam && validTabs.includes(tabParam)) {
         return tabParam as any;
       }
@@ -157,6 +160,7 @@ export default function App() {
     return 'dashboard';
   });
   const [pendingReportDate, setPendingReportDate] = useState<string | null>(null);
+  const [viewportMode, setViewportMode] = useState<'monitor' | 'web' | 'tablet' | 'phone'>('monitor');
 
   // Authentication & Role-based Access States
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
@@ -554,7 +558,192 @@ export default function App() {
     );
   }
 
+  const workspaceView = (
+    <div className="flex-grow flex flex-col min-h-0 w-full">
+      {/* Header Area - Completely frozen/sticky on desktop, only visible on Dashboard */}
+      {activeTab === 'dashboard' && (
+        <div className="max-w-full w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 shrink-0 z-10">
+          <Header totalStaff={staffList.length} totalPresentToday={totalPresentToday} lang={lang} />
+        </div>
+      )}
 
+      {/* Scrollable Work Area containing active dynamic views and the brand footer */}
+      <div 
+        ref={workspaceScrollRef}
+        className="flex-grow overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 xl:px-12 mt-2 flex flex-col pr-1 relative z-10"
+      >
+        <main className="min-w-0 w-full flex-grow">
+          <div className="w-full">
+            {activeTab === 'dashboard' && (
+              <DashboardStats 
+                staffList={staffList} 
+                attendanceRecords={attendanceRecords}
+                selectedDate={selectedDate}
+                electricityRecords={electricityRecords}
+                waterRecords={waterRecords}
+              />
+            )}
+
+            {activeTab === 'electricity' && (
+              <ElectricityTracker 
+                electricityRecords={electricityRecords}
+                setElectricityRecords={setElectricityRecords}
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'water' && (
+              <WaterTracker 
+                waterRecords={waterRecords}
+                setWaterRecords={setWaterRecords}
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'khmercalendar' && (
+              <KhmerCalendarManager 
+                onNavigateToDailyReport={(date) => {
+                  setPendingReportDate(date);
+                  setActiveTab('dailyreport');
+                }}
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'fixedassets' && (
+              <FixedAssetManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'insurance' && (
+              <StudentInsuranceManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'admindocs' && (
+              <AdminDocumentationManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'otherlinks' && (
+              <OtherLinksManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'schoolevents' && (
+              <SchoolEventsManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'monthlyreport' && (
+              <MonthlyReportManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'followup' && (
+              <TaskFollowupManager currentUser={currentUser} lang={lang} />
+            )}
+
+            {activeTab === 'medicine' && (
+              <MedicineManager currentUser={currentUser} lang={lang} />
+            )}
+
+            {activeTab === 'staff' && (
+              <StaffManager 
+                staffList={staffList} 
+                setStaffList={setStaffList} 
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'students' && (
+              <StudentManager 
+                studentList={studentList} 
+                setStudentList={setStudentList} 
+                lang={lang}
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'studentstatistics' && (
+              <StudentStatistics />
+            )}
+
+            {activeTab === 'schoolinfo' && (
+              <WesternSchoolInfo />
+            )}
+
+            {activeTab === 'attendance' && (
+              <AttendanceTracker 
+                staffList={staffList}
+                attendanceRecords={attendanceRecords}
+                setAttendanceRecords={setAttendanceRecords}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'telegram' && (
+              <TelegramReporter 
+                staffList={staffList}
+                attendanceRecords={attendanceRecords}
+                selectedDate={selectedDate}
+                electricityRecords={electricityRecords}
+                waterRecords={waterRecords}
+              />
+            )}
+
+            {activeTab === 'cctv' && (
+              <CctvManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'classroomequipment' && (
+              <ClassroomEquipmentManager currentUser={currentUser} />
+            )}
+
+            {activeTab === 'dailyreport' && (
+              <DailyReportManager 
+                initialDate={pendingReportDate}
+                onClearInitialDate={() => setPendingReportDate(null)}
+                currentUser={currentUser}
+              />
+            )}
+
+            {activeTab === 'staff-portal' && (
+              <UserDashboard 
+                currentUser={currentUser!}
+                usersList={usersList}
+                setUsersList={setUsersList}
+                userRequests={userRequests}
+                setUserRequests={setUserRequests}
+                staffList={staffList}
+                onLogout={handleLogout}
+                lang={lang === 'en' ? 'en' : 'kh'}
+              />
+            )}
+
+            {activeTab === 'usermanager' && (
+              <UserManager 
+                usersList={usersList}
+                setUsersList={setUsersList}
+                userRequests={userRequests}
+                setUserRequests={setUserRequests}
+                currentUser={currentUser}
+                lang={lang === 'en' ? 'en' : 'kh'}
+              />
+            )}
+          </div>
+        </main>
+
+        {/* Footer Branding credits */}
+        <footer className="mt-16 text-center border-t border-slate-200 pt-8 max-w-full mx-auto w-full px-6 xl:px-12 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-slate-400 font-semibold gap-4 pb-12 font-sans shrink-0">
+          <div>
+            © {new Date().getFullYear()} {lang === 'en' ? 'Western International School' : 'សាលាវេស្ទើនអន្តរជាតិ'}. {t.footerCopyright}
+          </div>
+          <div className="flex items-center justify-center gap-4 text-slate-500 font-medium font-sans">
+            <span>{t.footerMotto}</span>
+            <span>•</span>
+            <span className="text-emerald-700 font-bold hover:underline cursor-pointer">{t.footerSystem}</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen md:h-screen text-slate-800 flex flex-col md:flex-row font-sans selection:bg-amber-100 selection:text-slate-900 relative md:overflow-hidden bg-slate-50">
@@ -793,6 +982,36 @@ export default function App() {
             </button>
           )}
 
+          {/* Tab 1.13.7: Follow-up Tasks */}
+          {hasPermission('followup') && (
+            <button
+              onClick={() => setActiveTab('followup')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'followup'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <RefreshCw className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+              <span className="flex-1">{t.followup}</span>
+            </button>
+          )}
+
+          {/* Medicine Management (Nurse Room) */}
+          {hasPermission('medicine') && (
+            <button
+              onClick={() => setActiveTab('medicine')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'medicine'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Pill className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+              <span className="flex-1">{t.medicine}</span>
+            </button>
+          )}
+
           {/* Tab 1.14: Other Web Links (Other) */}
           {hasPermission('otherlinks') && (
             <button
@@ -943,196 +1162,187 @@ export default function App() {
       </aside>
 
           {/* Right Column Layout containing the Top info strip, Brand Header, and active workspace views */}
-          <div className="flex-1 flex flex-col min-w-0 pb-12 relative z-10 font-sans">
+          <div className="flex-grow flex flex-col min-w-0 pb-1 z-10 font-sans bg-slate-900/5 relative">
             
-            {/* Upper color accents block */}
-            <div className="bg-slate-900 text-slate-400 py-1 flex items-center justify-between px-6 border-b border-slate-800 shrink-0">
-              <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
-                <Sparkles className="w-4.5 h-4.5 animate-pulse" />
-                <span>{t.topStrip}</span>
+            {/* Upper color accents block with premium viewport switcher */}
+            <div className="bg-slate-950 text-slate-400 py-2.5 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 border-b border-slate-800 shrink-0 gap-3 select-none relative z-20">
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs text-amber-300 font-extrabold">
+                <Sparkles className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
+                <span className="truncate tracking-wide">{t.topStrip}</span>
               </div>
-              <div className="text-[10px] text-slate-400 font-bold tracking-widest hidden sm:block uppercase font-mono">
+              
+              {/* Specialized Interactive Viewport Switcher */}
+              <div className="flex items-center gap-1 bg-slate-900/95 p-1 rounded-xl border border-slate-800 text-xs shadow-inner">
+                <span className="text-[10px] text-slate-500 font-bold uppercase px-2 hidden lg:inline border-r border-slate-800 mr-1 pb-0.5">
+                  {lang === 'kh' ? 'ទម្រង់បន្ទះបង្ហាញ' : 'Layout Mode'}
+                </span>
+                
+                {/* Widescreen Monitor Button */}
+                <button
+                  type="button"
+                  onClick={() => setViewportMode('monitor')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer text-[11px] font-bold ${
+                    viewportMode === 'monitor'
+                      ? 'bg-amber-400 text-slate-950 shadow-md transform scale-[1.03]'
+                      : 'hover:text-slate-100 text-slate-400 hover:bg-slate-800/60'
+                  }`}
+                  title={lang === 'kh' ? 'អេក្រង់ធំ (Monitor)' : 'Widescreen Monitor'}
+                >
+                  <Monitor className="w-3.5 h-3.5 shrink-0" />
+                  <span>{lang === 'kh' ? 'អេក្រង់ធំ' : 'Monitor'}</span>
+                </button>
+
+                {/* Laptop / Web Button */}
+                <button
+                  type="button"
+                  onClick={() => setViewportMode('web')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer text-[11px] font-bold ${
+                    viewportMode === 'web'
+                      ? 'bg-amber-400 text-slate-950 shadow-md transform scale-[1.03]'
+                      : 'hover:text-slate-100 text-slate-400 hover:bg-slate-800/60'
+                  }`}
+                  title={lang === 'kh' ? 'កុំព្យូទ័រយួរដៃ (Desktop Web)' : 'Web Layout'}
+                >
+                  <Laptop className="w-3.5 h-3.5 shrink-0" />
+                  <span>{lang === 'kh' ? 'កុំព្យូទ័រ' : 'Web'}</span>
+                </button>
+
+                {/* Tablet Button */}
+                <button
+                  type="button"
+                  onClick={() => setViewportMode('tablet')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer text-[11px] font-bold ${
+                    viewportMode === 'tablet'
+                      ? 'bg-amber-400 text-slate-950 shadow-md transform scale-[1.03]'
+                      : 'hover:text-slate-100 text-slate-400 hover:bg-slate-800/60'
+                  }`}
+                  title={lang === 'kh' ? 'ថេប្លេត (Tablet Pro)' : 'iPad Tablet'}
+                >
+                  <Tablet className="w-3.5 h-3.5 shrink-0" />
+                  <span>{lang === 'kh' ? 'ថេប្លេត' : 'Tablet'}</span>
+                </button>
+
+                {/* Phone Button */}
+                <button
+                  type="button"
+                  onClick={() => setViewportMode('phone')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer text-[11px] font-bold ${
+                    viewportMode === 'phone'
+                      ? 'bg-amber-400 text-slate-950 shadow-md transform scale-[1.03]'
+                      : 'hover:text-slate-100 text-slate-400 hover:bg-slate-800/60'
+                  }`}
+                  title={lang === 'kh' ? 'ទូរស័ព្ទ (Smart Phone)' : 'Mobile Phone'}
+                >
+                  <Smartphone className="w-3.5 h-3.5 shrink-0" />
+                  <span>{lang === 'kh' ? 'ទូរស័ព្ទ' : 'Phone'}</span>
+                </button>
+              </div>
+
+              <div className="text-[10px] text-slate-500 font-bold tracking-widest hidden xl:block uppercase font-mono">
                 {t.versionLabel}
               </div>
             </div>
 
-            {/* Header Area - Completely frozen/sticky on desktop, only visible on Dashboard */}
-            {activeTab === 'dashboard' && (
-              <div className="max-w-full w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 shrink-0 z-10">
-                <Header totalStaff={staffList.length} totalPresentToday={totalPresentToday} lang={lang} />
-              </div>
-            )}
+            {/* Inner viewport container - dynamically styled according to layout state selection */}
+            <div className={`flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-900/5 transition-all duration-300 relative ${
+              viewportMode !== 'monitor' ? 'p-4 sm:p-6 md:p-8 overflow-y-auto bg-slate-900/10' : ''
+            }`}>
+              
+              {/* Case 1: Standard Full screen Monitor layout */}
+              {viewportMode === 'monitor' && workspaceView}
 
-            {/* Scrollable Work Area containing active dynamic views and the brand footer */}
-            <div 
-              ref={workspaceScrollRef}
-              className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 xl:px-12 mt-2 flex flex-col pr-1 relative z-10"
-            >
-              <main className="min-w-0 w-full flex-grow">
-                <div className="w-full">
-              {activeTab === 'dashboard' && (
-                <DashboardStats 
-                  staffList={staffList} 
-                  attendanceRecords={attendanceRecords}
-                  selectedDate={selectedDate}
-                  electricityRecords={electricityRecords}
-                  waterRecords={waterRecords}
-                />
+              {/* Case 2: Web / Laptop simulated browser window mockup frame */}
+              {viewportMode === 'web' && (
+                <div className="max-w-[1240px] w-full mx-auto bg-white border border-slate-200 shadow-2xl rounded-2xl flex flex-col h-full min-h-[600px] overflow-hidden transition-all duration-300">
+                  {/* Browser simulated navigation chrome */}
+                  <div className="bg-slate-100 border-b border-slate-250/70 px-4 py-2.5 flex items-center justify-between text-xs text-slate-550 rounded-t-xl select-none shrink-0 font-sans">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full bg-rose-400 inline-block shadow-xs" />
+                      <span className="w-3 h-3 rounded-full bg-amber-400 inline-block shadow-xs" />
+                      <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block shadow-xs" />
+                    </div>
+                    {/* Simulated address bar */}
+                    <div className="bg-white border border-slate-250 px-4 py-0.5 rounded-lg text-[11px] font-mono w-2/3 max-w-[500px] h-7 flex items-center justify-between text-slate-500 shadow-xs">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <span className="text-emerald-600 text-xs shadow-2xs">🔒</span>
+                        <span className="text-[10.5px]">secured-admin.western.edu.kh/{activeTab}</span>
+                      </span>
+                      <button 
+                        type="button"
+                        onClick={() => window.location.reload()} 
+                        className="hover:text-slate-900 hover:bg-slate-100 p-0.5 rounded cursor-pointer transition duration-150"
+                        title="Refresh"
+                      >
+                        🔄
+                      </button>
+                    </div>
+                    <div className="text-[9px] font-extrabold text-emerald-600 font-mono">
+                      SECURE WEB
+                    </div>
+                  </div>
+                  {/* Web viewport body */}
+                  <div className="flex-1 flex flex-col min-h-0 bg-slate-50 overflow-hidden relative">
+                    {workspaceView}
+                  </div>
+                </div>
               )}
 
-              {activeTab === 'electricity' && (
-                <ElectricityTracker 
-                  electricityRecords={electricityRecords}
-                  setElectricityRecords={setElectricityRecords}
-                  currentUser={currentUser}
-                />
+              {/* Case 3: Tablet iPad simulated frame with camera bezel */}
+              {viewportMode === 'tablet' && (
+                <div className="max-w-[768px] w-full mx-auto my-auto bg-white border-[14px] border-slate-950 rounded-[38px] shadow-2xl overflow-hidden ring-4 ring-slate-800/15 flex flex-col h-[880px] min-h-0 shrink-0 transition-all duration-300">
+                  {/* Simulated iOS iPad status bar */}
+                  <div className="bg-slate-950 text-slate-400 text-[10.5px] px-6 py-2 flex items-center justify-between font-mono shrink-0 select-none border-b border-slate-900">
+                    <span className="font-extrabold text-slate-300">Western International School (Tablet preview)</span>
+                    <div className="flex items-center gap-3">
+                      <span>📶 Wi-Fi 6</span>
+                      <span>🔋 99%</span>
+                      <span className="font-bold text-slate-100">09:41 AM</span>
+                    </div>
+                  </div>
+                  {/* iPad scroll frame contents */}
+                  <div className="flex-1 flex flex-col min-h-0 bg-slate-50 overflow-hidden relative">
+                    {workspaceView}
+                  </div>
+                  {/* Bottom micro-speaker slot indicator line */}
+                  <div className="bg-slate-950 py-1 flex items-center justify-center shrink-0">
+                    <div className="w-24 h-1 bg-slate-800 rounded-full" />
+                  </div>
+                </div>
               )}
 
-              {activeTab === 'water' && (
-                <WaterTracker 
-                  waterRecords={waterRecords}
-                  setWaterRecords={setWaterRecords}
-                  currentUser={currentUser}
-                />
+              {/* Case 4: Smart phone Portrait mockup frame with Dynamic Island and indicator notch */}
+              {viewportMode === 'phone' && (
+                <div className="max-w-[390px] w-full mx-auto my-auto bg-white border-[14px] border-slate-950 rounded-[48px] shadow-2xl overflow-hidden ring-4 ring-slate-800/15 flex flex-col h-[740px] min-h-0 shrink-0 relative transition-all duration-300 select-none">
+                  {/* Simulated top camera slot (Dynamic Island Notch) */}
+                  <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-5.5 bg-slate-950 rounded-full z-50 flex items-center justify-between px-4 select-none shrink-0 shadow-inner">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-850" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-850" />
+                  </div>
+
+                  {/* simulated Smartphone Header and battery status bar */}
+                  <div className="bg-slate-950 text-slate-400 text-[9.5px] px-6 pt-3.5 pb-1 flex items-center justify-between font-mono shrink-0 select-none z-40 border-b border-slate-900">
+                    <span className="font-bold text-slate-205">09:41</span>
+                    <div className="flex items-center gap-1.5">
+                      <span>📶 5G</span>
+                      <span>🔋 100%</span>
+                    </div>
+                  </div>
+
+                  {/* internal smartphone content sandbox with enabled viewport scrolling */}
+                  <div className="flex-1 flex flex-col min-h-0 bg-slate-50 overflow-hidden relative">
+                    {workspaceView}
+                  </div>
+
+                  {/* Smartphone Home Indicator bar */}
+                  <div className="bg-slate-950 py-1.5 flex items-center justify-center shrink-0 select-none z-40">
+                    <div className="w-28 h-1.2 bg-slate-800 rounded-full" />
+                  </div>
+                </div>
               )}
 
-              {activeTab === 'khmercalendar' && (
-                <KhmerCalendarManager 
-                  onNavigateToDailyReport={(date) => {
-                    setPendingReportDate(date);
-                    setActiveTab('dailyreport');
-                  }}
-                  currentUser={currentUser}
-                />
-              )}
-
-              {activeTab === 'fixedassets' && (
-                <FixedAssetManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'insurance' && (
-                <StudentInsuranceManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'admindocs' && (
-                <AdminDocumentationManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'otherlinks' && (
-                <OtherLinksManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'schoolevents' && (
-                <SchoolEventsManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'monthlyreport' && (
-                <MonthlyReportManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'staff' && (
-                <StaffManager 
-                  staffList={staffList} 
-                  setStaffList={setStaffList} 
-                  currentUser={currentUser}
-                />
-              )}
-
-              {activeTab === 'students' && (
-                <StudentManager 
-                  studentList={studentList} 
-                  setStudentList={setStudentList} 
-                  lang={lang}
-                  currentUser={currentUser}
-                />
-              )}
-
-              {activeTab === 'studentstatistics' && (
-                <StudentStatistics />
-              )}
-
-              {activeTab === 'schoolinfo' && (
-                <WesternSchoolInfo />
-              )}
-
-              {activeTab === 'attendance' && (
-                <AttendanceTracker 
-                  staffList={staffList}
-                  attendanceRecords={attendanceRecords}
-                  setAttendanceRecords={setAttendanceRecords}
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
-                  currentUser={currentUser}
-                />
-              )}
-
-              {activeTab === 'telegram' && (
-                <TelegramReporter 
-                  staffList={staffList}
-                  attendanceRecords={attendanceRecords}
-                  selectedDate={selectedDate}
-                  electricityRecords={electricityRecords}
-                  waterRecords={waterRecords}
-                />
-              )}
-
-              {activeTab === 'cctv' && (
-                <CctvManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'classroomequipment' && (
-                <ClassroomEquipmentManager currentUser={currentUser} />
-              )}
-
-              {activeTab === 'dailyreport' && (
-                <DailyReportManager 
-                  initialDate={pendingReportDate}
-                  onClearInitialDate={() => setPendingReportDate(null)}
-                  currentUser={currentUser}
-                />
-              )}
-
-              {activeTab === 'staff-portal' && (
-                <UserDashboard 
-                  currentUser={currentUser!}
-                  usersList={usersList}
-                  setUsersList={setUsersList}
-                  userRequests={userRequests}
-                  setUserRequests={setUserRequests}
-                  staffList={staffList}
-                  onLogout={handleLogout}
-                  lang={lang === 'en' ? 'en' : 'kh'}
-                />
-              )}
-
-              {activeTab === 'usermanager' && (
-                <UserManager 
-                  usersList={usersList}
-                  setUsersList={setUsersList}
-                  userRequests={userRequests}
-                  setUserRequests={setUserRequests}
-                  currentUser={currentUser}
-                  lang={lang === 'en' ? 'en' : 'kh'}
-                />
-              )}
             </div>
-          </main>
 
-          {/* Footer Branding credits */}
-          <footer className="mt-16 text-center border-t border-slate-200 pt-8 max-w-full mx-auto w-full px-6 xl:px-12 flex flex-col md:flex-row md:items-center md:justify-between text-xs text-slate-400 font-semibold gap-4 pb-12 font-sans">
-            <div>
-              © {new Date().getFullYear()} {lang === 'en' ? 'Western International School' : 'សាលាវេស្ទើនអន្តរជាតិ'}. {t.footerCopyright}
-            </div>
-            <div className="flex items-center justify-center gap-4 text-slate-500 font-medium">
-              <span>{t.footerMotto}</span>
-              <span>•</span>
-              <span className="text-emerald-700 font-bold hover:underline cursor-pointer">{t.footerSystem}</span>
-            </div>
-          </footer>
-
-        </div>
-
-      </div>
+          </div>
 
     </div>
   );

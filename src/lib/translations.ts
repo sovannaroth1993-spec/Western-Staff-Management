@@ -24,6 +24,8 @@ export const translations = {
     staffPortal: "បណ្តាញព័ត៌មានបុគ្គលិក (Staff Portal)",
     schoolEvents: "ផែនការសកម្មភាពសាលាប្រចាំឆ្នាំ (Annual School Events)",
     monthlyReport: "របាយការណ៍សង្ខេបប្រចាំខែ (Monthly Report)",
+    followup: "Follow-up ការងារ (Task Follow-up)",
+    medicine: "គ្រប់គ្រងថ្នាំពេទ្យ (Medicine Management)",
     
     // Header
     schoolName: "សាលាវេស្ទើនអន្តរជាតិ",
@@ -72,6 +74,8 @@ export const translations = {
     staffPortal: "Staff Portal (បណ្តាញព័ត៌មានបុគ្គលិក)",
     schoolEvents: "Annual School Events Plan (ផែនការសកម្មភាពសាលា)",
     monthlyReport: "Monthly Report (របាយការណ៍សង្ខេបប្រចាំខែ)",
+    followup: "Follow-up Tasks (Follow-up ការងារ)",
+    medicine: "Medicine Inventory & Logs (គ្រប់គ្រងថ្នាំពេទ្យ)",
     
     // Header
     schoolName: "Western International School",

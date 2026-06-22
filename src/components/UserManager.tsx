@@ -46,6 +46,7 @@ export const AVAILABLE_PERMISSIONS = [
   { key: 'telegram', labelKh: 'ប្រព័ន្ធ Forward ទៅ Telegram', labelEn: 'Telegram Alert' },
   { key: 'schoolevents', labelKh: 'ផែនការសកម្មភាពសាលា (School Events)', labelEn: 'School Annual Events' },
   { key: 'monthlyreport', labelKh: 'របាយការណ៍សង្ខេបប្រចាំខែ (Monthly Report)', labelEn: 'Monthly Reports' },
+  { key: 'followup', labelKh: 'តារាង Follow-up ការងារ (Task Follow-up)', labelEn: 'Task Follow-up Tracker' },
   { key: 'usermanager', labelKh: 'គ្រប់គ្រងអ្នកប្រើប្រាស់ (User manager)', labelEn: 'User Manager' },
 ];
 

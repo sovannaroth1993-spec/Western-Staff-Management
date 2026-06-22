@@ -21,7 +21,8 @@ import {
   Layers,
   Award,
   Hash,
-  Bookmark
+  Bookmark,
+  AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -83,7 +84,21 @@ export default function StudentStatistics() {
 
   // ASCII memo & printer container state
   const [showTextReport, setShowTextReport] = useState(false);
-  const [showStamp, setShowStamp] = useState(true);
+
+  // Custom modal states for Delete and Reset confirmations to support iframe sandboxes securely
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean;
+    targetId: string;
+    targetName: string;
+  }>({
+    isOpen: false,
+    targetId: '',
+    targetName: ''
+  });
+
+  const [resetConfirmModal, setResetConfirmModal] = useState({
+    isOpen: false
+  });
 
   // Save statistics to localStorage
   useEffect(() => {
@@ -148,9 +163,17 @@ export default function StudentStatistics() {
 
   // Delete grade
   const deleteGrade = (id: string, name: string) => {
-    if (window.confirm(`តើអ្នកពិតជាចង់លុបចោលទិន្នន័យថ្នាក់ "${name}" មែនទេ?`)) {
-      setStats(prev => prev.filter(item => item.id !== id));
-    }
+    setDeleteConfirmModal({
+      isOpen: true,
+      targetId: id,
+      targetName: name
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    const { targetId } = deleteConfirmModal;
+    setStats(prev => prev.filter(item => item.id !== targetId));
+    setDeleteConfirmModal({ isOpen: false, targetId: '', targetName: '' });
   };
 
   // Add new grade entry
@@ -183,12 +206,15 @@ export default function StudentStatistics() {
 
   // Reset to original defaults
   const resetStats = () => {
-    if (window.confirm('តើអ្នកចង់កំណត់ការគណនាស្ថិតិឡើងវិញទៅតាមលំនាំដើមមែនទេ? (Reset to default statistics)')) {
-      setStats(DEFAULT_GRADE_STATS);
-      setAcademicYear('2025-2026');
-      setTempYear('2025-2026');
-      localStorage.setItem('wis_student_statistics_academic_year', '2025-2026');
-    }
+    setResetConfirmModal({ isOpen: true });
+  };
+
+  const handleConfirmReset = () => {
+    setStats(DEFAULT_GRADE_STATS);
+    setAcademicYear('2025-2026');
+    setTempYear('2025-2026');
+    localStorage.setItem('wis_student_statistics_academic_year', '2025-2026');
+    setResetConfirmModal({ isOpen: false });
   };
 
   // Generate ASCII Plaintext representation exactly matching user specification with classrooms info
@@ -931,18 +957,6 @@ export default function StudentStatistics() {
                 </div>
                 
                 <div className="flex items-center gap-1.5 text-xs font-black">
-                  {/* Toggle Official Stamp Check */}
-                  <label className="flex items-center gap-1.5 text-[10px] text-slate-500 bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg cursor-pointer hover:bg-slate-50 select-none">
-                    <input 
-                      id="official-stamp-checkbox"
-                      type="checkbox" 
-                      checked={showStamp} 
-                      onChange={(e) => setShowStamp(e.target.checked)}
-                      className="accent-[#073B3A]"
-                    />
-                    <span>សញ្ញាត្រាផ្លូវការ (Show Stamp)</span>
-                  </label>
-
                   <button
                     id="copy-text-report-btn"
                     onClick={handleCopyText}
@@ -1024,7 +1038,7 @@ export default function StudentStatistics() {
                     {/* Report Specific Title and Memo description */}
                     <div className="text-center space-y-1.5 my-5 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-3xs select-none">
                       <h1 className="text-[12px] sm:text-[13px] font-black text-slate-900 font-moul tracking-wide leading-relaxed">
-                        សេចក្តីរាយការណ៍ព័ត៌មានស្ថិតិសិស្សានុសិស្សសរុស (OFFICIAL REGISTER CENSUS)
+                        សេចក្តីរាយការណ៍ព័ត៌មានស្ថិតិសិស្សានុសិស្សសរុប (OFFICIAL REGISTER CENSUS)
                       </h1>
                       <div className="text-[9.5px] text-[#073B3A] font-bold font-sans flex items-center justify-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-[#073B3A]" />
@@ -1053,44 +1067,124 @@ export default function StudentStatistics() {
                     </div>
                   </div>
 
-                  {/* Stamp Container & signatures rendered over the paper sheet dynamically */}
-                  <div className="relative mt-8 pt-6 border-t border-slate-250 grid grid-cols-2 gap-8 text-center text-[10px] select-none">
-                    
-                    {/* Red Stamp Seal layered on top of the Approved sign */}
-                    {showStamp && (
-                      <div className="absolute right-12 bottom-2 w-28 h-28 border-4 border-double border-rose-600 rounded-full flex flex-col items-center justify-center text-center opacity-85 select-none pointer-events-none rotate-12 shadow-[inset_0_0_8px_rgba(225,29,72,0.1)] z-20">
-                        <div className="text-[7px] font-black text-rose-605 tracking-widest uppercase mb-0.5">WESTERN INT. SCHOOL</div>
-                        <div className="border-t border-b border-rose-600/60 py-0.5 px-2 font-moul text-[6.5px] text-rose-650 font-normal">បានពិនិត្យ & យល់ព្រម</div>
-                        <div className="text-[7.5px] font-black text-rose-600 tracking-wider mt-0.5">OFFICIAL APPROVED</div>
-                        <div className="text-[5.5px] font-mono text-rose-600 mt-0.5 opacity-70 font-bold">DATE: {new Date().toISOString().split('T')[0]}</div>
-                      </div>
-                    )}
-
-                    {/* Prepared Person Sign */}
-                    <div className="space-y-1">
-                      <p className="font-extrabold text-slate-500 text-[9px] uppercase tracking-wide">អ្នកចងក្រងស្ថិតិ / COMPILED BY</p>
-                      <div className="h-10 flex items-end justify-center font-nitean text-xs text-indigo-700 italic select-none pb-0.5">
-                        Veasna
-                      </div>
-                      <p className="font-moul text-[8.5px] text-slate-800">ឡុង វាសនា</p>
-                      <p className="text-[8.5px] text-slate-400">អ្នកគ្រប់គ្រងការិយាល័យរដ្ឋបាល • WIS Chamkar Doung</p>
-                    </div>
-
-                    {/* Approved Sign */}
-                    <div className="space-y-1">
-                      <p className="font-extrabold text-slate-500 text-[9px] uppercase tracking-wide">ប្រធានការិយាល័យសិក្សា / DIRECTORY ENDORSEMENT</p>
-                      <div className="h-10 flex items-center justify-center font-mono text-xs text-slate-300 select-none italic">
-                        (ហត្ថលេខា និងសញ្ញា)
-                      </div>
-                      <p className="font-moul text-[8.5px] text-slate-800">នាយកផ្នែកអប់រំ និងចុះឈ្មោះ</p>
-                      <p className="text-[8.5px] text-slate-400">ក្រុមប្រឹក្សាភិបាលសាលា • Board of Western Directors</p>
-                    </div>
-
-                  </div>
-
                 </div>
               </div>
 
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirmModal.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-slate-200 shadow-2xl rounded-3xl w-full max-w-md overflow-hidden relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Alert Header */}
+              <div className="bg-rose-50 p-5 border-b border-rose-100 flex items-center gap-3 select-none">
+                <div className="p-2.5 bg-rose-600 text-white rounded-2xl shadow-inner shrink-0">
+                  <AlertTriangle className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-moul text-[10px] sm:text-[11px] text-rose-700 leading-normal">
+                    លុបទិន្នន័យថ្នាក់សិក្សា (Delete Grade Level)
+                  </h3>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-sans mt-0.5">
+                    This action is permanent and cannot be undone
+                  </p>
+                </div>
+              </div>
+
+              {/* Message Body */}
+              <div className="p-6 space-y-3">
+                <p className="text-xs text-slate-650 leading-relaxed font-semibold">
+                  តើលោកអ្នកពិតជាចង់លុបចោលទិន្នន័យស្ថិតិថ្នាក់ <span className="text-rose-600 font-black">«{deleteConfirmModal.targetName}»</span> នេះចេញពីប្រព័ន្ធមែនទេ?
+                </p>
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] text-slate-450 font-bold uppercase tracking-wide select-none">
+                  ⚠️ ព័ត៌មានបន្ថែម៖ នឹងមិនអាចទាញយកទិន្នន័យមកវិញបានឡើយ ក្រោយពេលលុបចោល។
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="bg-slate-50 px-6 py-4 border-t border-slate-150 flex items-center justify-end gap-2 text-xs font-black">
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmModal({ isOpen: false, targetId: '', targetName: '' })}
+                  className="px-4 py-2 hover:bg-slate-150 text-slate-550 border border-slate-205 bg-white rounded-xl cursor-pointer transition active:scale-95"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl cursor-pointer transition active:scale-95 shadow-md shadow-rose-700/20 flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>បាទ/ចាស លុបចេញ (Delete)</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Reset Confirmation Modal */}
+      <AnimatePresence>
+        {resetConfirmModal.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white border border-slate-200 shadow-2xl rounded-3xl w-full max-w-md overflow-hidden relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Alert Header */}
+              <div className="bg-amber-50 p-5 border-b border-amber-100 flex items-center gap-3 select-none">
+                <div className="p-2.5 bg-amber-500 text-slate-900 rounded-2xl shadow-inner shrink-0">
+                  <RotateCcw className="w-5 h-5 rotate-12" />
+                </div>
+                <div>
+                  <h3 className="font-moul text-[10px] sm:text-[11px] text-amber-800 leading-normal">
+                    កំណត់ឡើងវិញនូវស្ថិតិ (Reset statistics)
+                  </h3>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-sans mt-0.5">
+                    Reset all counts back to default school baseline values
+                  </p>
+                </div>
+              </div>
+
+              {/* Message Body */}
+              <div className="p-6 space-y-3">
+                <p className="text-xs text-slate-650 leading-relaxed font-semibold">
+                  តើលោកអ្នកពិតជាចង់កំណត់ឡើងវិញនូវស្ថិតិសិស្សានុសិស្សទាំងអស់ ទៅជាទិន្នន័យលំនាំដើមរបស់សាលាវិញមែនទេ? រាល់ការផ្លាស់ប្តូរចុងក្រោយនឹងត្រូវបាត់បង់។
+                </p>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="bg-slate-50 px-6 py-4 border-t border-slate-150 flex items-center justify-end gap-2 text-xs font-black">
+                <button
+                  type="button"
+                  onClick={() => setResetConfirmModal({ isOpen: false })}
+                  className="px-4 py-2 hover:bg-slate-150 text-slate-550 border border-slate-205 bg-white rounded-xl cursor-pointer transition active:scale-95"
+                >
+                  បោះបង់ (Cancel)
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmReset}
+                  className="px-4 py-2 bg-[#073B3A] hover:bg-[#0c5352] text-white rounded-xl cursor-pointer transition active:scale-95 shadow-md shadow-emerald-700/20 flex items-center gap-1.5"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>បាទ/ចាស កំណត់ឡើងវិញ (Reset)</span>
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
