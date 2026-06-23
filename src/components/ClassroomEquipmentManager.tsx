@@ -9,9 +9,17 @@ import {
   School, Layers, Laptop, Tv, Wind, Volume2, HardDrive, 
   Trash2, Plus, Edit3, Save, X, Search, ChevronRight, Check,
   PlusCircle, MinusCircle, FileSpreadsheet, Settings, Info,
-  Wrench, Calendar, AlertTriangle, CheckCircle, Clock, Camera, RefreshCw
+  Wrench, Calendar, AlertTriangle, CheckCircle, Clock, Camera, RefreshCw,
+  Database, Shield, Upload, Download, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { 
+  initAuth, 
+  googleSignIn, 
+  googleSignOut, 
+  checkSpreadsheetExists, 
+  syncClassroomEquipmentToSpreadsheet 
+} from '../utils/googleSheetsHelper';
 
 // Equipment counts structure for a room
 export interface EquipmentQuantities {
@@ -322,6 +330,161 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
     }
   }, [rooms]);
 
+  // Google Sheets Integration State
+  const [googleUser, setGoogleUser] = useState<any>(null);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  const [spreadsheetId, setSpreadsheetId] = useState<string | null>(() => {
+    return localStorage.getItem('wis_google_spreadsheet_id');
+  });
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState<string | null>(() => {
+    return localStorage.getItem('wis_google_spreadsheet_url');
+  });
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => {
+    return localStorage.getItem('wis_google_spreadsheet_last_sync_classroom');
+  });
+
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncSuccess, setSyncSuccess] = useState(false);
+  const [customSpreadsheetUrlInput, setCustomSpreadsheetUrlInput] = useState('');
+  const [showSheetSetup, setShowSheetSetup] = useState(false);
+
+  // Initialize Google Auth Connection
+  useEffect(() => {
+    const unsub = initAuth(
+      (user, token) => {
+        setGoogleUser(user);
+        setGoogleToken(token);
+        setAuthInitialized(true);
+      },
+      () => {
+        setGoogleUser(null);
+        setGoogleToken(null);
+        setAuthInitialized(true);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  // Validate Spreadsheet if it exists
+  useEffect(() => {
+    if (googleToken && spreadsheetId) {
+      checkSpreadsheetExists(googleToken, spreadsheetId).then((exists) => {
+        if (!exists) {
+          localStorage.removeItem('wis_google_spreadsheet_id');
+          localStorage.removeItem('wis_google_spreadsheet_url');
+          setSpreadsheetId(null);
+          setSpreadsheetUrl(null);
+        }
+      }).catch(() => {});
+    }
+  }, [googleToken, spreadsheetId]);
+
+  const handleGoogleSignIn = async () => {
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const res = await googleSignIn();
+      if (res) {
+        setGoogleUser(res.user);
+        setGoogleToken(res.accessToken);
+        showToast('បានភ្ជាប់គណនី Google ជោគជ័យ!', 'success');
+      }
+    } catch (err: any) {
+      setSyncError(err.message || 'ការតភ្ជាប់គណនី Google បរាជ័យ។');
+      showToast('ការតភ្ជាប់គណនី Google បរាជ័យ', 'error');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleGoogleSignOut = async () => {
+    setIsSyncing(true);
+    try {
+      await googleSignOut();
+      setGoogleUser(null);
+      setGoogleToken(null);
+      showToast('បានចាកចេញពីគណនី Google!', 'info');
+    } catch (err: any) {
+      setSyncError(err.message || 'ការចាកចេញបរាជ័យ។');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleLinkCustomSpreadsheet = () => {
+    if (!customSpreadsheetUrlInput.trim()) {
+      showToast('សូមបញ្ចូលតំណភ្ជាប់ Google Sheets ជាមុនសិន!', 'error');
+      return;
+    }
+    let extractedId = customSpreadsheetUrlInput.trim();
+    const match = customSpreadsheetUrlInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (match && match[1]) {
+      extractedId = match[1];
+    }
+
+    const url = `https://docs.google.com/spreadsheets/d/${extractedId}/edit`;
+    localStorage.setItem('wis_google_spreadsheet_id', extractedId);
+    localStorage.setItem('wis_google_spreadsheet_url', url);
+    setSpreadsheetId(extractedId);
+    setSpreadsheetUrl(url);
+    setCustomSpreadsheetUrlInput('');
+    showToast('បានតភ្ជាប់បន្ទះកិច្ចការគណនី Google Sheets រួចរាល់!', 'success');
+  };
+
+  const handleSyncToSheets = async () => {
+    if (!googleToken) {
+      try {
+        const res = await googleSignIn();
+        if (res) {
+          setGoogleUser(res.user);
+          setGoogleToken(res.accessToken);
+          await performSync(res.accessToken, spreadsheetId);
+        }
+      } catch (err: any) {
+        setSyncError(err.message || 'ការសមកាលកម្មបរាជ័យ។');
+      }
+      return;
+    }
+    await performSync(googleToken, spreadsheetId);
+  };
+
+  const performSync = async (token: string, currentSheetId: string | null) => {
+    setIsSyncing(true);
+    setSyncError(null);
+    setSyncSuccess(false);
+
+    try {
+      let sheetId = currentSheetId;
+      if (!sheetId) {
+        const savedSheetId = localStorage.getItem('wis_google_spreadsheet_id');
+        if (savedSheetId) {
+          sheetId = savedSheetId;
+          setSpreadsheetId(sheetId);
+        } else {
+          throw new Error('សូមមេត្តាបង្កើតបន្ទះកិច្ចការ Master Google Sheet នៅក្នុង Dashboard ជាមុនសិន ឬភ្ជាប់ដោយសរសេរ Link ផ្ទាល់។');
+        }
+      }
+
+      await syncClassroomEquipmentToSpreadsheet(token, sheetId, rooms, equipmentTypes);
+
+      const nowStr = new Date().toLocaleString('km-KH', { dateStyle: 'medium', timeStyle: 'short' });
+      localStorage.setItem('wis_google_spreadsheet_last_sync_classroom', nowStr);
+      setLastSyncedAt(nowStr);
+      setSyncSuccess(true);
+      showToast('សមកាលកម្មទិន្នន័យបន្ទប់រៀនទៅកាន់ Google Sheets រួចរាល់!', 'success');
+      setTimeout(() => setSyncSuccess(false), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setSyncError(err.message || 'សូមពិនិត្យមើលសិទ្ធិតភ្ជាប់ ឬតំណភ្ជាប់ Google Sheets របស់អ្នកឡើងវិញ។');
+      showToast('ការសមកាលកម្មបន្ទប់រៀនបរាជ័យ៖ ' + (err.message || 'Error'), 'error');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // UI state
   const [searchTerm, setSearchTerm] = useState('');
   const [filterFloor, setFilterFloor] = useState('All');
@@ -423,6 +586,129 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
   const [showTelegramSetup, setShowTelegramSetup] = useState(false);
   const [telegramTestStatus, setTelegramTestStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [telegramTestError, setTelegramTestError] = useState('');
+
+  // Master Database Backup & Restore Center State
+  const [showBackupCenter, setShowBackupCenter] = useState(false);
+  const [isBackupExporting, setIsBackupExporting] = useState(false);
+  const [isBackupImporting, setIsBackupImporting] = useState(false);
+  const [backupRestoreError, setBackupRestoreError] = useState<string | null>(null);
+  const [backupRestoreSuccess, setBackupRestoreSuccess] = useState<string | null>(null);
+
+  const handleExportBackup = () => {
+    setIsBackupExporting(true);
+    setBackupRestoreError(null);
+    setBackupRestoreSuccess(null);
+    try {
+      const backupData: Record<string, any> = {};
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key && (key.startsWith('wis_') || key.startsWith('school_') || key.includes('docs_'))) {
+          const valRaw = window.localStorage.getItem(key);
+          if (valRaw) {
+            try {
+              backupData[key] = JSON.parse(valRaw);
+            } catch {
+              backupData[key] = valRaw;
+            }
+          }
+        }
+      }
+
+      // Append specific metadata
+      backupData['__backup_metadata__'] = {
+        exportedAt: new Date().toISOString(),
+        version: '1.0',
+        creator: currentUser?.fullName || 'System Administrator'
+      };
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `wis_school_master_backup_${dateStr}.json`;
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setBackupRestoreSuccess('បាននាំចេញទិន្នន័យបម្រុងទុកដោយជោគជ័យ! សូមរក្សាទុកឯកសារ JSON នេះនៅកន្លែងដែលមានសុវត្ថិភាពបំផុត។');
+      showToast('បាននាំចេញទិន្នន័យបម្រុងទុកដោយជោគជ័យ!', 'success');
+    } catch (err: any) {
+      setBackupRestoreError(err.message || 'ការនាំចេញបរាជ័យ');
+      showToast('ការនាំចេញបរាជ័យ', 'error');
+    } finally {
+      setIsBackupExporting(false);
+    }
+  };
+
+  const handleImportBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsBackupImporting(true);
+    setBackupRestoreError(null);
+    setBackupRestoreSuccess(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        if (!content) {
+          throw new Error('ឯកសារគ្មានទិន្នន័យ ឬខូចខាត។');
+        }
+
+        const parsed = JSON.parse(content);
+        if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+          throw new Error('ទម្រង់ឯកសារមិនត្រឹមត្រូវឡើយ។ ត្រូវតែជាឯកសារគណនីបម្រុងទុក JSON របស់ប្រព័ន្ធព័ត៌មានវិទ្យារបស់សាលា។');
+        }
+
+        const keys = Object.keys(parsed);
+        const validKeys = keys.filter(k => k.startsWith('wis_') || k.startsWith('school_') || k.includes('docs_'));
+        if (validKeys.length === 0) {
+          throw new Error('ឯកសារនេះមិនមានផ្ទុកទិន្នន័យគ្រប់គ្រងសាលាផ្លូវការឡើយ។');
+        }
+
+        if (!confirm(`តើអ្នកពិតជាចង់បញ្ចូលទិន្នន័យពីឯកសារបម្រុងទុកនេះមែនទេ? វានឹងជំនួសរាល់ទិន្នន័យចាស់ៗទាំងអស់នៅលើឧបករណ៍នេះ និងនៅលើ Server ម៉ាស៊ីនបម្រើភ្លាមៗ (ទិន្នន័យសរុបមានចំនួន ${validKeys.length} តារាង)។`)) {
+          setIsBackupImporting(false);
+          if (e.target) e.target.value = '';
+          return;
+        }
+
+        // Import the validated keys
+        for (const key of validKeys) {
+          const val = parsed[key];
+          const stringified = typeof val === 'object' ? JSON.stringify(val) : String(val);
+          localStorage.setItem(key, stringified);
+        }
+
+        setBackupRestoreSuccess('បានស្ដារឯកសារបម្រុងទុក និងសមកាលកម្មជាមួយម៉ាស៊ីនមេ រួចរាល់ដោយជោគជ័យ! ទំព័ររត់ឡើងវិញក្នុងមួយភ្លែត...');
+        showToast('បានស្តារទិន្នន័យរូបវន្តជោគជ័យ!', 'success');
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+
+      } catch (err: any) {
+        console.error(err);
+        setBackupRestoreError(err.message || 'ការអានឯកសារ ឬការស្តារឡើងវិញបរាជ័យ។');
+        showToast('ការនាំចូលទិន្នន័យបរាជ័យ', 'error');
+      } finally {
+        setIsBackupImporting(false);
+        if (e.target) e.target.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      setBackupRestoreError('ការអានឯកសារបរាជ័យ។');
+      setIsBackupImporting(false);
+    };
+
+    reader.readAsText(file);
+  };
 
   const handleSaveTelegramState = (token: string, chatId: string, enabled: boolean) => {
     setTelegramBotToken(token);
@@ -1170,6 +1456,382 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
             );
           })}
         </div>
+      </div>
+
+      {/* Google Sheets Inventory Sync Panel */}
+      <div className="mb-6 bg-white border border-slate-200 rounded-3xl p-4.5 shadow-2xs">
+        <div 
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
+          onClick={() => setShowSheetSetup(!showSheetSetup)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-150 shrink-0">
+              <FileSpreadsheet className={`w-5 h-5 shrink-0 ${isSyncing ? 'animate-bounce' : ''}`} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 flex items-center flex-wrap gap-2 leading-relaxed">
+                <span className="font-moul text-[11px] font-normal tracking-wide text-[#073B3A]">📊 សមកាលកម្មទិន្នន័យសម្ភារៈទៅកាន់ Google Sheets</span>
+                <span className="text-[10px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Google Sheets Inventory Sync)</span>
+                {lastSyncedAt && (
+                  <span className="bg-emerald-50 text-emerald-700 text-[9px] font-black px-2.5 py-1.5 rounded-full border border-emerald-250">
+                    សមកាលកម្មចុងក្រោយ៖ {lastSyncedAt}
+                  </span>
+                )}
+              </h4>
+              <p className="text-[11.5px] text-slate-500 font-medium mt-1 leading-relaxed">
+                បម្រុងទុក និងគ្រប់គ្រងទិន្នន័យសម្ភារៈបន្ទប់រៀន និងកំណត់ត្រាថែទាំទាំងអស់ ដោយស្វ័យប្រវត្តលើគណនី Google Drive ផ្ទាល់ខ្លួន <span className="text-slate-400 font-sans">| Backup & sync classroom items real-time to your Google sheets</span>
+              </p>
+            </div>
+          </div>
+          
+          <button
+            type="button"
+            className="text-[10.5px] font-black text-emerald-755 hover:text-emerald-900 bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl transition cursor-pointer shrink-0 self-end sm:self-auto shadow-2xs"
+          >
+            {showSheetSetup ? 'លាក់ការតភ្ជាប់ (Hide Settings)' : 'គ្រប់គ្រងការតភ្ជាប់ (Manage Connection)'}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showSheetSetup && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 pt-4 border-t border-slate-200/60 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5.5 items-start">
+                  
+                  {/* Account Status */}
+                  <div className="md:col-span-5 space-y-3.5">
+                    <h5 className="text-[11.5px] font-bold text-[#0d5c5a] tracking-wider uppercase">
+                      គណនីតភ្ជាប់ Google (Google Auth Connection)
+                    </h5>
+                    
+                    {!googleUser ? (
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+                        <p className="text-[11.5px] text-slate-500 font-semibold leading-relaxed">
+                          មិនទាន់មានការតភ្ជាប់គណនី Google នៅឡើយទេ។ សូមភ្ជាប់គណនីដើម្បីអនុញ្ញាតឱ្យប្រព័ន្ធសរសេរទិន្នន័យចូល។
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleGoogleSignIn}
+                          disabled={isSyncing}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-4 py-2 rounded-xl transition hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          {isSyncing ? 'កំពុងភ្ជាប់...' : 'ភ្ជាប់គណនី Google (Connect Account)'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50/50 border border-slate-200 p-4 rounded-2xl space-y-3.5">
+                        <div className="flex items-center gap-3">
+                          {googleUser.photoURL ? (
+                            <img 
+                              src={googleUser.photoURL} 
+                              alt="Google Profile" 
+                              className="w-10 h-10 rounded-full border-2 border-emerald-400"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
+                              {googleUser.displayName?.charAt(0) || 'G'}
+                            </div>
+                          )}
+                          <div>
+                            <h6 className="text-xs font-black text-slate-800 leading-tight">{googleUser.displayName}</h6>
+                            <p className="text-[10px] text-slate-500 font-mono mt-0.5">{googleUser.email}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={handleGoogleSignOut}
+                            disabled={isSyncing}
+                            className="text-[10.5px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 border border-rose-100 bg-white px-3 py-1.5 rounded-xl cursor-pointer transition disabled:opacity-50"
+                          >
+                            ផ្តាច់ការតភ្ជាប់ (Disconnect)
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Spreadsheet Settings & Actions */}
+                  <div className="md:col-span-7 space-y-3.5">
+                    <h5 className="text-[11.5px] font-bold text-[#0d5c5a] tracking-wider uppercase">
+                      ការសមកាលកម្មបន្ទះកិច្ចការ (Spreadsheet Configuration & Sync)
+                    </h5>
+
+                    {/* Existing Spreadsheet Info or Link Input */}
+                    <div className="bg-slate-50/50 border border-slate-200 p-4 rounded-2xl space-y-4">
+                      {spreadsheetId ? (
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-black text-slate-450 uppercase block">បន្ទះកិច្ចការដែលកំពុងភ្ជាប់ (Connected Sheet)</span>
+                            <div className="flex items-center justify-between gap-2 bg-white border border-slate-200 p-2.5 rounded-xl">
+                              <div className="truncate">
+                                <span className="text-xs font-bold text-slate-800 block truncate">WIS School Management Master Sheet</span>
+                                <span className="text-[9.5px] font-mono text-slate-400">ID: {spreadsheetId}</span>
+                              </div>
+                              <a 
+                                href={spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-[10px] uppercase font-black tracking-wider text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 transition shrink-0"
+                              >
+                                បើកសន្លឹកកិច្ចការ (Open Sheet)
+                              </a>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 flex-wrap pt-1">
+                            <button
+                              type="button"
+                              onClick={handleSyncToSheets}
+                              disabled={isSyncing}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-4.5 py-2.5 rounded-xl transition hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
+                            >
+                              <FileSpreadsheet className="w-4 h-4 shrink-0" />
+                              <span>{isSyncing ? 'កំពុងសមកាលកម្ម...' : 'ធ្វើសមកាលកម្មឥឡូវនេះ (Sync Data)'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm('តើអ្នកពិតជាចង់ផ្តាច់តំណភ្ជាប់សន្លឹកកិច្ចការនេះមែនទេ?')) {
+                                  localStorage.removeItem('wis_google_spreadsheet_id');
+                                  localStorage.removeItem('wis_google_spreadsheet_url');
+                                  setSpreadsheetId(null);
+                                  setSpreadsheetUrl(null);
+                                  showToast('បានផ្តាច់សន្លឹកកិច្ចការ!', 'info');
+                                }
+                              }}
+                              className="text-[10px] font-bold text-slate-500 hover:text-slate-850 hover:bg-slate-100 px-3 py-2 rounded-xl border border-transparent transition cursor-pointer"
+                            >
+                              ប្តូរសន្លឹកកិច្ចការ (Change Sheet)
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3.5">
+                          <div>
+                            <span className="text-xs font-extrabold text-[#073B3A] block">មិនទាន់មានបន្ទះកិច្ចការ Google Sheets ភ្ជាប់ឡើយ</span>
+                            <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
+                              លោកអ្នកអាចប្រើប្រាស់សន្លឹកកិច្ចការ Master ដូចគ្នានៅលើ Dashboard ឬបញ្ចូល Link សន្លឹកកិច្ចការផ្ទាល់ខ្លួនដោយឡែកដើម្បីសមកាលកម្មទិន្នន័យ៖
+                            </p>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const masterId = localStorage.getItem('wis_google_spreadsheet_id');
+                                const masterUrl = localStorage.getItem('wis_google_spreadsheet_url');
+                                if (masterId) {
+                                  setSpreadsheetId(masterId);
+                                  setSpreadsheetUrl(masterUrl);
+                                  showToast('បានតភ្ជាប់ទៅកាន់បន្ទះកិច្ចការ Master ជោគជ័យ!', 'success');
+                                } else {
+                                  showToast('រកមិនឃើញសន្លឹកកិច្ចការ Master ឡើយ។ សូមបង្កើតវានៅលើ Dashboard ឬភ្ជាប់ដោយបញ្ចូល Link ផ្ទាល់! ', 'error');
+                                }
+                              }}
+                              className="bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-bold text-[10.5px] px-3 py-2 rounded-xl transition cursor-pointer"
+                            >
+                              🔗 ប្រើសន្លឹកកិច្ចការ Master របស់សាលា
+                            </button>
+                          </div>
+
+                          <div className="border-t border-slate-200/60 pt-3 space-y-2">
+                            <label className="text-[10px] font-black uppercase text-slate-450 block">តភ្ជាប់ដោយ Link ផ្ទាល់ (Link a Custom Spreadsheet URL)</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={customSpreadsheetUrlInput}
+                                onChange={(e) => setCustomSpreadsheetUrlInput(e.target.value)}
+                                placeholder="https://docs.google.com/spreadsheets/d/your-id..."
+                                className="flex-1 bg-white border border-slate-200 focus:border-[#0d5c5a] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-inner"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleLinkCustomSpreadsheet}
+                                className="bg-[#052C2B] hover:bg-[#073B3A] text-white font-black text-xs px-3.5 py-1.5 rounded-xl cursor-pointer"
+                              >
+                                តភ្ជាប់ (Link)
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {syncError && (
+                        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11px] font-semibold rounded-xl leading-relaxed">
+                          ⚠️ {syncError}
+                        </div>
+                      )}
+
+                      {syncSuccess && (
+                        <div className="p-3 bg-emerald-50 border border-emerald-250 text-emerald-800 text-[11px] font-semibold rounded-xl leading-relaxed">
+                          ✅ សមកាលកម្មបានជោគជ័យឥតខ្ចោះ! បន្ទះកិច្ចការរបស់អ្នក ត្រូវបានបង្កើតសន្លឹកការងារ៖ <b>"សម្ភារៈបន្ទប់រៀន (Classroom Inventory)"</b> និង <b>"កំណត់ត្រាថែទាំសម្ភារៈ (Maintenance Logs)"</b>។
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* 🛡️ Data Security & Master Backup Center */}
+      <div className="mb-6 bg-[#F8FAFC] border border-slate-200 rounded-3xl p-4.5 shadow-2xs">
+        <div 
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
+          onClick={() => setShowBackupCenter(!showBackupCenter)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-sky-50 text-sky-600 rounded-2xl border border-sky-150 shrink-0">
+              <Shield className={`w-5 h-5 shrink-0 ${isBackupImporting ? 'animate-pulse' : ''}`} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 flex items-center flex-wrap gap-2 leading-relaxed">
+                <span className="font-moul text-[11px] font-normal tracking-wide text-[#033B44]">🛡️ មជ្ឈមណ្ឌលធានាសុវត្ថិភាព និង បម្រុងទុកទិន្នន័យស្វ័យប្រវត្តិ</span>
+                <span className="text-[10px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Data Security & Master Backup Center)</span>
+                <span className="bg-sky-100 text-sky-800 text-[9px] font-black px-2.5 py-1.5 rounded-full border border-sky-200">
+                  ម៉ាស៊ីនមេ និង ក្រៅប្រព័ន្ធ (Ready)
+                </span>
+              </h4>
+              <p className="text-[11.5px] text-slate-500 font-medium mt-1 leading-relaxed">
+                ធានាថារាល់ទិន្នន័យគ្រឹះស្ថាន បក្សព័ត៌មាន សម្ភារៈបន្ទប់រៀន និងកំណត់ត្រាទាំងអស់ មិនត្រូវបានបាត់បង់ឡើយ ទោះជាសម្អាត browser ក៏ដោយ <span className="text-slate-400 font-sans">| Direct server-backed storage & offline local database file exports</span>
+              </p>
+            </div>
+          </div>
+          
+          <button
+            type="button"
+            className="text-[10.5px] font-black text-sky-800 hover:text-sky-950 bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl transition cursor-pointer shrink-0 self-end sm:self-auto shadow-2xs"
+          >
+            {showBackupCenter ? 'លាក់ផ្ទាំងគ្រប់គ្រង (Hide Settings)' : 'បើកផ្ទាំងគ្រប់គ្រង (Open Center)'}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showBackupCenter && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 pt-4 border-t border-slate-200/60 space-y-4">
+                
+                {/* Visual Status Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  {/* Status Card 1 */}
+                  <div className="bg-white border border-slate-100 p-4 rounded-2xl flex flex-col justify-between space-y-3.5 shadow-3xs">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg shrink-0 border border-emerald-100">
+                        <Database className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block">សមកាលកម្មម៉ាស៊ីនថតស្វ័យប្រវត្តិ</span>
+                        <span className="text-[10px] text-slate-400 font-sans block uppercase">Auto Real-Time Server Sync</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                      ប្រព័ន្ធរក្សាទុកឆ្លាតវៃ (Database Engine) នឹងដំណើរការថតចម្លងរាល់ការកែប្រែរបស់អ្នកភ្លាមៗទៅកាន់ Cloud Server ថតចម្លង និងរួមបញ្ចូលគ្នាដោយស្វ័យប្រវត្តិ ធានាកុំឱ្យបាត់បង់ទិន្នន័យ។
+                    </p>
+                    <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-black">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></div>
+                      <span>កំពុងភ្ជាប់ការពារ (Active & Syncing)</span>
+                    </div>
+                  </div>
+
+                  {/* Status Card 2 */}
+                  <div className="bg-white border border-slate-100 p-4 rounded-2xl flex flex-col justify-between space-y-3.5 shadow-3xs">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg shrink-0 border border-blue-100">
+                        <Download className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block">ទាញយកទិន្នន័យទុកក្រៅប្រព័ន្ធ</span>
+                        <span className="text-[10px] text-slate-400 font-sans block uppercase">Download Offline Master File</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                      ទាញយកទិន្នន័យសាលាទាំងមូល (កាលវិភាគ វត្តមាន បន្ទប់រៀន បុគ្គលិក សិស្ស...) រក្សាទុកក្នុងឯកសារ JSON តែ១គត់នៅលើ កុំព្យូទ័រផ្ទាល់ខ្លួន ឬ Flash Drive របស់អ្នក។
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleExportBackup}
+                      disabled={isBackupExporting}
+                      className="w-full bg-[#055B68] hover:bg-[#034A54] text-white font-extrabold text-[11px] py-2 rounded-xl transition hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-3xs"
+                    >
+                      <Download className="w-3.5 h-3.5 shrink-0" />
+                      <span>{isBackupExporting ? 'កំពុងនាំចេញ...' : 'ទាញយកទិន្នន័យបម្រុងទុក (Export Backup)'}</span>
+                    </button>
+                  </div>
+
+                  {/* Status Card 3 */}
+                  <div className="bg-white border border-slate-100 p-4 rounded-2xl flex flex-col justify-between space-y-3.5 shadow-3xs">
+                    <div className="flex items-start gap-2.5">
+                      <div className="p-1.5 bg-purple-50 text-purple-600 rounded-lg shrink-0 border border-purple-100">
+                        <Upload className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-800 block">ស្ដារទិន្នន័យពីឯកសារចាស់ឡើងវិញ</span>
+                        <span className="text-[10px] text-slate-400 font-sans block uppercase">Restore All Data Instantly</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                      ជ្រើសរើសឯកសារ Backup (.json) ដែលអ្នកបានរក្សាទុកពីមុន ដើម្បីនាំចូល និងស្ដាររាល់ទិន្នន័យទាំងអស់ត្រឡប់មកដូចដើមវិញភ្លាមៗ លើឧបករណ៍ណាក៏បាន។
+                    </p>
+                    <label className="w-full bg-[#1E293B] hover:bg-[#0F172A] text-white font-extrabold text-[11px] py-2 rounded-xl transition hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-3xs text-center">
+                      <Upload className="w-3.5 h-3.5 shrink-0" />
+                      <span>{isBackupImporting ? 'កំពុងស្ដារ...' : 'ស្ដារទិន្នន័យឡើងវិញ (Restore Backup)'}</span>
+                      <input 
+                        type="file" 
+                        accept=".json" 
+                        onChange={handleImportBackup} 
+                        disabled={isBackupImporting}
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+
+                </div>
+
+                {/* Notifications & Warning Block */}
+                <div className="space-y-3">
+                  {backupRestoreError && (
+                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-[11.5px] font-semibold rounded-xl flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{backupRestoreError}</span>
+                    </div>
+                  )}
+
+                  {backupRestoreSuccess && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11.5px] font-semibold rounded-xl flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{backupRestoreSuccess}</span>
+                    </div>
+                  )}
+
+                  <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-[11px] font-medium leading-relaxed">
+                    <b>💡 បម្រាមសុវត្ថិភាពទិន្នន័យ និងការណែនាំ៖</b> ដើម្បីរក្សាទុកទិន្នន័យឱ្យគ្មានថ្ងៃបាត់បង់ សូមមេត្តាបង្កើតទម្លាប់ទាញយកឯកសារបម្រុងទុក (Export Backup) រក្សាទុកក្នុង Flash Drive ឬ Google Drive ផ្ទាល់ខ្លួនរបស់អ្នក យ៉ាងហោចណាស់ ១សប្ដាហ៍ម្ដង។ ឯកសារ Backup នេះអាចយកមកស្ដារឡើងវិញបានគ្រប់ពេលវេលា និងធានាសុវត្ថិភាព ១០០% ជានិច្ច។
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Telegram Equipment Auto-Report Settings */}

@@ -6,9 +6,20 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Laptop, Monitor, Tv, Camera, Box, Search, PlusCircle, Edit2, Trash2, 
-  X, Check, AlertTriangle, Download, Info, FileText, BarChart3, HardDrive, RefreshCw
+  X, Check, AlertTriangle, Download, Info, FileText, BarChart3, HardDrive, RefreshCw,
+  FileSpreadsheet, Upload, Settings, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { FixedAsset, AssetCategory, AssetStatus, ASSET_CATEGORIES_KM, ASSET_STATUSES_KM, UserAccount } from '../types';
+import { 
+  initAuth, 
+  googleSignIn, 
+  googleSignOut, 
+  checkSpreadsheetExists, 
+  syncFixedAssetsToSpreadsheet 
+} from '../utils/googleSheetsHelper';
+import { motion, AnimatePresence } from 'motion/react';
+
+
 
 // Default mock assets to make the UI look spectacular right out of the box
 const DEFAULT_ASSETS: FixedAsset[] = [
@@ -179,11 +190,167 @@ export default function FixedAssetManager({ currentUser }: FixedAssetManagerProp
     }
   }, []);
 
-  // Helper trigger to save state instantly (รាល់ការបញ្ចូលព័ត៌មានទាំងអស់ត្រូវបានកត់ត្រាជាប់ Auto)
+  // Helper trigger to save state instantly (រាល់ការបញ្ចូលព័ត៌មានទាំងអស់ត្រូវបានកត់ត្រាជាប់ Auto)
   const saveAndSyncState = (updatedAssets: FixedAsset[]) => {
     setAssets(updatedAssets);
     localStorage.setItem('wis_fixed_assets', JSON.stringify(updatedAssets));
   };
+
+  // Google Sheets Integration State
+  const [googleUser, setGoogleUser] = useState<any>(null);
+  const [googleToken, setGoogleToken] = useState<string | null>(null);
+  const [authInitialized, setAuthInitialized] = useState(false);
+
+  const [spreadsheetId, setSpreadsheetId] = useState<string | null>(() => {
+    return localStorage.getItem('wis_google_spreadsheet_id');
+  });
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState<string | null>(() => {
+    return localStorage.getItem('wis_google_spreadsheet_url');
+  });
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => {
+    return localStorage.getItem('wis_google_spreadsheet_last_sync_assets');
+  });
+
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncSuccess, setSyncSuccess] = useState(false);
+  const [customSpreadsheetUrlInput, setCustomSpreadsheetUrlInput] = useState('');
+  const [showSheetSetup, setShowSheetSetup] = useState(false);
+
+  // Initialize Google Auth Connection
+  useEffect(() => {
+    const unsub = initAuth(
+      (user, token) => {
+        setGoogleUser(user);
+        setGoogleToken(token);
+        setAuthInitialized(true);
+      },
+      () => {
+        setGoogleUser(null);
+        setGoogleToken(null);
+        setAuthInitialized(true);
+      }
+    );
+    return () => unsub();
+  }, []);
+
+  // Validate Spreadsheet if it exists
+  useEffect(() => {
+    if (googleToken && spreadsheetId) {
+      checkSpreadsheetExists(googleToken, spreadsheetId).then((exists) => {
+        if (!exists) {
+          localStorage.removeItem('wis_google_spreadsheet_id');
+          localStorage.removeItem('wis_google_spreadsheet_url');
+          setSpreadsheetId(null);
+          setSpreadsheetUrl(null);
+        }
+      }).catch(() => {});
+    }
+  }, [googleToken, spreadsheetId]);
+
+  const handleGoogleSignIn = async () => {
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      const res = await googleSignIn();
+      if (res) {
+        setGoogleUser(res.user);
+        setGoogleToken(res.accessToken);
+        showToastMsg('បានភ្ជាប់គណនី Google ជោគជ័យ!', 'success');
+      }
+    } catch (err: any) {
+      setSyncError(err.message || 'ការតភ្ជាប់គណនី Google បរាជ័យ។');
+      showToastMsg('ការតភ្ជាប់គណនី Google បរាជ័យ', 'danger');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleGoogleSignOut = async () => {
+    setIsSyncing(true);
+    try {
+      await googleSignOut();
+      setGoogleUser(null);
+      setGoogleToken(null);
+      showToastMsg('បានចាកចេញពីគណនី Google!', 'info');
+    } catch (err: any) {
+      setSyncError(err.message || 'ការចាកចេញបរាជ័យ។');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleLinkCustomSpreadsheet = () => {
+    if (!customSpreadsheetUrlInput.trim()) {
+      showToastMsg('សូមបញ្ចូលតំណភ្ជាប់ Google Sheets ជាមុនសិន!', 'danger');
+      return;
+    }
+    let extractedId = customSpreadsheetUrlInput.trim();
+    const match = customSpreadsheetUrlInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (match && match[1]) {
+      extractedId = match[1];
+    }
+
+    const url = `https://docs.google.com/spreadsheets/d/${extractedId}/edit`;
+    localStorage.setItem('wis_google_spreadsheet_id', extractedId);
+    localStorage.setItem('wis_google_spreadsheet_url', url);
+    setSpreadsheetId(extractedId);
+    setSpreadsheetUrl(url);
+    setCustomSpreadsheetUrlInput('');
+    showToastMsg('បានតភ្ជាប់បន្ទះកិច្ចការគណនី Google Sheets រួចរាល់!', 'success');
+  };
+
+  const handleSyncToSheets = async () => {
+    if (!googleToken) {
+      try {
+        const res = await googleSignIn();
+        if (res) {
+          setGoogleUser(res.user);
+          setGoogleToken(res.accessToken);
+          await performSync(res.accessToken, spreadsheetId);
+        }
+      } catch (err: any) {
+        setSyncError(err.message || 'ការសមកាលកម្មបរាជ័យ។');
+      }
+      return;
+    }
+    await performSync(googleToken, spreadsheetId);
+  };
+
+  const performSync = async (token: string, currentSheetId: string | null) => {
+    setIsSyncing(true);
+    setSyncError(null);
+    setSyncSuccess(false);
+
+    try {
+      let sheetId = currentSheetId;
+      if (!sheetId) {
+        const savedSheetId = localStorage.getItem('wis_google_spreadsheet_id');
+        if (savedSheetId) {
+          sheetId = savedSheetId;
+          setSpreadsheetId(sheetId);
+        } else {
+          throw new Error('សូមមេត្តាបង្កើតបន្ទះកិច្ចការ Master Google Sheet នៅក្នុង Dashboard ជាមុនសិន ឬភ្ជាប់ដោយសរសេរ Link ផ្ទាល់។');
+        }
+      }
+
+      await syncFixedAssetsToSpreadsheet(token, sheetId, assets);
+
+      const nowStr = new Date().toLocaleString('km-KH', { dateStyle: 'medium', timeStyle: 'short' });
+      localStorage.setItem('wis_google_spreadsheet_last_sync_assets', nowStr);
+      setLastSyncedAt(nowStr);
+      setSyncSuccess(true);
+      showToastMsg('សមកាលកម្មបញ្ជីទ្រព្យសកម្មទៅកាន់ Google Sheets រួចរាល់!', 'success');
+      setTimeout(() => setSyncSuccess(false), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setSyncError(err.message || 'សូមពិនិត្យមើលសិទ្ធិតភ្ជាប់ ឬតំណភ្ជាប់ Google Sheets របស់អ្នកឡើងវិញ។');
+      showToastMsg('ការសមកាលកម្មទ្រព្យសកម្មបរាជ័យ៖ ' + (err.message || 'Error'), 'danger');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
 
   const showToastMsg = (msg: string, type: 'success' | 'danger' | 'info') => {
     setToast({ message: msg, type });
@@ -391,7 +558,237 @@ export default function FixedAssetManager({ currentUser }: FixedAssetManagerProp
         </div>
       </div>
 
+      {/* Google Sheets Fixed Asset Sync Panel */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-4.5 shadow-2xs">
+        <div 
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
+          onClick={() => setShowSheetSetup(!showSheetSetup)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-150 shrink-0">
+              <FileSpreadsheet className={`w-5 h-5 shrink-0 ${isSyncing ? 'animate-bounce' : ''}`} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 flex items-center flex-wrap gap-2 leading-relaxed">
+                <span className="font-moul text-[11px] font-normal tracking-wide text-[#073B3A]">📊 សមកាលកម្មបញ្ជីទ្រព្យសកម្មទៅកាន់ Google Sheets</span>
+                <span className="text-[10px] text-slate-400 font-sans font-bold uppercase tracking-wider">(Google Sheets Fixed Assets Sync)</span>
+                {lastSyncedAt && (
+                  <span className="bg-emerald-50 text-emerald-700 text-[9px] font-black px-2.5 py-1.5 rounded-full border border-emerald-250">
+                    សមកាលកម្មចុងក្រោយ៖ {lastSyncedAt}
+                  </span>
+                )}
+              </h4>
+              <p className="text-[11.5px] text-slate-500 font-medium mt-1 leading-relaxed">
+                បម្រុងទុក និងគ្រប់គ្រងទិន្នន័យបញ្ជីទ្រព្យសម្បត្តិសាលាទាំងអស់ ដោយស្វ័យប្រវត្តលើគណនី Google Drive ផ្ទាល់ខ្លួន <span className="text-slate-400 font-sans">| Backup & sync fixed assets real-time to your Google sheets</span>
+              </p>
+            </div>
+          </div>
+          
+          <button
+            type="button"
+            className="text-[10.5px] font-black text-emerald-755 hover:text-emerald-900 bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl transition cursor-pointer shrink-0 self-end sm:self-auto shadow-2xs"
+          >
+            {showSheetSetup ? 'លាក់ការតភ្ជាប់ (Hide Settings)' : 'គ្រប់គ្រងការតភ្ជាប់ (Manage Connection)'}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {showSheetSetup && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-4 pt-4 border-t border-slate-200/60 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5.5 items-start">
+                  
+                  {/* Account Status */}
+                  <div className="md:col-span-12 lg:col-span-5 space-y-3.5">
+                    <h5 className="text-[11.5px] font-bold text-[#0d5c5a] tracking-wider uppercase">
+                      គណនីតភ្ជាប់ Google (Google Auth Connection)
+                    </h5>
+                    
+                    {!googleUser ? (
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+                        <p className="text-[11.5px] text-slate-500 font-semibold leading-relaxed">
+                          មិនទាន់មានការតភ្ជាប់គណនី Google នៅឡើយទេ។ សូមភ្ជាប់គណនីដើម្បីអនុញ្ញាតឱ្យប្រព័ន្ធសរសេរទិន្នន័យចូល។
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleGoogleSignIn}
+                          disabled={isSyncing}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-4 py-2 rounded-xl transition hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          {isSyncing ? 'កំពុងភ្ជាប់...' : 'ភ្ជាប់គណនី Google (Connect Account)'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-50/50 border border-slate-200 p-4 rounded-2xl space-y-3.5">
+                        <div className="flex items-center gap-3">
+                          {googleUser.photoURL ? (
+                            <img 
+                              src={googleUser.photoURL} 
+                              alt="Google Profile" 
+                              className="w-10 h-10 rounded-full border-2 border-emerald-400"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
+                              {googleUser.displayName?.charAt(0) || 'G'}
+                            </div>
+                          )}
+                          <div>
+                            <h6 className="text-xs font-black text-slate-800 leading-tight">{googleUser.displayName}</h6>
+                            <p className="text-[10px] text-slate-500 font-mono mt-0.5">{googleUser.email}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={handleGoogleSignOut}
+                            disabled={isSyncing}
+                            className="text-[10.5px] font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 border border-rose-100 bg-white px-3 py-1.5 rounded-xl cursor-pointer transition disabled:opacity-50"
+                          >
+                            ផ្តាច់ការតភ្ជាប់ (Disconnect)
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Spreadsheet Settings & Actions */}
+                  <div className="md:col-span-12 lg:col-span-7 space-y-3.5">
+                    <h5 className="text-[11.5px] font-bold text-[#0d5c5a] tracking-wider uppercase">
+                      ការសមកាលកម្មបន្ទះកិច្ចការ (Spreadsheet Configuration & Sync)
+                    </h5>
+
+                    {/* Existing Spreadsheet Info or Link Input */}
+                    <div className="bg-slate-50/50 border border-slate-200 p-4 rounded-2xl space-y-4">
+                      {spreadsheetId ? (
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-black text-slate-455 uppercase block">បន្ទះកិច្ចការដែលកំពុងភ្ជាប់ (Connected Sheet)</span>
+                            <div className="flex items-center justify-between gap-2 bg-white border border-slate-200 p-2.5 rounded-xl">
+                              <div className="truncate">
+                                <span className="text-xs font-bold text-slate-800 block truncate">WIS School Management Master Sheet</span>
+                                <span className="text-[9.5px] font-mono text-slate-400">ID: {spreadsheetId}</span>
+                              </div>
+                              <a 
+                                href={spreadsheetUrl || `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-[10px] uppercase font-black tracking-wider text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100 transition shrink-0"
+                              >
+                                បើកសន្លឹកកិច្ចការ (Open Sheet)
+                              </a>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 flex-wrap pt-1">
+                            <button
+                              type="button"
+                              onClick={handleSyncToSheets}
+                              disabled={isSyncing}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-4.5 py-2.5 rounded-xl transition hover:scale-[1.01] active:scale-[0.99] flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs animate-fade-in"
+                            >
+                              <FileSpreadsheet className="w-4 h-4 shrink-0" />
+                              <span>{isSyncing ? 'កំពុងសមកាលកម្ម...' : 'ធ្វើសមកាលកម្មឥឡូវនេះ (Sync Data)'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm('តើអ្នកពិតជាចង់ផ្តាច់តំណភ្ជាប់សន្លឹកកិច្ចការនេះមែនទេ?')) {
+                                  localStorage.removeItem('wis_google_spreadsheet_id');
+                                  localStorage.removeItem('wis_google_spreadsheet_url');
+                                  setSpreadsheetId(null);
+                                  setSpreadsheetUrl(null);
+                                  showToastMsg('បានផ្តាច់សន្លឹកកិច្ចការ!', 'info');
+                                }
+                              }}
+                              className="text-[10px] font-bold text-slate-500 hover:text-slate-850 hover:bg-slate-100 px-3 py-2 rounded-xl border border-transparent transition cursor-pointer"
+                            >
+                              ប្តូរសន្លឹកកិច្ចការ (Change Sheet)
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3.5">
+                          <div>
+                            <span className="text-xs font-extrabold text-[#073B3A] block">មិនទាន់មានបន្ទះកិច្ចការ Google Sheets ភ្ជាប់ឡើយ</span>
+                            <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
+                              លោកអ្នកអាចប្រើប្រាស់សន្លឹកកិច្ចការ Master ដូចគ្នានៅលើ Dashboard ឬបញ្ចូល Link សន្លឹកកិច្ចការផ្ទាល់ខ្លួនដោយឡែកដើម្បីសមកាលកម្មទិន្នន័យ៖
+                            </p>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const masterId = localStorage.getItem('wis_google_spreadsheet_id');
+                                const masterUrl = localStorage.getItem('wis_google_spreadsheet_url');
+                                if (masterId) {
+                                  setSpreadsheetId(masterId);
+                                  setSpreadsheetUrl(masterUrl);
+                                  showToastMsg('បានតភ្ជាប់ទៅកាន់បន្ទះកិច្ចការ Master ជោគជ័យ!', 'success');
+                                } else {
+                                  showToastMsg('រកមិនឃើញសន្លឹកកិច្ចការ Master ឡើយ។ សូមបង្កើតវានៅលើ Dashboard ឬភ្ជាប់ដោយបញ្ចូល Link ផ្ទាល់! ', 'danger');
+                                }
+                              }}
+                              className="bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-bold text-[10.5px] px-3 py-2 rounded-xl transition cursor-pointer"
+                            >
+                              🔗 ប្រើសន្លឹកកិច្ចការ Master របស់សាលា
+                            </button>
+                          </div>
+
+                          <div className="border-t border-slate-200/60 pt-3 space-y-2">
+                            <label className="text-[10px] font-black uppercase text-slate-455 block">តភ្ជាប់ដោយ Link ផ្ទាល់ (Link a Custom Spreadsheet URL)</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={customSpreadsheetUrlInput}
+                                onChange={(e) => setCustomSpreadsheetUrlInput(e.target.value)}
+                                placeholder="https://docs.google.com/spreadsheets/d/your-id..."
+                                className="flex-1 bg-white border border-slate-200 focus:border-[#0d5c5a] rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-800 shadow-inner"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleLinkCustomSpreadsheet}
+                                className="bg-[#052C2B] hover:bg-[#073B3A] text-white font-black text-xs px-3.5 py-1.5 rounded-xl cursor-pointer shadow-xs"
+                              >
+                                តភ្ជាប់ (Link)
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {syncError && (
+                        <div className="p-3 bg-rose-50 border border-rose-250 text-rose-800 text-[11px] font-semibold rounded-xl leading-relaxed">
+                          ⚠️ {syncError}
+                        </div>
+                      )}
+
+                      {syncSuccess && (
+                        <div className="p-3 bg-emerald-50 border border-emerald-250 text-emerald-800 text-[11px] font-semibold rounded-xl leading-relaxed">
+                          ✅ សមកាលកម្មបានជោគជ័យឥតខ្ចោះ! បន្ទះកិច្ចការ Google Sheets របស់អ្នក ត្រូវបានបង្កើតសន្លឹកការងារ៖ <b>"ទ្រព្យសកម្មសាលា (Fixed Assets)"</b>។
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Stats Cards Dashboard with Emerald/Indigo Styling */}
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-xs">
           <p className="text-[11px] font-semibold text-slate-400">

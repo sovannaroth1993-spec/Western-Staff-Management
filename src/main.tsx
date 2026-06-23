@@ -36,12 +36,22 @@ window.localStorage.setItem = function (key, value) {
       // Keep as string if it is not valid JSON
     }
     
+    window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'syncing', action: 'write', key } }));
     fetch(`/api/db/${key}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ value: parsedValue })
-    }).catch(err => {
+    })
+    .then(res => {
+      if (res.ok) {
+        window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'success', action: 'write', key } }));
+      } else {
+        window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'error', action: 'write', key } }));
+      }
+    })
+    .catch(err => {
       console.error("[BG Database Sync Error]:", err);
+      window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'error', action: 'write', key } }));
     });
   }
 };
@@ -56,10 +66,20 @@ window.localStorage.removeItem = function (key) {
     key.startsWith('school_') || 
     key.includes('docs_')
   ) {
+    window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'syncing', action: 'delete', key } }));
     fetch(`/api/db/${key}`, {
       method: "DELETE"
-    }).catch(err => {
+    })
+    .then(res => {
+      if (res.ok) {
+        window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'success', action: 'delete', key } }));
+      } else {
+        window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'error', action: 'delete', key } }));
+      }
+    })
+    .catch(err => {
       console.error("[BG Database Delete Error]:", err);
+      window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'error', action: 'delete', key } }));
     });
   }
 };
@@ -74,7 +94,7 @@ async function startAppWithHydration() {
       
       console.log("[WIS Database Hydration] Loaded server-side entries:", Object.keys(serverDb));
       
-      // Crucial keys we wish to protect/synchronize
+      // Dynamically load and protect all keys starting with 'wis_', 'school_', or containing 'docs_'
       const syncKeys = [
         'wis_staff_list',
         'wis_attendance_records',
@@ -100,7 +120,26 @@ async function startAppWithHydration() {
         'wis_academic_years'
       ];
 
-      for (const key of syncKeys) {
+      // Scan all actual keys present in either serverDb or local storage to synchronize them dynamically and prevent data loss
+      const allSyncKeysSet = new Set<string>(syncKeys);
+      
+      Object.keys(serverDb).forEach(key => {
+        if (key.startsWith('wis_') || key.startsWith('school_') || key.includes('docs_')) {
+          allSyncKeysSet.add(key);
+        }
+      });
+
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key && (key.startsWith('wis_') || key.startsWith('school_') || key.includes('docs_'))) {
+          allSyncKeysSet.add(key);
+        }
+      }
+
+      const allKeysToSync = Array.from(allSyncKeysSet);
+      console.log("[WIS Database Sync Engine] Dynamically synchronizing keys:", allKeysToSync);
+
+      for (const key of allKeysToSync) {
         const serverVal = serverDb[key];
         const localValRaw = window.localStorage.getItem(key);
         
@@ -170,18 +209,30 @@ async function startAppWithHydration() {
           
           if (source === 'local') {
             console.log(`[WIS Database Sync] Uploading local newer state for: ${key}`);
+            window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'syncing', action: 'write', key } }));
             fetch(`/api/db/${key}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ value: resolvedValue })
-            }).catch(err => console.error(`[WIS Sync Error for ${key}]:`, err));
+            })
+            .then(res => {
+              if (res.ok) {
+                window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'success', action: 'write', key } }));
+              } else {
+                window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'error', action: 'write', key } }));
+              }
+            })
+            .catch(err => {
+              console.error(`[WIS Sync Error for ${key}]:`, err);
+              window.dispatchEvent(new CustomEvent('wis-sync-status', { detail: { status: 'error', action: 'write', key } }));
+            });
           }
         }
       }
 
       // Hydrate all other non-tracked keys directly from the server
       for (const [key, val] of Object.entries(serverDb)) {
-        if (!syncKeys.includes(key) && val !== null && val !== undefined) {
+        if (!allSyncKeysSet.has(key) && val !== null && val !== undefined) {
           (window as any).__INITIAL_SERVER_DB__[key] = val;
           const stringified = typeof val === 'object' ? JSON.stringify(val) : String(val);
           try {

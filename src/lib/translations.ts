@@ -26,6 +26,7 @@ export const translations = {
     monthlyReport: "របាយការណ៍សង្ខេបប្រចាំខែ (Monthly Report)",
     followup: "Follow-up ការងារ (Task Follow-up)",
     medicine: "គ្រប់គ្រងថ្នាំពេទ្យ (Medicine Management)",
+    dbstatus: "ស្ថានភាពឃ្លាំងទិន្នន័យ (Database Status)",
     
     // Header
     schoolName: "សាលាវេស្ទើនអន្តរជាតិ",
@@ -76,6 +77,7 @@ export const translations = {
     monthlyReport: "Monthly Report (របាយការណ៍សង្ខេបប្រចាំខែ)",
     followup: "Follow-up Tasks (Follow-up ការងារ)",
     medicine: "Medicine Inventory & Logs (គ្រប់គ្រងថ្នាំពេទ្យ)",
+    dbstatus: "Database Status (ស្ថានភាពឃ្លាំងទិន្នន័យ)",
     
     // Header
     schoolName: "Western International School",
