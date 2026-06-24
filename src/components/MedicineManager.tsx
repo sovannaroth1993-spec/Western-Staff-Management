@@ -906,24 +906,17 @@ export default function MedicineManager({ currentUser, lang = 'kh' }: MedicineMa
 
         {/* Global actions context */}
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => {
-              if (activeSubTab === 'master') handleOpenMedForm();
-              else if (activeSubTab === 'stockin') handleOpenStockForm();
-              else if (activeSubTab === 'usage') handleOpenUsageForm();
-              else handleOpenMedForm();
-            }}
-            className="bg-[#052C2B] hover:bg-[#073B3A] text-white font-extrabold text-xs px-4.5 py-2.5 rounded-xl transition duration-150 cursor-pointer shadow-xs active:scale-97 flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>
-              {activeSubTab === 'usage' 
-                ? (lang === 'kh' ? 'កត់ត្រាការប្រើប្រាស់ថ្នាំ' : 'Log Patient Intake') 
-                : activeSubTab === 'stockin'
-                ? (lang === 'kh' ? 'បញ្ចូលឱសថថ្មី' : 'Log Stock Intake')
-                : (lang === 'kh' ? 'បន្ថែមឱសថបញ្ជីមេ' : 'Add Medicine Master')}
-            </span>
-          </button>
+          {activeSubTab === 'master' && (
+            <button
+              onClick={handleOpenMedForm}
+              className="bg-[#052C2B] hover:bg-[#073B3A] text-white font-extrabold text-xs px-4.5 py-2.5 rounded-xl transition duration-150 cursor-pointer shadow-xs active:scale-97 flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>
+                {lang === 'kh' ? 'បន្ថែមឱសថបញ្ជីមេ' : 'Add Medicine Master'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -954,30 +947,6 @@ export default function MedicineManager({ currentUser, lang = 'kh' }: MedicineMa
         </button>
 
         <button
-          onClick={() => setActiveSubTab('stockin')}
-          className={`px-4.5 py-2.5 text-xs sm:text-sm font-black rounded-lg transition duration-150 cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-            activeSubTab === 'stockin'
-              ? 'bg-[#0d5c5a] text-white shadow-xs'
-              : 'text-slate-500 hover:text-[#0d5c5a] hover:bg-slate-50'
-          }`}
-        >
-          <Package className="w-4 h-4" />
-          <span>{lang === 'kh' ? '២. បញ្ចូលឱសថ (Medicine Stock In)' : '2. Stock Shipment In'}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('usage')}
-          className={`px-4.5 py-2.5 text-xs sm:text-sm font-black rounded-lg transition duration-150 cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-            activeSubTab === 'usage'
-              ? 'bg-[#0d5c5a] text-white shadow-xs'
-              : 'text-slate-500 hover:text-[#0d5c5a] hover:bg-slate-50'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>{lang === 'kh' ? '៣. ប្រើប្រាស់ថ្នាំ (Medicine Use Logs)' : '3. Patient Dispense Log'}</span>
-        </button>
-
-        <button
           onClick={() => setActiveSubTab('report')}
           className={`px-4.5 py-2.5 text-xs sm:text-sm font-black rounded-lg transition duration-150 cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
             activeSubTab === 'report'
@@ -986,7 +955,7 @@ export default function MedicineManager({ currentUser, lang = 'kh' }: MedicineMa
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>{lang === 'kh' ? '៤. របាយការណ៍ & ផុតកំណត់ (Report / Alerts)' : '4. Report & Expiration'}</span>
+          <span>{lang === 'kh' ? '២. របាយការណ៍ & ផុតកំណត់ (Report / Alerts)' : '2. Report & Expiration'}</span>
         </button>
       </div>
 

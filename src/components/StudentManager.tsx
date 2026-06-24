@@ -12,7 +12,7 @@ import autoTable from 'jspdf-autotable';
 import { 
   Plus, Edit2, Trash2, FileSpreadsheet, FileText, Upload, 
   Search, Filter, BookOpen, AlertCircle, Camera, UserPlus, X, Info,
-  Paperclip, Download, Eye, File, Link2, Globe, ExternalLink, GraduationCap
+  Paperclip, Download, Eye, File, Link2, Globe, ExternalLink, GraduationCap, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -41,16 +41,50 @@ interface BulkRow {
 export default function StudentManager({ studentList, setStudentList, lang, currentUser }: StudentManagerProps) {
   const isKh = lang === 'kh';
 
+  const formatMonthYearStr = (my: string) => {
+    if (!my || !my.includes('-')) return my;
+    const [year, month] = my.split('-');
+    const khmerMonths = [
+      'មករា (Jan)', 'កុម្ភៈ (Feb)', 'មីនា (Mar)', 'មេសា (Apr)', 'ឧសភា (May)', 'មិថុនា (Jun)',
+      'កក្កដា (Jul)', 'សីហា (Aug)', 'កញ្ញា (Sep)', 'តុលា (Oct)', 'វិច្ឆិកា (Nov)', 'ធ្នូ (Dec)'
+    ];
+    const englishMonths = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    const mIndex = parseInt(month, 10) - 1;
+    if (mIndex < 0 || mIndex > 11) return my;
+    const mName = isKh ? khmerMonths[mIndex] : englishMonths[mIndex];
+    return `${mName} ${year}`;
+  };
+
   // Filters & State
   const [search, setSearch] = useState('');
   const [selectedGrade, setSelectedGrade] = useState<StudentGrade | 'All'>('All');
   const [selectedGender, setSelectedGender] = useState<'All' | 'ប្រុស' | 'ស្រី'>('All');
+  const [selectedNapService, setSelectedNapService] = useState<'All' | 'Stays' | 'NoStays'>('All');
+  const [selectedMealService, setSelectedMealService] = useState<'All' | 'Eats' | 'NoEats'>('All');
+  const [selectedMonth, setSelectedMonth] = useState<string>('All');
 
   const isAdmin = currentUser?.role === 'admin';
   const displayedStudents = React.useMemo(() => {
     if (isAdmin) return studentList;
     return studentList.filter(s => s.createdBy === currentUser?.username);
   }, [studentList, currentUser, isAdmin]);
+
+  const allAvailableMonths = React.useMemo(() => {
+    const monthsSet = new Set<string>();
+    const now = new Date();
+    for (let i = -2; i <= 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const str = d.toISOString().substring(0, 7); // "YYYY-MM"
+      monthsSet.add(str);
+    }
+    studentList.forEach(s => {
+      if (s.napMonths) s.napMonths.forEach(m => monthsSet.add(m));
+      if (s.mealMonths) s.mealMonths.forEach(m => monthsSet.add(m));
+    });
+    return Array.from(monthsSet).sort();
+  }, [studentList]);
   
   // Handlers for Add / Edit Modal
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -74,6 +108,14 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
   const [formPhoto, setFormPhoto] = useState('');
   const [formGrade, setFormGrade] = useState<StudentGrade>('Grade 1');
   const [formResponsibleLocation, setFormResponsibleLocation] = useState('');
+  const [formStaysForNap, setFormStaysForNap] = useState(false);
+  const [formEatsSchoolMeal, setFormEatsSchoolMeal] = useState(false);
+  const [formNapStopped, setFormNapStopped] = useState(false);
+  const [formNapStopDate, setFormNapStopDate] = useState('');
+  const [formMealStopped, setFormMealStopped] = useState(false);
+  const [formMealStopDate, setFormMealStopDate] = useState('');
+  const [formNapMonths, setFormNapMonths] = useState<string[]>([]);
+  const [formMealMonths, setFormMealMonths] = useState<string[]>([]);
 
   // Excel input target grade selection
   const [importGrade, setImportGrade] = useState<StudentGrade>('Grade 1');
@@ -180,6 +222,14 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
     setFormPhoto('');
     setFormGrade('Grade 1');
     setFormResponsibleLocation('');
+    setFormStaysForNap(false);
+    setFormEatsSchoolMeal(false);
+    setFormNapStopped(false);
+    setFormNapStopDate('');
+    setFormMealStopped(false);
+    setFormMealStopDate('');
+    setFormNapMonths([]);
+    setFormMealMonths([]);
     setLastInsertedStudent(null);
   };
 
@@ -191,6 +241,14 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
     setFormGrade('Grade 1');
     setFormResponsibleLocation('');
     setFormEnrollmentDate('');
+    setFormStaysForNap(false);
+    setFormEatsSchoolMeal(false);
+    setFormNapStopped(false);
+    setFormNapStopDate('');
+    setFormMealStopped(false);
+    setFormMealStopDate('');
+    setFormNapMonths([]);
+    setFormMealMonths([]);
     setEntryMode('single');
     setKeepAndAddMore(false);
     setIsFormOpen(true);
@@ -209,6 +267,14 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
     setFormPhoto(student.photo);
     setFormGrade(student.grade);
     setFormResponsibleLocation(student.responsibleLocation || '');
+    setFormStaysForNap(!!student.staysForNap);
+    setFormEatsSchoolMeal(!!student.eatsSchoolMeal);
+    setFormNapStopped(!!student.napStopped);
+    setFormNapStopDate(student.napStopDate || '');
+    setFormMealStopped(!!student.mealStopped);
+    setFormMealStopDate(student.mealStopDate || '');
+    setFormNapMonths(student.napMonths || []);
+    setFormMealMonths(student.mealMonths || []);
     setEntryMode('single');
     setIsFormOpen(true);
   };
@@ -331,6 +397,14 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
             photo: formPhoto || s.photo,
             grade: formGrade,
             responsibleLocation: formResponsibleLocation.trim(),
+            staysForNap: formStaysForNap,
+            eatsSchoolMeal: formEatsSchoolMeal,
+            napStopped: formNapStopped,
+            napStopDate: formNapStopped ? (formNapStopDate || new Date().toISOString().split('T')[0]) : '',
+            mealStopped: formMealStopped,
+            mealStopDate: formMealStopped ? (formMealStopDate || new Date().toISOString().split('T')[0]) : '',
+            napMonths: formNapMonths,
+            mealMonths: formMealMonths,
             createdBy: s.createdBy || currentUser?.username || 'admin'
           };
         }
@@ -368,6 +442,14 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
         photo: formPhoto,
         grade: formGrade,
         responsibleLocation: formResponsibleLocation.trim(),
+        staysForNap: formStaysForNap,
+        eatsSchoolMeal: formEatsSchoolMeal,
+        napStopped: formNapStopped,
+        napStopDate: formNapStopped ? (formNapStopDate || new Date().toISOString().split('T')[0]) : '',
+        mealStopped: formMealStopped,
+        mealStopDate: formMealStopped ? (formMealStopDate || new Date().toISOString().split('T')[0]) : '',
+        napMonths: formNapMonths,
+        mealMonths: formMealMonths,
         createdBy: currentUser?.username || 'admin'
       };
 
@@ -632,7 +714,9 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
       'ថ្ងៃចូលរៀន (Enrollment Date)': s.enrollmentDate || 'N/A',
       'លេខទូរស័ព្ទអាណាព្យាបាល (Parent Phone)': s.phoneNumber,
       'ថ្នាក់រៀន (Grade)': GRADE_NAMES_KM[s.grade] || s.grade,
-      'បន្ទប់រៀន (Classroom)': s.responsibleLocation || 'គ្មាន'
+      'បន្ទប់រៀន (Classroom)': s.responsibleLocation || 'គ្មាន',
+      'សេវាកម្មគេងសាលា (Nap Stay)': s.staysForNap ? (s.napStopped ? `ឈប់គេងសាលា (${s.napStopDate || ''})` : 'មាន') : 'គ្មាន',
+      'សេវាកម្មញ៉ាំបាយសាលា (School Meals)': s.eatsSchoolMeal ? (s.mealStopped ? `ឈប់ញ៉ាំបាយ (${s.mealStopDate || ''})` : 'មាន') : 'គ្មាន'
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -883,7 +967,23 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
     const matchesGrade = selectedGrade === 'All' || student.grade === selectedGrade;
     const matchesGender = selectedGender === 'All' || student.gender === selectedGender;
 
-    return matchesSearch && matchesGrade && matchesGender;
+    const matchesNap = 
+      selectedNapService === 'All' || 
+      (selectedNapService === 'Stays' && !!student.staysForNap && !student.napStopped) || 
+      (selectedNapService === 'Stopped' && !!student.staysForNap && !!student.napStopped) ||
+      (selectedNapService === 'NoStays' && !student.staysForNap);
+
+    const matchesMeal = 
+      selectedMealService === 'All' || 
+      (selectedMealService === 'Eats' && !!student.eatsSchoolMeal && !student.mealStopped) || 
+      (selectedMealService === 'Stopped' && !!student.eatsSchoolMeal && !!student.mealStopped) ||
+      (selectedMealService === 'NoEats' && !student.eatsSchoolMeal);
+
+    const matchesMonth = selectedMonth === 'All' || 
+      (!!student.staysForNap && !student.napStopped && (!student.napMonths || student.napMonths.length === 0 || student.napMonths.includes(selectedMonth))) ||
+      (!!student.eatsSchoolMeal && !student.mealStopped && (!student.mealMonths || student.mealMonths.length === 0 || student.mealMonths.includes(selectedMonth)));
+
+    return matchesSearch && matchesGrade && matchesGender && matchesNap && matchesMeal && matchesMonth;
   });
 
   return (
@@ -933,6 +1033,83 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
             <FileText className="w-4 h-4" />
             <span>PDF</span>
           </button>
+        </div>
+      </div>
+
+      {/* Student Statistics Cards Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Students */}
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-150/60 shadow-3xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+              {isKh ? 'សិស្សសរុប (Total)' : 'Total Students'}
+            </span>
+            <span className="text-xl font-black text-slate-850 font-mono">
+              {studentList.length} <span className="text-xs text-slate-400 font-medium font-sans">{isKh ? 'នាក់' : 'Pupils'}</span>
+            </span>
+          </div>
+          <div className="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100">
+            <GraduationCap className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Card 2: Male vs Female */}
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-150/60 shadow-3xs flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+              {isKh ? 'ប្រុស / ស្រី (Gender)' : 'Male / Female'}
+            </span>
+            <span className="text-sm font-black text-slate-800 flex items-center gap-1.5 font-mono">
+              <span className="text-blue-600">♂️ {studentList.filter(s => s.gender === 'ប្រុស' || s.gender === 'Male').length}</span>
+              <span className="text-slate-300">|</span>
+              <span className="text-rose-600">♀️ {studentList.filter(s => s.gender === 'ស្រី' || s.gender === 'Female').length}</span>
+            </span>
+          </div>
+          <div className="p-3 bg-slate-50/70 text-slate-500 rounded-xl border border-slate-200">
+            <Users className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Card 3: Sleeping Students */}
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-150/60 shadow-3xs flex items-center justify-between animate-fade-in">
+          <div className="space-y-1">
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+              {isKh ? 'សិស្សគេងសាលា (Nap stay)' : 'Nap stayers'}
+            </span>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-xl font-black text-[#3B2C85] font-mono">
+                {studentList.filter(s => s.staysForNap && !s.napStopped).length}
+                <span className="text-xs text-[#3B2C85] font-medium font-sans ml-0.5">{isKh ? 'នាក់' : 'active'}</span>
+              </span>
+              <span className="text-[10.5px] bg-rose-50 text-rose-600 font-black px-1.5 py-0.5 rounded-md border border-rose-100 italic" title={isKh ? 'ឈប់ប្រើប្រាស់សេវាកម្មគេងសាលា' : 'Cancelled nap service count'}>
+                {isKh ? 'ឈប់៖' : 'Stop:'} {studentList.filter(s => s.staysForNap && s.napStopped).length}
+              </span>
+            </div>
+          </div>
+          <div className="p-3 bg-violet-50 text-[#3B2C85] rounded-xl border border-violet-100">
+            <span className="text-lg">🛌</span>
+          </div>
+        </div>
+
+        {/* Card 4: Dining Students */}
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-150/60 shadow-3xs flex items-center justify-between animate-fade-in">
+          <div className="space-y-1">
+            <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+              {isKh ? 'សិស្សញ៉ាំបាយសាលា' : 'School meal eaters'}
+            </span>
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-xl font-black text-[#073B3A] font-mono">
+                {studentList.filter(s => s.eatsSchoolMeal && !s.mealStopped).length}
+                <span className="text-xs text-[#073B3A] font-medium font-sans ml-0.5">{isKh ? 'នាក់' : 'active'}</span>
+              </span>
+              <span className="text-[10.5px] bg-rose-50 text-rose-600 font-black px-1.5 py-0.5 rounded-md border border-rose-100 italic" title={isKh ? 'ឈប់ប្រើប្រាស់សេវាកម្មញ៉ាំអាហារ' : 'Cancelled meal service count'}>
+                {isKh ? 'ឈប់៖' : 'Stop:'} {studentList.filter(s => s.eatsSchoolMeal && s.mealStopped).length}
+              </span>
+            </div>
+          </div>
+          <div className="p-3 bg-teal-50 text-[#073B3A] rounded-xl border border-teal-100">
+            <span className="text-lg">🍱</span>
+          </div>
         </div>
       </div>
 
@@ -1020,13 +1197,52 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
             <option value="ស្រី">{isKh ? 'ភេទ ស្រី' : 'Female'}</option>
           </select>
 
+          {/* Nap Service Filter */}
+          <select 
+            value={selectedNapService}
+            onChange={(e) => setSelectedNapService(e.target.value as any)}
+            className="bg-slate-50/85 hover:bg-slate-100 text-slate-600 border border-slate-200/80 rounded-lg py-1 px-2.5 text-xs font-extrabold cursor-pointer transition focus:ring-0"
+          >
+            <option value="All">{isKh ? 'គ្រប់ស្ថានភាពគេងសាលា' : 'All Nap Stay'}</option>
+            <option value="Stays">{isKh ? '🛌 សិស្សកំពុងគេងសាលា' : '🛌 Active Sleep-in'}</option>
+            <option value="Stopped">{isKh ? '🚷 សិស្សឈប់គេងសាលា' : '🚷 Stopped Sleep-in'}</option>
+            <option value="NoStays">{isKh ? '❌ មិនមានសេវាកម្មគេង' : '❌ No Nap'}</option>
+          </select>
+
+          {/* Meal Service Filter */}
+          <select 
+            value={selectedMealService}
+            onChange={(e) => setSelectedMealService(e.target.value as any)}
+            className="bg-slate-50/85 hover:bg-slate-100 text-slate-600 border border-slate-200/80 rounded-lg py-1 px-2.5 text-xs font-extrabold cursor-pointer transition focus:ring-0"
+          >
+            <option value="All">{isKh ? 'គ្រប់ស្ថានភាពញ៉ាំបាយ' : 'All Meals'}</option>
+            <option value="Eats">{isKh ? '🍱 សិស្សកំពុងញ៉ាំបាយសាលា' : '🍱 Active School Meals'}</option>
+            <option value="Stopped">{isKh ? '🚫 សិស្សឈប់ញ៉ាំបាយសាលា' : '🚫 Stopped School Meals'}</option>
+            <option value="NoEats">{isKh ? '❌ មិនមានសេវាកម្មអាហារ' : '❌ No Meals'}</option>
+          </select>
+
+          {/* Month & Year Filter */}
+          <select 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="bg-slate-50/85 hover:bg-slate-100 text-slate-600 border border-slate-200/80 rounded-lg py-1 px-2.5 text-xs font-extrabold cursor-pointer transition focus:ring-0"
+          >
+            <option value="All">{isKh ? 'គ្រប់ខែទាំងអស់' : 'All Months'}</option>
+            {allAvailableMonths.map((m) => (
+              <option key={m} value={m}>{formatMonthYearStr(m)}</option>
+            ))}
+          </select>
+
           {/* Clear filters trigger */}
-          {(search || selectedGrade !== 'All' || selectedGender !== 'All') && (
+          {(search || selectedGrade !== 'All' || selectedGender !== 'All' || selectedNapService !== 'All' || selectedMealService !== 'All' || selectedMonth !== 'All') && (
             <button 
               onClick={() => {
                 setSearch('');
                 setSelectedGrade('All');
                 setSelectedGender('All');
+                setSelectedNapService('All');
+                setSelectedMealService('All');
+                setSelectedMonth('All');
               }}
               className="text-amber-600 hover:text-amber-700 text-xs font-extrabold flex items-center gap-1 cursor-pointer ml-auto"
             >
@@ -1051,6 +1267,7 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
                 <th className="py-4 px-4 w-36">{isKh ? 'ថ្នាក់សិក្សា' : 'Grade Level'}</th>
                 <th className="py-4 px-4 w-36">{isKh ? 'បន្ទប់រៀន / ទីតាំង' : 'Classroom'}</th>
                 <th className="py-4 px-4 w-36">{isKh ? 'ទូរស័ព្ទអាណាព្យាបាល' : 'Parent Contact'}</th>
+                <th className="py-4 px-4 w-36">{isKh ? 'សេវាកម្មសាលា' : 'School Services'}</th>
                 <th className="py-4 px-4 text-center w-28">{isKh ? 'ឯកសារយោង' : 'Files'}</th>
                 <th className="py-4 px-5 text-right w-36">{isKh ? 'សកម្មភាព' : 'Actions'}</th>
               </tr>
@@ -1109,6 +1326,57 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-600">
                       {student.phoneNumber}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col gap-1.5">
+                        {student.staysForNap && (
+                          student.napStopped ? (
+                            <span className="inline-flex items-center gap-1 bg-rose-50/70 text-rose-600 text-[10.5px] font-bold px-2 py-1 rounded-lg border border-rose-200 line-through decoration-rose-400 w-max cursor-help" title={isKh ? `បានឈប់គេងសាលាថ្ងៃទី៖ ${student.napStopDate}` : `Stopped nap stay on: ${student.napStopDate}`}>
+                              🛌 {isKh ? 'ឈប់គេងសាលា' : 'Stopped Sleep-in'} <span className="text-[9px] font-medium text-rose-500 font-mono">({student.napStopDate})</span>
+                            </span>
+                          ) : (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="inline-flex items-center gap-1 bg-violet-50 text-[#3B2C85] text-[10.5px] font-black px-2 py-1 rounded-lg border border-violet-150 w-max">
+                                🛌 {isKh ? 'គេងសាលា' : 'Sleep-in'}
+                              </span>
+                              {student.napMonths && student.napMonths.length > 0 && (
+                                <span className="text-[10px] text-[#3B2C85]/80 font-extrabold max-w-[150px] truncate pl-1" title={student.napMonths.map(formatMonthYearStr).join(', ')}>
+                                  {student.napMonths.map(m => {
+                                    const parts = m.split('-');
+                                    return `${parts[1]}/${parts[0].substring(2)}`;
+                                  }).join(', ')}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        )}
+                        {student.eatsSchoolMeal && (
+                          student.mealStopped ? (
+                            <span className="inline-flex items-center gap-1 bg-rose-50/70 text-rose-700 text-[10.5px] font-bold px-2 py-1 rounded-lg border border-rose-200 line-through decoration-rose-400 w-max cursor-help" title={isKh ? `បានឈប់ញ៉ាំបាយថ្ងៃទី៖ ${student.mealStopDate}` : `Stopped school meals on: ${student.mealStopDate}`}>
+                              🍱 {isKh ? 'ឈប់ញ៉ាំបាយ' : 'Stopped Meals'} <span className="text-[9px] font-medium text-rose-500 font-mono">({student.mealStopDate})</span>
+                            </span>
+                          ) : (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="inline-flex items-center gap-1 bg-teal-50 text-[#073B3A] text-[10.5px] font-black px-2 py-1 rounded-lg border border-teal-150 w-max">
+                                🍱 {isKh ? 'ញ៉ាំបាយសាលា' : 'School meals'}
+                              </span>
+                              {student.mealMonths && student.mealMonths.length > 0 && (
+                                <span className="text-[10px] text-[#073B3A]/85 font-extrabold max-w-[150px] truncate pl-1" title={student.mealMonths.map(formatMonthYearStr).join(', ')}>
+                                  {student.mealMonths.map(m => {
+                                    const parts = m.split('-');
+                                    return `${parts[1]}/${parts[0].substring(2)}`;
+                                  }).join(', ')}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        )}
+                        {!student.staysForNap && !student.eatsSchoolMeal && (
+                          <span className="text-slate-400 text-[10.5px] font-bold italic pl-1">
+                            {isKh ? 'គ្មានសេវាកម្ម' : 'No service'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-center">
                       {/* Attachments trigger button with count badge */}
@@ -1443,6 +1711,315 @@ export default function StudentManager({ studentList, setStudentList, lang, curr
                             className="w-full px-3.5 py-2 hover:bg-slate-50 focus:bg-white border border-slate-200 focus:border-amber-400 focus:ring-3 focus:ring-amber-500/10 rounded-xl text-xs font-mono font-bold transition duration-200 outline-none text-slate-700"
                           />
                         </div>
+
+                        {/* School Services Flags (សិស្សគេងសាលា និងសិស្សញ៉ាំបាយសាលា) */}
+                        <div className="sm:col-span-2 border-t border-slate-100/80 pt-4 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Container 1: Nap Service */}
+                          <div className="space-y-2">
+                            <label className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition cursor-pointer select-none ${
+                              formStaysForNap 
+                                ? 'border-[#3B2C85] bg-violet-50/10 text-[#3B2C85]' 
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-350'
+                            }`}>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl">🛌</span>
+                                <div>
+                                  <span className="block text-xs font-black">
+                                    {isKh ? 'សិស្សគេង (Nap Service)' : 'Nap School Stay'}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-medium font-sans">
+                                    {isKh ? 'សិស្សគេងសម្រាកថ្ងៃត្រង់នៅសាលា' : 'Stays for sleep/nap'}
+                                  </span>
+                                </div>
+                              </div>
+                              <input 
+                                type="checkbox"
+                                checked={formStaysForNap}
+                                onChange={(e) => setFormStaysForNap(e.target.checked)}
+                                className="w-4 h-4 rounded-md border-slate-355 text-violet-650 focus:ring-violet-500/20 cursor-pointer"
+                              />
+                            </label>
+
+                            {formStaysForNap && (
+                              <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-150 space-y-2">
+                                <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+                                  📅 {isKh ? 'កំណត់ខែឆ្នាំនៃការគេងសាលា៖' : 'Select Nap Stay Months:'}
+                                </span>
+                                
+                                <div className="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                                  {formNapMonths.length === 0 ? (
+                                    <span className="text-[10.5px] text-slate-450 font-bold italic">
+                                      {isKh ? 'មិនទាន់មានការកំណត់ខែឡើយ (គ្រប់ខែ)' : 'No specific months chosen (All months)'}
+                                    </span>
+                                  ) : (
+                                    formNapMonths.map((m) => (
+                                      <span key={m} className="inline-flex items-center gap-1 bg-violet-100 text-[#3B2C85] text-[10.5px] font-bold px-2 py-0.5 rounded-lg border border-violet-200">
+                                        {formatMonthYearStr(m)}
+                                        <button
+                                          type="button"
+                                          onClick={() => setFormNapMonths(formNapMonths.filter(x => x !== m))}
+                                          className="text-[#3B2C85] hover:text-red-500 font-bold ml-1 cursor-pointer text-xs"
+                                        >
+                                          ×
+                                        </button>
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2 mt-2">
+                                  <select 
+                                    id="napMonthSelect"
+                                    className="bg-white border border-slate-200 rounded-lg py-1 px-2 text-[11px] font-bold outline-none text-slate-600 cursor-pointer"
+                                    defaultValue={new Date().toISOString().split('-')[1]}
+                                  >
+                                    <option value="01">{isKh ? 'មករា (01)' : 'Jan (01)'}</option>
+                                    <option value="02">{isKh ? 'កុម្ភៈ (02)' : 'Feb (02)'}</option>
+                                    <option value="03">{isKh ? 'មីនា (03)' : 'Mar (03)'}</option>
+                                    <option value="04">{isKh ? 'មេសា (04)' : 'Apr (04)'}</option>
+                                    <option value="05">{isKh ? 'ឧសភា (05)' : 'May (05)'}</option>
+                                    <option value="06">{isKh ? 'មិថុនា (06)' : 'Jun (06)'}</option>
+                                    <option value="07">{isKh ? 'កក្កដា (07)' : 'Jul (07)'}</option>
+                                    <option value="08">{isKh ? 'សីហា (08)' : 'Aug (08)'}</option>
+                                    <option value="09">{isKh ? 'កញ្ញា (09)' : 'Sep (09)'}</option>
+                                    <option value="10">{isKh ? 'តុលា (10)' : 'Oct (10)'}</option>
+                                    <option value="11">{isKh ? 'វិច្ឆិកា (11)' : 'Nov (11)'}</option>
+                                    <option value="12">{isKh ? 'ធ្នូ (12)' : 'Dec (12)'}</option>
+                                  </select>
+                                  <select 
+                                    id="napYearSelect"
+                                    className="bg-white border border-slate-200 rounded-lg py-1 px-2 text-[11px] font-bold outline-none text-slate-600 cursor-pointer"
+                                    defaultValue={new Date().getFullYear().toString()}
+                                  >
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const mSelect = document.getElementById('napMonthSelect') as HTMLSelectElement;
+                                      const ySelect = document.getElementById('napYearSelect') as HTMLSelectElement;
+                                      if (mSelect && ySelect) {
+                                        const val = `${ySelect.value}-${mSelect.value}`;
+                                        if (!formNapMonths.includes(val)) {
+                                          setFormNapMonths([...formNapMonths, val].sort());
+                                        }
+                                      }
+                                    }}
+                                    className="bg-violet-50 hover:bg-violet-100 text-violet-700 font-black text-[11px] py-1 px-2 rounded-lg border border-violet-200 cursor-pointer"
+                                  >
+                                    {isKh ? 'បន្ថែម' : 'Add'}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Container 2: Meal Service */}
+                          <div className="space-y-2">
+                            <label className={`flex items-center justify-between p-3.5 rounded-2xl border-2 transition cursor-pointer select-none ${
+                              formEatsSchoolMeal 
+                                ? 'border-[#073B3A] bg-teal-50/10 text-[#073B3A]' 
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-350'
+                            }`}>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl">🍱</span>
+                                <div>
+                                  <span className="block text-xs font-black">
+                                    {isKh ? 'សិស្សញ៉ាំបាយសាលា (School Meals)' : 'School Lunch service'}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-medium font-sans">
+                                    {isKh ? 'សិស្សញ៉ាំអាហារសាលាថ្ងៃត្រង់' : 'Eats catered school meals'}
+                                  </span>
+                                </div>
+                              </div>
+                              <input 
+                                type="checkbox"
+                                checked={formEatsSchoolMeal}
+                                onChange={(e) => setFormEatsSchoolMeal(e.target.checked)}
+                                className="w-4 h-4 rounded-md border-slate-355 text-teal-650 focus:ring-teal-500/20 cursor-pointer"
+                              />
+                            </label>
+
+                            {formEatsSchoolMeal && (
+                              <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-150 space-y-2">
+                                <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider">
+                                  📅 {isKh ? 'កំណត់ខែឆ្នាំនៃការញ៉ាំអាហារ៖' : 'Select Meal Service Months:'}
+                                </span>
+                                
+                                <div className="flex flex-wrap gap-1.5 min-h-[32px] items-center">
+                                  {formMealMonths.length === 0 ? (
+                                    <span className="text-[10.5px] text-slate-450 font-bold italic">
+                                      {isKh ? 'មិនទាន់មានការកំណត់ខែឡើយ (គ្រប់ខែ)' : 'No specific months chosen (All months)'}
+                                    </span>
+                                  ) : (
+                                    formMealMonths.map((m) => (
+                                      <span key={m} className="inline-flex items-center gap-1 bg-teal-100 text-[#073B3A] text-[10.5px] font-bold px-2 py-0.5 rounded-lg border border-teal-200">
+                                        {formatMonthYearStr(m)}
+                                        <button
+                                          type="button"
+                                          onClick={() => setFormMealMonths(formMealMonths.filter(x => x !== m))}
+                                          className="text-[#073B3A] hover:text-red-500 font-bold ml-1 cursor-pointer text-xs"
+                                        >
+                                          ×
+                                        </button>
+                                      </span>
+                                    ))
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2 mt-2">
+                                  <select 
+                                    id="mealMonthSelect"
+                                    className="bg-white border border-slate-200 rounded-lg py-1 px-2 text-[11px] font-bold outline-none text-slate-600 cursor-pointer"
+                                    defaultValue={new Date().toISOString().split('-')[1]}
+                                  >
+                                    <option value="01">{isKh ? 'មករា (01)' : 'Jan (01)'}</option>
+                                    <option value="02">{isKh ? 'កុម្ភៈ (02)' : 'Feb (02)'}</option>
+                                    <option value="03">{isKh ? 'មីនា (03)' : 'Mar (03)'}</option>
+                                    <option value="04">{isKh ? 'មេសា (04)' : 'Apr (04)'}</option>
+                                    <option value="05">{isKh ? 'ឧសភា (05)' : 'May (05)'}</option>
+                                    <option value="06">{isKh ? 'មិថុនា (06)' : 'Jun (06)'}</option>
+                                    <option value="07">{isKh ? 'កក្កដា (07)' : 'Jul (07)'}</option>
+                                    <option value="08">{isKh ? 'សីហា (08)' : 'Aug (08)'}</option>
+                                    <option value="09">{isKh ? 'កញ្ញា (09)' : 'Sep (09)'}</option>
+                                    <option value="10">{isKh ? 'តុលា (10)' : 'Oct (10)'}</option>
+                                    <option value="11">{isKh ? 'វិច្ឆិកា (11)' : 'Nov (11)'}</option>
+                                    <option value="12">{isKh ? 'ធ្នូ (12)' : 'Dec (12)'}</option>
+                                  </select>
+                                  <select 
+                                    id="mealYearSelect"
+                                    className="bg-white border border-slate-200 rounded-lg py-1 px-2 text-[11px] font-bold outline-none text-slate-600 cursor-pointer"
+                                    defaultValue={new Date().getFullYear().toString()}
+                                  >
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                    <option value="2027">2027</option>
+                                    <option value="2028">2028</option>
+                                    <option value="2029">2029</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const mSelect = document.getElementById('mealMonthSelect') as HTMLSelectElement;
+                                      const ySelect = document.getElementById('mealYearSelect') as HTMLSelectElement;
+                                      if (mSelect && ySelect) {
+                                        const val = `${ySelect.value}-${mSelect.value}`;
+                                        if (!formMealMonths.includes(val)) {
+                                          setFormMealMonths([...formMealMonths, val].sort());
+                                        }
+                                      }
+                                    }}
+                                    className="bg-teal-50 hover:bg-teal-100 text-teal-700 font-black text-[11px] py-1 px-2 rounded-lg border border-teal-200 cursor-pointer"
+                                  >
+                                    {isKh ? 'បន្ថែម' : 'Add'}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Service Cancellation Flags (សិស្សឈប់គេងសាលា ឬឈប់ញ៉ាំបាយសាលា) */}
+                        {(formStaysForNap || formEatsSchoolMeal) && (
+                          <div className="sm:col-span-2 border-t border-slate-100/80 pt-4 mt-2 space-y-4">
+                            <span className="block text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                              🛑 {isKh ? 'កំណត់ការឈប់ប្រើប្រាស់សេវាកម្ម (Cancel / Withdraw School Services)' : 'Service Withdrawal Settings'}
+                            </span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {/* Nap Stopped */}
+                              {formStaysForNap && (
+                                <div className={`p-3.5 rounded-2xl border-2 transition ${
+                                  formNapStopped 
+                                    ? 'border-rose-400 bg-rose-50/10 text-rose-700' 
+                                    : 'border-slate-150 bg-white text-slate-600 hover:border-slate-250'
+                                }`}>
+                                  <div className="flex items-center justify-between cursor-pointer select-none" onClick={() => setFormNapStopped(!formNapStopped)}>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-xl">🚷</span>
+                                      <div>
+                                        <span className="block text-xs font-black">
+                                          {isKh ? 'ឈប់គេងសាលា' : 'Cancel Nap Service'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">
+                                          {isKh ? 'បញ្ឈប់សេវាកម្មគេងសាលាថ្ងៃត្រង់' : 'Withdraw from sleep service'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <input 
+                                      type="checkbox"
+                                      checked={formNapStopped}
+                                      onChange={(e) => setFormNapStopped(e.target.checked)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="w-4 h-4 rounded-md border-slate-350 text-rose-605 focus:ring-rose-500/20 cursor-pointer"
+                                    />
+                                  </div>
+                                  
+                                  {formNapStopped && (
+                                    <div className="mt-3.5 pt-3.5 border-t border-rose-100 space-y-1.5">
+                                      <label className="block text-[10px] font-black text-rose-550 uppercase">
+                                        {isKh ? 'ថ្ងៃខែឆ្នាំឈប់គេងសាលា៖' : 'Stop Date:'}
+                                      </label>
+                                      <input 
+                                        type="date"
+                                        value={formNapStopDate || new Date().toISOString().split('T')[0]}
+                                        onChange={(e) => setFormNapStopDate(e.target.value)}
+                                        className="w-full px-3 py-1.5 bg-white border border-rose-200 focus:border-rose-450 focus:ring-rose-500/15 rounded-xl text-xs font-bold font-mono outline-none text-rose-800"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Meal Stopped */}
+                              {formEatsSchoolMeal && (
+                                <div className={`p-3.5 rounded-2xl border-2 transition ${
+                                  formMealStopped 
+                                    ? 'border-rose-400 bg-rose-50/10 text-rose-700' 
+                                    : 'border-slate-150 bg-white text-slate-600 hover:border-slate-250'
+                                }`}>
+                                  <div className="flex items-center justify-between cursor-pointer select-none" onClick={() => setFormMealStopped(!formMealStopped)}>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-xl">🚫</span>
+                                      <div>
+                                        <span className="block text-xs font-black">
+                                          {isKh ? 'ឈប់ញ៉ាំបាយសាលា' : 'Cancel Meal Service'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">
+                                          {isKh ? 'បញ្ឈប់សេវាកម្មញ៉ាំអាហារសាលា' : 'Withdraw from meal service'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <input 
+                                      type="checkbox"
+                                      checked={formMealStopped}
+                                      onChange={(e) => setFormMealStopped(e.target.checked)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="w-4 h-4 rounded-md border-slate-350 text-rose-605 focus:ring-rose-500/20 cursor-pointer"
+                                    />
+                                  </div>
+
+                                  {formMealStopped && (
+                                    <div className="mt-3.5 pt-3.5 border-t border-rose-100 space-y-1.5">
+                                      <label className="block text-[10px] font-black text-rose-550 uppercase">
+                                        {isKh ? 'ថ្ងៃខែឆ្នាំឈប់ញ៉ាំបាយសាលា៖' : 'Stop Date:'}
+                                      </label>
+                                      <input 
+                                        type="date"
+                                        value={formMealStopDate || new Date().toISOString().split('T')[0]}
+                                        onChange={(e) => setFormMealStopDate(e.target.value)}
+                                        className="w-full px-3 py-1.5 bg-white border border-rose-200 focus:border-rose-450 focus:ring-rose-500/15 rounded-xl text-xs font-bold font-mono outline-none text-rose-800"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
                       </div>
 

@@ -367,33 +367,43 @@ export interface Student {
   enrollmentDate?: string;
   responsibleLocation?: string; // Classroom room number, e.g., "Room 102"
   icom?: string; // Optionally keep same structure " walkie / extra card " or status
+  staysForNap?: boolean; // សិស្សគេង
+  eatsSchoolMeal?: boolean; // សិស្សញាំបាយសាលា
+  napStopped?: boolean; // ឈប់គេងសាលា
+  napStopDate?: string; // ថ្ងៃឈប់គេងសាលា
+  mealStopped?: boolean; // ឈប់ញ៉ាំបាយសាលា
+  mealStopDate?: string; // ថ្ងៃឈប់ញ៉ាំបាយសាលា
+  napMonths?: string[]; // e.g. ["2026-06", "2026-07"] - active months
+  mealMonths?: string[]; // e.g. ["2026-06", "2026-07"] - active months
   attachments?: { id: string; name: string; size: string; type: string; dataUrl: string }[];
   createdBy?: string;
 }
 
 export interface HourlyLog {
   id: string;
-  timeSlot: string; // e.g. "08:00 - 09:00"
-  activity: string; // Detail of the hour's record/task
-  status: 'Completed' | 'In Progress' | 'Pending' | 'Delayed';
+  timeSlot?: string; // Optional for backward compatibility
+  date: string; // Task Date
+  activity: string; // Description of work
+  status: 'Completed' | 'In progress' | 'Pending' | 'Follow up' | 'Cancelled';
   remarks?: string;
 }
 
 export interface DailyReport {
   id: string;
   date: string; // YYYY-MM-DD
-  checkInTime: string; // entry time e.g., "07:30"
-  checkOutTime: string; // exit time e.g., "17:00"
-  reporterName: string; // Name of person who records it (Prepared by)
-  overallSummary: string;
+  department?: string; // Department (default: Operations)
   hourlyLogs: HourlyLog[];
   createdAt: string;
-  department?: string; // Department (default: Operations)
+  reporterName?: string; // Name of person who records it (Prepared by)
+  overallSummary?: string;
   issuesEncountered?: string; // បញ្ហាប្រឈម
   actionsTaken?: string; // ដំណោះស្រាយដែលបានអនុវត្ត
   planForTomorrow?: string; // ផែនការសម្រាប់ថ្ងៃស្អែក
   remarks?: string; // កំណត់សម្គាល់
   createdBy?: string;
+  pinned?: boolean;
+  checkInTime?: string; // Made optional
+  checkOutTime?: string; // Made optional
 }
 
 export type UserRole = 'admin' | 'user';

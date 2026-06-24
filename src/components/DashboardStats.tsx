@@ -497,61 +497,61 @@ export default function DashboardStats({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Card 1: Total Staff */}
-        <div className="bg-gradient-to-br from-amber-950 via-stone-950 to-stone-950 rounded-2xl p-4 border border-amber-900 shadow-md relative overflow-hidden group hover:border-amber-700 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+        <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 border border-amber-500 shadow-md relative overflow-hidden group hover:border-amber-600 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse shadow-sm shadow-amber-500/50" />
-                <p className="text-xs sm:text-sm font-black text-amber-200 font-sans tracking-wide text-amber-100/90">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
+                <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse shadow-sm shadow-slate-900/50" />
+                <p className="text-xs sm:text-sm font-black text-slate-900 font-sans tracking-wide">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
               </div>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl sm:text-3xl font-mono font-black text-white tracking-tight">{staffList.length}</span>
-                <span className="text-sm sm:text-base font-bold text-amber-400 font-sans ml-1">នាក់</span>
+                <span className="text-2xl sm:text-3xl font-mono font-black text-slate-950 tracking-tight">{staffList.length}</span>
+                <span className="text-sm sm:text-base font-bold text-slate-900 font-sans ml-1">នាក់</span>
               </div>
               <div className="pt-1">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-950/80 border border-amber-900 text-[10px] font-semibold text-amber-300 rounded-lg">
-                  <span className="w-1 h-1 rounded-full bg-amber-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-950/10 border border-slate-950/20 text-[10px] font-bold text-slate-900 rounded-lg">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                   កំពុងបំពេញការងារប្រចាំថ្ងៃ
                 </span>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-amber-800 to-amber-900 text-amber-300 p-2.5 rounded-xl border border-amber-800/50 transition-all duration-300 group-hover:scale-110 shrink-0">
+            <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 transition-all duration-300 group-hover:scale-110 shrink-0">
               <Users className="w-5 h-5 stroke-[2.2]" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
         </div>
 
         {/* Card 2: Presence Rate */}
-        <div className="bg-gradient-to-br from-amber-950 via-stone-950 to-stone-950 rounded-2xl p-4 border border-amber-900 shadow-md relative overflow-hidden group hover:border-amber-700 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+        <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 border border-amber-500 shadow-md relative overflow-hidden group hover:border-amber-600 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse shadow-sm shadow-amber-400/50" />
-                <p className="text-xs sm:text-sm font-black text-amber-200 font-sans tracking-wide text-amber-100/90">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
+                <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse shadow-sm shadow-slate-900/50" />
+                <p className="text-xs sm:text-sm font-black text-slate-900 font-sans tracking-wide">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
               </div>
               <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl sm:text-3xl font-mono font-black text-amber-400 tracking-tight">{presentRate}</span>
-                <span className="text-lg sm:text-xl font-bold text-amber-300 ml-0.5">%</span>
+                <span className="text-2xl sm:text-3xl font-mono font-black text-slate-950 tracking-tight">{presentRate}</span>
+                <span className="text-lg sm:text-xl font-bold text-slate-900 ml-0.5">%</span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/60 border border-amber-900 text-[10px] font-bold text-amber-300 rounded-md">
-                  <span className="w-1 h-1 rounded-full bg-amber-400" />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-950/10 border border-slate-950/15 text-[10px] font-bold text-slate-900 rounded-md">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                   វត្តមាន <strong className="font-mono ml-0.5">{totalPresent}</strong>
                 </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-950/60 border border-amber-900 text-[10px] font-bold text-amber-300 rounded-md">
-                  <span className="w-1 h-1 rounded-full bg-amber-500" />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-950/10 border border-slate-950/15 text-[10px] font-bold text-slate-900 rounded-md">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
                   ច្បាប់ <strong className="font-mono ml-0.5">{totalExcused}</strong>
                 </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-950/60 border border-rose-900 text-[10px] font-bold text-rose-350 rounded-md">
-                  <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-650/15 border border-rose-600/30 text-[10px] font-bold text-rose-800 rounded-md">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
                   អត់ <strong className="font-mono ml-0.5">{totalAbsent}</strong>
                 </span>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-amber-800 to-amber-900 text-amber-300 p-2.5 rounded-xl border border-amber-800/50 transition-all duration-300 group-hover:scale-110 shrink-0">
+            <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 transition-all duration-300 group-hover:scale-110 shrink-0">
               <UserCheck className="w-5 h-5 stroke-[2.2]" />
             </div>
           </div>
@@ -559,36 +559,36 @@ export default function DashboardStats({
         </div>
 
         {/* Card 3: Date Display Banner */}
-        <div className="bg-gradient-to-br from-amber-950 via-stone-950 to-stone-950 rounded-2xl p-4 border border-amber-900 shadow-md relative overflow-hidden group hover:border-amber-700 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute -top-4 -right-4 w-24 h-24 bg-amber-500/5 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
+        <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 border border-amber-500 shadow-md relative overflow-hidden group hover:border-amber-600 hover:shadow-lg transition-all duration-300 select-none">
+          <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
           <div className="flex items-start justify-between gap-1">
             <div className="space-y-1.5">
               <div className="inline-block">
-                <span className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-moul font-normal text-[8.5px] px-2 py-0.5 rounded-md shadow-sm leading-none">
+                <span className="bg-slate-950 text-amber-400 font-moul font-normal text-[8.5px] px-2 py-0.5 rounded-md shadow-sm leading-none">
                   កាលបរិច្ឆេទស្រង់
                 </span>
               </div>
               <div>
-                <h4 className="text-xl sm:text-2xl font-black font-mono text-white tracking-wider mt-1 drop-shadow-[0_2px_4px_rgba(245,158,11,0.2)]">
+                <h4 className="text-xl sm:text-2xl font-black font-mono text-slate-950 tracking-wider mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
                   {selectedDate}
                 </h4>
               </div>
-              <p className="text-[11px] font-semibold text-amber-300/80 flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-amber-500" />
+              <p className="text-[11px] font-semibold text-slate-900 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-slate-900" />
                 រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)
               </p>
               
-              <div className="bg-amber-950/60 border border-amber-900 rounded-lg px-2 py-1 text-[10.5px] font-bold text-amber-300/90 flex items-center gap-1.5 mt-2 transition max-w-max">
-                <Clock className="w-3.5 h-3.5 text-amber-400 animate-spin-slow shrink-0" />
+              <div className="bg-slate-950/10 border border-slate-950/20 rounded-lg px-2 py-1 text-[10.5px] font-bold text-slate-900 flex items-center gap-1.5 mt-2 transition max-w-max">
+                <Clock className="w-3.5 h-3.5 text-slate-800 animate-spin-slow shrink-0" />
                 <span>ស្រង់ដោយ៖ <strong className="tracking-wide">LOUNG Veasna</strong></span>
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-amber-800 to-amber-900 text-amber-400 p-2.5 rounded-xl border border-amber-800/50 shrink-0 leading-none flex items-center justify-center">
+            <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 shrink-0 leading-none flex items-center justify-center">
               <Clock className="w-5 h-5 stroke-[2.2] animate-pulse" />
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
         </div>
 
       </div>
@@ -598,7 +598,7 @@ export default function DashboardStats({
         
         {/* Department lists cards */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-lg p-6 space-y-4">
-          <h4 className="text-xs md:text-sm font-moul font-normal leading-relaxed text-[#073B3A] border-b border-slate-100 pb-3 flex flex-wrap items-center gap-1.5">
+          <h4 className="text-sm md:text-base font-battambang font-extrabold leading-relaxed text-[#073B3A] border-b border-slate-100 pb-3 flex flex-wrap items-center gap-1.5">
             <span>ស្ថិតិបុគ្គលិកតាមផ្នែកនីមួយៗ</span>
             <span className="text-[10px] font-sans font-semibold text-slate-400 uppercase tracking-wider hidden sm:inline">
               (Department Resources & Status)
@@ -623,7 +623,7 @@ export default function DashboardStats({
                     </div>
                   </div>
                   <div>
-                    <h5 className="text-[13.5px] sm:text-[14.5px] font-moul font-normal text-slate-800 mt-1 leading-relaxed">
+                    <h5 className="text-[14px] sm:text-[15.5px] font-battambang font-bold text-slate-800 mt-1 leading-relaxed">
                       {DEPARTMENT_NAMES_KM[dept]}
                     </h5>
                     <div className="flex items-center justify-between mt-2.5 text-xs font-semibold text-slate-650">
@@ -646,7 +646,7 @@ export default function DashboardStats({
         {/* Presence breakdown visualization in standard geometric elements */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-lg p-6 flex flex-col justify-between">
           <div>
-            <h4 className="text-xs md:text-sm font-moul font-normal leading-relaxed text-[#073B3A] border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+            <h4 className="text-sm md:text-base font-battambang font-extrabold leading-relaxed text-[#073B3A] border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
               <span>របាយវត្តមានថ្ងៃនេះ</span>
               <span className="text-[11px] font-sans font-bold text-slate-505 bg-slate-50 px-2.5 py-0.5 rounded-md border border-slate-100">
                 <span className="font-mono text-slate-700">{totalPresent + totalExcused + totalAbsent}</span> នាក់

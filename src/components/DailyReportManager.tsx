@@ -3,7 +3,7 @@ import {
   Clock, Calendar, User, ClipboardList, Plus, Trash2, Eye, Printer, 
   Edit3, Save, X, Check, FileText, ChevronRight, Search, Activity, 
   Sparkles, Filter, CheckCircle, AlertTriangle, Play, HelpCircle, Download,
-  Building, ChevronDown
+  Building, ChevronDown, Pin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DailyReport, HourlyLog, UserAccount } from '../types';
@@ -12,30 +12,30 @@ import { DailyReport, HourlyLog, UserAccount } from '../types';
 const DEFAULT_HOURLY_LOGS_DEMO: HourlyLog[] = [
   {
     id: 'hl-1',
-    timeSlot: '07:30 - 08:30',
+    date: '2026-06-10',
     activity: 'អញ្ជើញត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ និងកម្លាំងយាមល្បាតតាមច្រកទ្វារសាលា (Inspect security guard assembly and gate operations)',
     status: 'Completed',
     remarks: 'គ្រប់គ្នាមកទាន់ពេល និងរៀបរយល្អ'
   },
   {
     id: 'hl-2',
-    timeSlot: '08:30 - 10:30',
+    date: '2026-06-10',
     activity: 'ដើរត្រួតពិនិត្យប្រព័ន្ធម៉ាស៊ីនត្រជាក់ (AC) និងឧបករណ៍អគ្គិសនីតាមបណ្តាបន្ទប់រៀនជាន់ទី១ និងជាន់ទី២ (Audit room ACs and electricity on 1st & 2nd floors)',
     status: 'Completed',
     remarks: 'រកឃើញម៉ាស៊ីនត្រជាក់បន្ទប់ ២០១ មិនសូវត្រជាក់'
   },
   {
     id: 'hl-3',
-    timeSlot: '10:30 - 12:30',
+    date: '2026-06-10',
     activity: 'ពិនិត្យដំណើរការកាមេរ៉ាសុវត្ថិភាព CCTV ក្នុងមជ្ឈមណ្ឌលបញ្ជា និងផ្ទៀងផ្ទាត់ការថត (Verify CCTV control feed integrity and hard drive backup)',
     status: 'Completed',
     remarks: 'កាមេរ៉ាទាំងអស់៥៦គ្រាប់ ដំណើរការល្អ'
   },
   {
     id: 'hl-4',
-    timeSlot: '13:30 - 15:30',
+    date: '2026-06-10',
     activity: 'រៀបចំរបាយការណ៍រួមប្រចាំថ្ងៃ និងត្រួតពិនិត្យច្រកចេញ-ចូល ធានាសុវត្ថិភាពសិស្ស (Construct overall daily report and monitor security dismissals)',
-    status: 'In Progress',
+    status: 'In progress',
     remarks: 'កំពុងបន្តអនុវត្ត'
   }
 ];
@@ -44,52 +44,38 @@ const INITIAL_REPORTS_MOCK: DailyReport[] = [
   {
     id: 'dr-1',
     date: '2026-06-10',
-    checkInTime: '07:30',
-    checkOutTime: '17:30',
     reporterName: 'LOUNG Veasna (Admin Supervisor)',
-    overallSummary: 'ថ្ងៃនេះសកម្មភាពការងារទូទៅរបស់សាលាប្រព្រឹត្តទៅបានយ៉ាងរលូនល្អប្រសើរ។ ប្រព័ន្ធអគ្គិសនី និងទឹកមានស្ថិរភាព។',
     hourlyLogs: DEFAULT_HOURLY_LOGS_DEMO,
     createdAt: '2026-06-10T10:00:00.000Z',
-    department: 'Operations',
-    issuesEncountered: 'រកឃើញម៉ាស៊ីនត្រជាក់បន្ទប់ ២០១ មិនសូវត្រជាក់ និងមានបញ្ហាហូរទឹកបន្តិចបន្តួច។',
-    actionsTaken: 'បានកត់ត្រាចូលប្រព័ន្ធស្នើសុំ និងទាក់ទងជាងបច្ចេកទេសឱ្យចុះមកពិនិត្យ និងសម្អាតខ្សែកាបម៉ាស៊ីនភ្លាមៗ។',
-    planForTomorrow: 'បន្តតាមដានការជួសជុលម៉ាស៊ីនត្រជាក់បន្ទប់ ២០១ និងត្រួតពិនិត្យកាមេរ៉ា CCTV នៅខាងក្រោយសាលាបន្ថែមទៀត។',
-    remarks: 'ការងារទូទៅរបស់សាលារៀបរយល្អ គ្មានការរអាក់រអួលធំដុំនោះទេ។'
+    department: 'Operations'
   },
   {
     id: 'dr-2',
     date: '2026-06-09',
-    checkInTime: '07:30',
-    checkOutTime: '17:30',
     reporterName: 'LOUNG Veasna (Admin Supervisor)',
-    overallSummary: 'ការងារបង្រួបបង្រួមឯកសាររដ្ឋបាល និងការតាមដានការប្រើប្រាស់អគ្គិសនីប្រចាំខែត្រូវបានបញ្ចប់។',
     hourlyLogs: [
       {
         id: 'hl-b1',
-        timeSlot: '07:30 - 10:30',
+        date: '2026-06-09',
         activity: 'ទទួលវត្តមានបុគ្គលិក និងរៀបចំផែនការការងារប្រចាំថ្ងៃ (Staff check-in & setup daily checklist)',
         status: 'Completed'
       },
       {
         id: 'hl-b2',
-        timeSlot: '10:30 - 15:30',
+        date: '2026-06-09',
         activity: 'ចុះពិនិត្យប្រព័ន្ធដកដង្ហើម និងម៉ាស៊ីនត្រជាក់ទូទាំងវិទ្យាល័យ (Full school AC & ventilation sanity checks)',
         status: 'Completed',
         remarks: 'បានសំអាតបរិក្ខារបន្ទប់កុំព្យូទ័រ'
       },
       {
         id: 'hl-b3',
-        timeSlot: '15:30 - 17:30',
+        date: '2026-06-09',
         activity: 'សម្របសម្រួលជាមួយក្រុមសន្តិសុខក្នុងការបញ្ជូនសិស្សត្រឡប់ទៅផ្ទះ (Manage dismissal gate operations and secure premises)',
         status: 'Completed'
       }
     ],
     createdAt: '2026-06-09T10:05:00.000Z',
-    department: 'Operations',
-    issuesEncountered: 'កម្លាំងយាមល្បាតខាងមុខខ្វះអាយកូម (Icom) ១គ្រឿងសម្រាប់ការសម្របសម្រួលពេលសិស្សចេញ។',
-    actionsTaken: 'បានស្នើសុំបន្ទាន់ទៅកាន់ប្រធានផ្នែកដើម្បីផ្គត់ផ្គង់អាយកូមបន្ថែម។',
-    planForTomorrow: 'ត្រួតពិនិត្យឧបករណ៍យាមល្បាតរបស់ក្រុមការងារសន្តិសុខទូទៅ។',
-    remarks: 'សិស្សានុសិស្សទាំងអស់គោរពវិន័យសណ្តាប់ធ្នាប់បានល្អល្អះ។'
+    department: 'Operations'
   }
 ];
 
@@ -141,6 +127,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterDate, setFilterDate] = useState<string>('All');
   const [selectedReport, setSelectedReport] = useState<DailyReport | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<DailyReport | null>(null);
@@ -158,20 +145,41 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
   const [formActionsTaken, setFormActionsTaken] = useState('');
   const [formPlanForTomorrow, setFormPlanForTomorrow] = useState('');
   const [formRemarks, setFormRemarks] = useState('');
+  const [formPinned, setFormPinned] = useState(false);
 
-  // Hourly log listings in Form
+  // Hourly log listings in Form (Summary of Activities)
   const [formHourlyLogs, setFormHourlyLogs] = useState<HourlyLog[]>([]);
 
-  // Time slot building in Form
-  const [currentSlotText, setCurrentSlotText] = useState('07:30 - 08:30');
+  // Activity log building in Form
+  const [currentLogDate, setCurrentLogDate] = useState('');
   const [currentActivity, setCurrentActivity] = useState('');
-  const [currentStatus, setCurrentStatus] = useState<'Completed' | 'In Progress'>('Completed');
+  const [currentStatus, setCurrentStatus] = useState<'Completed' | 'In progress' | 'Pending' | 'Follow up' | 'Cancelled'>('Completed');
+
+  // Inline Activity Log states for the new on-screen data entry form
+  const [inlineLogDate, setInlineLogDate] = useState('');
+  const [inlineLogStatus, setInlineLogStatus] = useState<'Completed' | 'In progress' | 'Pending' | 'Follow up' | 'Cancelled'>('Completed');
+  const [inlineLogActivity, setInlineLogActivity] = useState('');
+
+  // Sync inline log date when report is selected
+  useEffect(() => {
+    if (selectedReport) {
+      setInlineLogDate(selectedReport.date);
+    }
+  }, [selectedReport?.id, selectedReport?.date]);
 
   // Load standard date
   useEffect(() => {
     const today = new Date().toISOString().substring(0, 10);
     setFormDate(today);
+    setCurrentLogDate(today);
   }, []);
+
+  // Sync current log date with form date
+  useEffect(() => {
+    if (formDate) {
+      setCurrentLogDate(formDate);
+    }
+  }, [formDate]);
 
   // Save to localStorage
   useEffect(() => {
@@ -189,13 +197,15 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
       } else {
         setEditingReport(null);
         setFormDate(initialDate);
+        setCurrentLogDate(initialDate);
         setFormReporter('LOUNG Veasna (Admin Supervisor)');
         setFormDepartment('Operations');
         setFormIssuesEncountered('');
         setFormActionsTaken('');
         setFormPlanForTomorrow('');
         setFormRemarks('');
-        setFormHourlyLogs([...DEFAULT_HOURLY_LOGS_DEMO.map(l => ({ ...l, id: Math.random().toString() }))]);
+        setFormPinned(false);
+        setFormHourlyLogs([...DEFAULT_HOURLY_LOGS_DEMO.map(l => ({ ...l, id: Math.random().toString(), date: initialDate }))]);
         setIsFormOpen(true);
         setSelectedReport(null);
       }
@@ -209,25 +219,29 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
     setEditingReport(null);
     const today = new Date().toISOString().substring(0, 10);
     setFormDate(today);
+    setCurrentLogDate(today);
     setFormReporter('LOUNG Veasna (Admin Supervisor)');
     setFormDepartment('Operations');
     setFormIssuesEncountered('');
     setFormActionsTaken('');
     setFormPlanForTomorrow('');
     setFormRemarks('');
-    setFormHourlyLogs([...DEFAULT_HOURLY_LOGS_DEMO.map(l => ({ ...l, id: Math.random().toString() }))]);
+    setFormPinned(false);
+    setFormHourlyLogs([...DEFAULT_HOURLY_LOGS_DEMO.map(l => ({ ...l, id: Math.random().toString(), date: today }))]);
     setIsFormOpen(true);
   };
 
   const handleOpenEditForm = (report: DailyReport) => {
     setEditingReport(report);
     setFormDate(report.date);
-    setFormReporter(report.reporterName);
+    setCurrentLogDate(report.date);
+    setFormReporter(report.reporterName || 'LOUNG Veasna (Admin Supervisor)');
     setFormDepartment(report.department || 'Operations');
     setFormIssuesEncountered(report.issuesEncountered || '');
     setFormActionsTaken(report.actionsTaken || '');
     setFormPlanForTomorrow(report.planForTomorrow || '');
     setFormRemarks(report.remarks || '');
+    setFormPinned(!!report.pinned);
     setFormHourlyLogs([...report.hourlyLogs]);
     setIsFormOpen(true);
   };
@@ -237,7 +251,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
 
     const newLog: HourlyLog = {
       id: 'hl-' + Date.now() + Math.random().toString(36).substring(2, 5),
-      timeSlot: currentSlotText.trim() || '08:00 - 09:00',
+      date: currentLogDate || formDate || new Date().toISOString().substring(0, 10),
       activity: currentActivity.trim(),
       status: currentStatus,
       remarks: ''
@@ -268,7 +282,8 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
       actionsTaken: formActionsTaken,
       planForTomorrow: formPlanForTomorrow,
       remarks: formRemarks,
-      createdBy: editingReport?.createdBy || currentUser?.username || 'admin'
+      createdBy: editingReport?.createdBy || currentUser?.username || 'admin',
+      pinned: formPinned
     };
 
     if (editingReport) {
@@ -300,16 +315,42 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
     }
   };
 
+  const handleTogglePinReport = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setReports(prev => prev.map(r => r.id === id ? { ...r, pinned: !r.pinned } : r));
+    if (selectedReport && selectedReport.id === id) {
+      setSelectedReport(prev => prev ? { ...prev, pinned: !prev.pinned } : null);
+    }
+  };
+
+  const uniqueDates = React.useMemo(() => {
+    const datesSet = new Set<string>();
+    displayedReports.forEach(r => {
+      if (r.date) datesSet.add(r.date);
+    });
+    return Array.from(datesSet).sort((a, b) => b.localeCompare(a));
+  }, [displayedReports]);
+
   const filteredReports = displayedReports.filter(r => {
     const q = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       r.date.includes(q) ||
       (r.department || '').toLowerCase().includes(q) ||
       r.reporterName.toLowerCase().includes(q) ||
       (r.issuesEncountered || '').toLowerCase().includes(q) ||
       r.hourlyLogs.some(log => log.activity.toLowerCase().includes(q))
     );
+    const matchesDate = filterDate === 'All' || r.date === filterDate;
+    return matchesSearch && matchesDate;
   });
+
+  const sortedAndFilteredReports = React.useMemo(() => {
+    return [...filteredReports].sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return b.date.localeCompare(a.date);
+    });
+  }, [filteredReports]);
 
   const handleExportCSV = () => {
     if (!selectedReport) return;
@@ -318,22 +359,16 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
     let csvContent = "\uFEFF"; 
     csvContent += "Western International School - Daily Operations Report\n";
     csvContent += `Date: ${selectedReport.date}\n`;
-    csvContent += `Department: ${selectedReport.department || 'Operations'}\n`;
-    csvContent += `Prepared By: ${selectedReport.reporterName}\n\n`;
+    csvContent += `Department: ${selectedReport.department || 'Operations'}\n\n`;
     
-    // Headers for hourly tasks
-    csvContent += "No,Time Slot,Activity,Status\n";
+    // Headers for tasks
+    csvContent += "No,Date,Description of Work,Status\n";
     selectedReport.hourlyLogs.forEach((log, idx) => {
       const cleanActivity = log.activity.replace(/"/g, '""');
-      csvContent += `${idx + 1},"${log.timeSlot || '08:00 - 09:00'}","${cleanActivity}","${log.status}"\n`;
+      const logDate = log.date || selectedReport.date;
+      csvContent += `${idx + 1},"${logDate}","${cleanActivity}","${log.status}"\n`;
     });
     
-    csvContent += "\n";
-    csvContent += `Issues Encountered (បញ្ហាប្រឈម),"${(selectedReport.issuesEncountered || '').replace(/"/g, '""')}"\n`;
-    csvContent += `Actions Taken (ដំណោះស្រាយ),"${(selectedReport.actionsTaken || '').replace(/"/g, '""')}"\n`;
-    csvContent += `Plan for Tomorrow (ផែនការបន្ទាប់),"${(selectedReport.planForTomorrow || '').replace(/"/g, '""')}"\n`;
-    csvContent += `Remarks (កំណត់សម្គាល់ផ្សេងៗ),"${(selectedReport.remarks || '').replace(/"/g, '""')}"\n`;
-
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -346,15 +381,19 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
 
   const handleExportJSON = () => {
     if (!selectedReport) return;
-    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-      JSON.stringify(selectedReport, null, 2)
-    )}`;
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', jsonString);
-    downloadAnchor.setAttribute('download', `WIS_Daily_Report_${selectedReport.date}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    document.body.removeChild(downloadAnchor);
+    try {
+      const blob = new Blob([JSON.stringify(selectedReport, null, 2)], { type: "application/json;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute('href', url);
+      downloadAnchor.setAttribute('download', `WIS_Daily_Report_${selectedReport.date}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export JSON failed:", err);
+    }
   };
 
   const handlePrint = () => {
@@ -408,67 +447,28 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
               color: #0f172a !important;
               margin: 0 !important;
               padding: 0 !important;
-              font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
+              font-family: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Inter", sans-serif !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
 
             /* Explicit high-contrast rules for Moul (Traditional Khmer Title Script) */
             .font-moul {
-              font-family: 'Moul', serif !important;
+              font-family: "Khmer OS Muol Light", "Moul", "Khmer OS Muol", serif !important;
               text-shadow: none !important;
               font-weight: normal !important;
             }
             
             .font-sans {
-              font-family: 'Inter', 'Noto Sans Khmer', sans-serif !important;
+              font-family: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Inter", sans-serif !important;
             }
 
-            /* Prevent browser options from masking background colors or borders */
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              color-adjust: exact !important;
-            }
-
-            /* Optimize container footprint for printing */
-            #printable-scope {
-              width: 100% !important;
-              max-width: 100% !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              box-shadow: none !important;
-              border: none !important;
-              background-color: white !important;
-            }
-
-            #report-sheet {
-              border: none !important;
-              box-shadow: none !important;
-              width: 100% !important;
-              max-width: 100% !important;
-              padding: 0 !important;
-              margin: 0 !important;
-              background-color: white !important;
-              min-height: auto !important;
-            }
-
-            /* Guard against clumsy page-breaks on tables and signature areas */
-            tr, .signature-section, .signature-section * {
-              page-break-inside: avoid !important;
-            }
-
-            thead {
-              display: table-header-group !important;
-            }
-            
-            /* Render input checklists in uniform size */
             input[type="checkbox"] {
               vertical-align: middle !important;
             }
 
             /* Hide general interactive helper components or editing widgets in vectors */
-            .no-print, [title="Upload custom logo"], .group\\/edit:hover svg {
+            .no-print, [title="Upload custom logo"], .group\/edit:hover svg {
               display: none !important;
             }
           </style>
@@ -507,6 +507,19 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
     }
   };
 
+  const handleInlineAddActivity = () => {
+    if (!selectedReport || !inlineLogActivity.trim()) return;
+    const newLog = {
+      id: Math.random().toString(36).substr(2, 9),
+      date: inlineLogDate || selectedReport.date,
+      activity: inlineLogActivity.trim(),
+      status: inlineLogStatus
+    };
+    const updatedLogs = [...selectedReport.hourlyLogs, newLog];
+    handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updatedLogs);
+    setInlineLogActivity('');
+  };
+
   const handleUpdateInlineField = (reportId: string, field: string, value: any) => {
     setReports(prev => prev.map(r => {
       if (r.id === reportId) {
@@ -525,7 +538,8 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
     field: string,
     label: string,
     currentValue: string,
-    customSave?: (newValue: string) => void
+    customSave?: (newValue: string) => void,
+    alignCenter?: boolean
   ) => {
     const isEditing = inlineEditingField === field;
     if (isEditing) {
@@ -556,7 +570,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
             <button
               type="button"
               onClick={() => setInlineEditingField(null)}
-              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-705 rounded-md cursor-pointer"
+              className="p-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -570,12 +584,12 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
           setInlineEditingField(field);
           setInlineEditValue(currentValue || '');
         }}
-        className="group/edit cursor-pointer hover:bg-amber-50/50 px-2 py-1 rounded-lg border border-transparent hover:border-amber-200/40 flex items-start justify-between gap-2 mt-1 min-h-[1.5rem]"
+        className={`group/edit cursor-pointer hover:bg-amber-50/50 px-2 py-1 rounded-lg border border-transparent hover:border-amber-200/40 flex items-center ${alignCenter ? 'justify-center relative' : 'justify-between'} gap-2 mt-1 min-h-[1.5rem]`}
       >
-        <p className="text-xs text-slate-850 font-medium leading-relaxed whitespace-pre-wrap">
+        <p className={`text-xs text-slate-850 font-medium leading-relaxed whitespace-pre-wrap ${alignCenter ? 'text-center' : ''}`}>
           {currentValue || <span className="text-slate-400 italic">ចុចត្រង់នេះដើម្បីបំពេញព័ត៌មាន...</span>}
         </p>
-        <Edit3 className="w-3.5 h-3.5 text-emerald-600 opacity-0 group-hover/edit:opacity-100 transition shrink-0 no-print" />
+        <Edit3 className={`w-3.5 h-3.5 text-emerald-600 opacity-0 group-hover/edit:opacity-100 transition shrink-0 no-print ${alignCenter ? 'absolute right-2 opacity-0 group-hover/edit:opacity-100' : ''}`} />
       </div>
     );
   };
@@ -624,25 +638,49 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
             </button>
           </div>
 
-          <div className="relative mb-4 shrink-0">
-            <input
-              type="text"
-              placeholder="ស្វែងរកតាមកាលបរិច្ឆេទ..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white border border-slate-205 pl-9.5 pr-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+          <div className="flex flex-col gap-2 mb-4 shrink-0">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="ស្វែងរកតាមកាលបរិច្ឆេទ..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-white border border-slate-200 pl-9.5 pr-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+            </div>
+
+            <div className="flex gap-1.5 items-center">
+              <select
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="w-full bg-white border border-slate-200 text-slate-650 rounded-xl px-2.5 py-1.5 text-xs font-black cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="All">កាលបរិច្ឆេទទាំងអស់ (All Dates)</option>
+                {uniqueDates.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+              {filterDate !== 'All' && (
+                <button
+                  onClick={() => setFilterDate('All')}
+                  className="p-1 px-2 text-[10px] font-bold text-slate-500 bg-slate-200/60 hover:bg-slate-200 hover:text-slate-700 rounded-lg shrink-0 transition"
+                  title="Clear Date Filter"
+                >
+                  លុប (Clear)
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 max-h-[500px] pr-1 scrollbar-thin">
-            {filteredReports.length === 0 ? (
+            {sortedAndFilteredReports.length === 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-400 text-xs py-12">
                 <FileText className="w-8 h-8 mx-auto text-slate-350 mb-2" />
                 <p>រកមិនឃើញរបាយការណ៍ទេ</p>
               </div>
             ) : (
-              filteredReports.map((report) => {
+              sortedAndFilteredReports.map((report) => {
                 const totalTasks = report.hourlyLogs.length;
                 const completedTasks = report.hourlyLogs.filter(l => l.status === 'Completed').length;
                 const isSelected = selectedReport?.id === report.id;
@@ -654,31 +692,48 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                     className={`p-3.5 rounded-2xl border transition-all duration-150 cursor-pointer text-left relative ${
                       isSelected
                         ? 'bg-emerald-50/70 border-emerald-400 shadow-xs'
-                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        : report.pinned
+                          ? 'bg-amber-50/30 border-amber-300 hover:border-amber-400 hover:bg-amber-50/50'
+                          : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                         <span className="text-xs font-extrabold text-slate-800 font-mono">
                           {report.date}
                         </span>
+                        {report.pinned && (
+                          <span className="inline-flex items-center text-[8px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-black gap-0.5 shadow-3xs border border-amber-200/60">
+                            📌  ខ្ទាស់ (Pinned)
+                          </span>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5">
+                        <button
+                          type="button"
+                          onClick={(e) => handleTogglePinReport(report.id, e)}
+                          className={`p-1.5 hover:bg-slate-100 rounded transition ${
+                            report.pinned ? 'text-amber-600 hover:text-amber-700' : 'text-slate-350 hover:text-amber-500'
+                          }`}
+                          title={report.pinned ? "ដកខ្ទាស់ (Unpin)" : "ខ្ទាស់របាយការណ៍ (Pin)"}
+                        >
+                          <Pin className={`w-3.5 h-3.5 ${report.pinned ? 'fill-current' : ''}`} />
+                        </button>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenEditForm(report);
                           }}
-                          className="p-1 hover:bg-slate-100 hover:text-emerald-700 rounded transition text-slate-400"
+                          className="p-1.5 hover:bg-slate-100 hover:text-emerald-700 rounded transition text-slate-400"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={(e) => handleDeleteReport(report.id, e)}
-                          className="p-1 hover:bg-rose-50 hover:text-rose-600 rounded transition text-slate-400"
+                          className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded transition text-slate-400"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -687,14 +742,10 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
 
                     <div className="text-[10px] font-bold text-slate-500 mt-1 flex justify-between">
                       <span className="text-slate-650">🏢 {report.department || 'Operations'}</span>
-                      <span>✍️ {report.reporterName.split(' ')[0]}</span>
+                      {report.reporterName && (
+                        <span>✍️ {report.reporterName.split(' ')[0]}</span>
+                      )}
                     </div>
-
-                    {report.issuesEncountered && (
-                      <p className="text-[11px] text-slate-600 font-medium mt-1.5 line-clamp-1 italic">
-                        ⚠️ បញ្ហា៖ {report.issuesEncountered}
-                      </p>
-                    )}
 
                     <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px] font-semibold text-slate-500">
                       <span>{totalTasks} សកម្មភាពរួម</span>
@@ -786,13 +837,26 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                 `}} />
 
                 {/* Print Controls Top Ribbon */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-50 border border-slate-205 p-4 rounded-2xl no-print">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl no-print">
                   <div className="text-xs text-slate-500 font-bold flex items-center gap-1">
                     <FileText className="w-4 h-4 text-emerald-600" />
-                    <span>ចុចលើប្រអប់ព័ត៌មានខាងក្រោមក្រដាស A4 ផ្ទាល់ ដើម្បីកែសម្រួលរហ័ស។</span>
+                    <span>លោកអ្នកអាចកែសម្រួលទិន្នន័យរបាយការណ៍ផ្ទាល់នៅលើទម្រង់បញ្ចូលទិន្នន័យខាងក្រោមយ៉ាងងាយស្រួល និងរហ័ស។</span>
                   </div>
                   
                   <div className="flex items-center gap-2 self-end flex-wrap">
+                    <button
+                      type="button"
+                      onClick={(e) => handleTogglePinReport(selectedReport.id, e)}
+                      className={`px-3.5 py-2 font-extrabold text-xs rounded-xl flex items-center gap-1.5 transition cursor-pointer ${
+                        selectedReport.pinned
+                          ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300/50'
+                      }`}
+                    >
+                      <Pin className={`w-3.5 h-3.5 ${selectedReport.pinned ? 'fill-current text-amber-600' : ''}`} />
+                      <span>{selectedReport.pinned ? 'បានខ្ទាស់ទុក (Pinned)' : 'ខ្ទាស់របាយការណ៍ (Pin)'}</span>
+                    </button>
+
                     <button
                       onClick={() => handleOpenEditForm(selectedReport)}
                       className="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold text-xs rounded-xl flex items-center gap-1 transition cursor-pointer"
@@ -826,7 +890,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                             className="fixed inset-0 z-[80]" 
                             onClick={() => setIsExportDropdownOpen(false)} 
                           />
-                          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-205 rounded-xl shadow-xl py-1.5 z-[90] font-sans text-xs shrink-0 transform origin-top-right transition-all">
+                          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-[90] font-sans text-xs shrink-0 transform origin-top-right transition-all">
                             <button
                               type="button"
                               onClick={() => {
@@ -867,8 +931,248 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                   </div>
                 </div>
 
-                {/* Main A4 Styled Sheet */}
-                <div className="bg-slate-200 p-2 sm:p-5 rounded-3xl border border-slate-300 overflow-x-auto w-full">
+                {/* 1. On-Screen Modern Form & Data Entry View */}
+                <div className="space-y-6 no-print">
+                  {/* Title & Metadata Card */}
+                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold uppercase px-2.5 py-1 rounded-full border border-emerald-200">
+                          Active Reporting Sheet
+                        </span>
+                        <h2 className="text-base font-black text-slate-800 font-moul mt-1.5 leading-relaxed">
+                          ទម្រង់បញ្ចូលទិន្នន័យរបាយការណ៍ប្រចាំថ្ងៃ
+                        </h2>
+                        <p className="text-slate-400 text-[11px] font-semibold mt-0.5">
+                          Daily Operations Reporting Form (Direct Interactive Editor)
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 self-start shrink-0">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Auto-Saving Connected</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Date */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10.5px] font-bold text-slate-500 block">Date (កាលបរិច្ឆេទ) *</label>
+                        <input
+                          type="date"
+                          value={selectedReport.date}
+                          onChange={(e) => handleUpdateInlineField(selectedReport.id, 'date', e.target.value)}
+                          className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500 font-mono transition"
+                          required
+                        />
+                      </div>
+
+                      {/* Department */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10.5px] font-bold text-slate-500 block">Department (ផ្នែក) *</label>
+                        <input
+                          type="text"
+                          value={selectedReport.department || 'Operations'}
+                          onChange={(e) => handleUpdateInlineField(selectedReport.id, 'department', e.target.value)}
+                          className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 p-2.5 rounded-xl text-xs font-black outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                          required
+                        />
+                      </div>
+
+                      {/* Prepared By */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10.5px] font-bold text-slate-500 block">Prepared By (រៀបចំដោយ) *</label>
+                        <input
+                          type="text"
+                          value={selectedReport.reporterName}
+                          onChange={(e) => handleUpdateInlineField(selectedReport.id, 'reporterName', e.target.value)}
+                          className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 p-2.5 rounded-xl text-xs font-black outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Inline Activities Builder Block */}
+                  <div className="bg-emerald-50/20 border border-emerald-100 rounded-3xl p-6 space-y-4 shadow-3xs">
+                    <div className="border-b border-emerald-100 pb-3 flex items-center justify-between">
+                      <h3 className="text-xs font-black text-[#073B3A] uppercase tracking-wider flex items-center gap-1.5">
+                        <Plus className="w-4 h-4 text-emerald-600" />
+                        <span>បន្ថែមសកម្មភាព / ការងារលម្អិត (Quick Activity Addition Form)</span>
+                      </h3>
+                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
+                        {selectedReport.hourlyLogs.length} សកម្មភាពសរុប
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                      <div className="md:col-span-3">
+                        <label className="text-[10px] font-black text-slate-500 block mb-1.5">កាលបរិច្ឆេទ (Date)</label>
+                        <input
+                          type="date"
+                          value={inlineLogDate}
+                          onChange={(e) => setInlineLogDate(e.target.value)}
+                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-bold font-mono focus:ring-2 focus:ring-emerald-500 outline-none transition"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <label className="text-[10px] font-black text-slate-500 block mb-1.5">ស្ថានភាពការងារ (Status)</label>
+                        <select
+                          value={inlineLogStatus}
+                          onChange={(e) => setInlineLogStatus(e.target.value as any)}
+                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-black focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer transition"
+                        >
+                          <option value="Completed">Completed (រួចរាល់)</option>
+                          <option value="In progress">In progress (កំពុងដំណើរការ)</option>
+                          <option value="Pending">Pending (ពន្យារពេល)</option>
+                          <option value="Follow up">Follow up (តាមដានបន្ថែម)</option>
+                          <option value="Cancelled">Cancelled (លុបចោល)</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-6 flex gap-2">
+                        <div className="flex-1">
+                          <label className="text-[10px] font-black text-slate-500 block mb-1.5">សេចក្តីពិពណ៌នាការងារ (Description of Work)</label>
+                          <input
+                            type="text"
+                            placeholder="ឧ. ត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ..."
+                            value={inlineLogActivity}
+                            onChange={(e) => setInlineLogActivity(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleInlineAddActivity();
+                              }
+                            }}
+                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 transition"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleInlineAddActivity}
+                          className="bg-emerald-700 hover:bg-emerald-850 text-white font-black text-xs px-5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1 mt-5 h-[38px] shrink-0 active:scale-95 shadow-sm"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>បន្ថែម</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary of Activities (Responsive Modern Table) */}
+                  <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
+                    <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                      <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                        <ClipboardList className="w-4 h-4 text-[#073B3A]" />
+                        <span>បញ្ជីសកម្មភាពការងារ (Summary of Activities)</span>
+                      </h3>
+                      <p className="text-[10px] text-slate-400 font-bold hidden sm:block">កែសម្រួលផ្ទាល់លើជួរដេកនីមួយៗ (Direct Row Editing)</p>
+                    </div>
+
+                    <div className="overflow-x-auto w-full">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50/80 text-[10px] font-black text-slate-500 border-b border-slate-200 uppercase tracking-wider">
+                            <th className="p-4 text-center w-16">No</th>
+                            <th className="p-4 text-center w-40">Date (កាលបរិច្ឆេទ)</th>
+                            <th className="p-4">Description of Work (ការពិពណ៌នាការងារ)</th>
+                            <th className="p-4 text-center w-44">Status (ស្ថានភាព)</th>
+                            <th className="p-4 text-center w-16">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-xs font-bold text-slate-700">
+                          {selectedReport.hourlyLogs.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="p-10 text-center text-slate-400 italic">
+                                មិនទាន់មានសកម្មភាពការងារណាមួយត្រូវបានបន្ថែមនៅឡើយទេ។ សូមប្រើប្រាស់ទម្រង់ខាងលើដើម្បីបន្ថែម។
+                              </td>
+                            </tr>
+                          ) : (
+                            selectedReport.hourlyLogs.map((log, index) => (
+                              <tr key={log.id} className="hover:bg-slate-50/50 transition">
+                                {/* No. */}
+                                <td className="p-4 text-center font-mono text-xs text-slate-400 bg-slate-50/10">
+                                  {index + 1}
+                                </td>
+
+                                {/* Date Input */}
+                                <td className="p-3">
+                                  <input
+                                    type="date"
+                                    value={log.date || selectedReport.date}
+                                    onChange={(e) => {
+                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, date: e.target.value } : l);
+                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                    }}
+                                    className="bg-transparent hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-200 text-center py-1.5 px-2 rounded-lg text-xs font-bold font-mono text-slate-700 focus:outline-none transition w-full focus:ring-1 focus:ring-emerald-500"
+                                  />
+                                </td>
+
+                                {/* Activity Input */}
+                                <td className="p-3">
+                                  <textarea
+                                    value={log.activity}
+                                    onChange={(e) => {
+                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, activity: e.target.value } : l);
+                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                    }}
+                                    rows={1}
+                                    className="bg-transparent hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-200 py-1.5 px-2.5 rounded-lg text-xs font-bold text-slate-800 focus:outline-none transition w-full focus:ring-1 focus:ring-emerald-500 resize-y scrollbar-thin"
+                                  />
+                                </td>
+
+                                {/* Status Select badge */}
+                                <td className="p-3 text-center">
+                                  <div className="relative inline-block w-full max-w-[140px] mx-auto">
+                                    <select
+                                      value={log.status}
+                                      onChange={(e) => {
+                                        const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, status: e.target.value as any } : l);
+                                        handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                      }}
+                                      className={`w-full py-1.5 pl-3 pr-8 rounded-xl text-[10px] font-black cursor-pointer border duration-150 outline-none text-center appearance-none transition focus:ring-1 focus:ring-offset-1 ${
+                                        log.status === 'Completed' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 focus:ring-emerald-400'
+                                          : log.status === 'In progress' ? 'bg-purple-50 text-purple-800 border-purple-200 focus:ring-purple-400'
+                                          : log.status === 'Pending' ? 'bg-amber-50 text-amber-800 border-amber-200 focus:ring-amber-400'
+                                          : log.status === 'Follow up' ? 'bg-blue-50 text-blue-800 border-blue-200 focus:ring-blue-400'
+                                          : 'bg-rose-50 text-rose-800 border-rose-200 focus:ring-rose-400'
+                                      }`}
+                                    >
+                                      <option value="Completed">Completed</option>
+                                      <option value="In progress">In progress</option>
+                                      <option value="Pending">Pending</option>
+                                      <option value="Follow up">Follow up</option>
+                                      <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
+                                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Action */}
+                                <td className="p-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = selectedReport.hourlyLogs.filter(l => l.id !== log.id);
+                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
+                                    title="លុបសកម្មភាព"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Hidden Official A4 Printable Template (Purely used to generate printed document via handlePrint) */}
+                <div className="absolute top-[-9999px] left-[-9999px] w-[810px] pointer-events-none opacity-0 select-none no-print">
                   <div 
                     className="bg-white border border-slate-400 p-8 sm:p-[0.8in] relative font-sans mx-auto flex flex-col justify-between text-slate-900 shadow-2xl space-y-6"
                     style={{ maxWidth: '800px', width: '100%', minHeight: '1050px' }}
@@ -876,7 +1180,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                   >
                     
                     {/* Header: School and Ministry Details */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start text-xs border-b border-slate-300 pb-3 font-sans gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start text-xs border-b border-slate-200 pb-4 font-sans gap-4">
                       <div className="flex items-center gap-3">
                         {logo && (
                           <img 
@@ -887,136 +1191,113 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                           />
                         )}
                         <div className="space-y-1">
-                          <h2 className="text-[11.5px] font-black text-[#073B3A] font-moul leading-tight">
-                            សាលាវេស្ទើនអន្តរជាតិ សាខាចំការដូង
+                          <h2 className="text-[12px] font-black text-[#0d5c5a] font-moul leading-tight">
+                            សាលាអន្តរជាតិ វេសស្ទើន សាខាកាឌី២
                           </h2>
                           <p className="text-[9.5px] text-[#0d5c5a] font-moul">
-                            ការិយាល័យរដ្ឋបាល និងត្រួតពិនិត្យប្រតិបត្តិការ
+                            ការិយាល័យរដ្ឋបាល និងបច្ចេកវិទ្យាព័ត៌មាន
                           </p>
                           <p className="text-[7.5px] text-slate-400 font-bold uppercase tracking-wider">
-                            WESTERN INTERNATIONAL SCHOOL • OPERATIONS
+                            WESTERN INTERNATIONAL SCHOOL • CKD2
                           </p>
                         </div>
                       </div>
 
-                      <div className="text-center sm:text-right mt-2 sm:mt-0">
-                        <p className="font-moul text-[10px] leading-tight text-slate-900">
+                      <div className="text-center sm:text-right mt-2 sm:mt-0 space-y-0.5">
+                        <p className="font-moul text-[10px] leading-tight text-slate-900 tracking-wide">
                           ព្រះរាជាណាចក្រកម្ពុជា
                         </p>
-                        <p className="font-moul text-[9px] leading-tight text-slate-800">
+                        <p className="font-moul text-[8.5px] leading-tight text-slate-800 tracking-wide">
                           ជាតិ សាសនា ព្រះមហាក្សត្រ
                         </p>
-                        <div className="flex items-center justify-center sm:justify-end gap-1 mt-1 text-[7px] text-rose-600">
-                          <span>⚜️</span>
-                          <span className="w-8 border-t border-rose-500"></span>
-                          <span>⚜️</span>
+                        <div className="flex items-center justify-center sm:justify-end gap-1 mt-1">
+                          <span className="text-amber-500 text-[8px] font-black">✦</span>
+                          <span className="w-14 border-t-2 border-rose-500"></span>
+                          <span className="text-amber-500 text-[8px] font-black">✦</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Memo Title Header */}
-                    <div className="text-center space-y-1 my-2 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                      <h1 className="text-[14px] font-black text-[#073B3A] font-moul leading-relaxed">
+                    <div className="text-center py-4 px-6 bg-[#f8fafc] border border-slate-200 rounded-2xl relative overflow-hidden my-4">
+                      {selectedReport.pinned && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-amber-750 bg-amber-50/80 border border-amber-200/50 py-0.5 px-2 rounded-lg text-[10px] font-black uppercase no-print">
+                          <Pin className="w-2.5 h-2.5 fill-current text-amber-600 animate-bounce" />
+                          <span>Pinned</span>
+                        </div>
+                      )}
+                      <h1 className="text-[14.5px] font-black text-[#073B3A] font-moul leading-relaxed tracking-wide">
                         របាយការណ៍ប្រតិបត្តិការប្រចាំថ្ងៃ (Daily Report)
                       </h1>
                     </div>
 
                     {/* Basic Meta Details Box */}
-                    <div className="grid grid-cols-2 gap-4 p-3 border border-slate-300 bg-slate-50/50 rounded-xl text-[11px] font-sans">
-                      <div className="flex items-center gap-1">
-                        <span className="font-bold text-slate-500 shrink-0">Date (កាលបរិច្ឆេទ) :</span>
-                        <div className="font-extrabold text-slate-800 font-mono block flex-1">
-                          {renderEditableBlock('date', 'កាលបរិច្ឆេទ', selectedReport.date, (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'date', val);
-                          })}
+                    <div className="grid grid-cols-2 gap-6 p-4 sm:p-5 border border-slate-200 bg-white rounded-2xl text-[11.5px] font-sans text-slate-650 my-4 shadow-3xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-500 shrink-0">Date (កាលបរិច្ឆេទ) :</span>
+                        <div className="font-bold text-slate-800 font-mono block">
+                          {selectedReport.date}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <span className="font-bold text-slate-500 shrink-0">Department (ផ្នែក) :</span>
-                        <div className="font-extrabold text-slate-800 flex-1 col-span-1">
-                          {renderEditableBlock('department', 'ផ្នែក', selectedReport.department || 'Operations', (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'department', val);
-                          })}
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-500 shrink-0">Department (ផ្នែក) :</span>
+                        <div className="font-bold text-slate-800 col-span-1">
+                          {selectedReport.department || 'Operations'}
                         </div>
                       </div>
                     </div>
 
-                    {/* 1. Summary of Activities (No, Description, Status) */}
-                    <div className="space-y-2">
-                      <h3 className="text-[11px] font-black text-slate-900 font-moul border-b border-slate-300 pb-1 flex items-center gap-1">
-                        <span className="bg-emerald-700 text-white rounded px-1.5 font-sans font-black mr-1 text-[8px]">1</span>
-                        Summary of Activities (បញ្ជីការងារ និងសកម្មភាពលម្អិត)
+                    {/* 1. Summary of Activities (No, Date, Description, Status) */}
+                    <div className="space-y-3 mt-6">
+                      <h3 className="text-[11.5px] font-extrabold text-slate-900 border-b border-slate-200 pb-2 flex items-center gap-1">
+                        <span className="inline-flex items-center justify-center bg-[#0d5c5a] text-white rounded-full w-5 h-5 text-[10px] font-black font-sans shrink-0 mr-1">1</span>
+                        <span className="font-sans font-bold">Summary of Activities</span>
+                        <span className="font-moul text-[10.5px] text-[#0d5c5a] font-normal ml-1">
+                          ( បញ្ជីការងារ និងសកម្មភាពលម្អិត )
+                        </span>
                       </h3>
 
-                      <div className="border border-slate-300 rounded-xl overflow-hidden shadow-3xs">
+                      <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-3xs">
                         <table className="w-full text-left border-collapse">
                           <thead>
-                            <tr className="bg-slate-100 text-[10px] font-extrabold text-slate-700 border-b border-slate-300 uppercase">
-                              <th className="p-2 text-center border-r border-slate-300 w-11">No</th>
-                              <th className="p-2 border-r border-slate-300">Description of Work (បញ្ជីការងារលម្អិតតាមម៉ោង)</th>
-                              <th className="p-2 text-center w-40">Status (ស្ថានភាពការងារ)</th>
+                            <tr className="bg-[#f8fafc] text-[10px] font-black text-slate-700 border-b border-slate-200 uppercase">
+                              <th className="p-3 text-center border-r border-slate-200 w-16 text-slate-600">NO</th>
+                              <th className="p-3 text-center border-r border-slate-200 w-36 text-slate-600">DATE ( កាលបរិច្ឆេទ )</th>
+                              <th className="p-3 text-center border-r border-slate-200 text-slate-600">DESCRIPTION OF WORK ( ការពិពណ៌នាការងារ )</th>
+                              <th className="p-3 text-center w-64 text-slate-600">STATUS ( ស្ថានភាពការងារ )</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white text-[11px] font-medium text-slate-800">
                             {selectedReport.hourlyLogs.length === 0 ? (
                               <tr>
-                                <td colSpan={3} className="p-6 text-center text-slate-400 italic">
+                                <td colSpan={4} className="p-6 text-center text-slate-400 italic">
                                   មិនមានបញ្ជីសកម្មភាពប្រចាំថ្ងៃត្រូវបានបញ្ចូលឡើយ។
                                 </td>
                               </tr>
                             ) : (
                               selectedReport.hourlyLogs.map((log, index) => (
-                                <tr key={log.id} className="border-b border-slate-200 hover:bg-slate-50/50">
+                                <tr key={log.id} className="border-b border-slate-150 hover:bg-slate-50/50">
                                   
                                   {/* No. */}
-                                  <td className="p-2 border-r border-slate-300 text-center font-mono font-bold text-slate-400 bg-slate-50/10">
+                                  <td className="p-3 border-r border-slate-200 text-center font-mono text-xs text-slate-400 bg-slate-50/20">
                                     {index + 1}
                                   </td>
 
-                                  {/* Description of Work */}
-                                  <td className="p-2 border-r border-slate-300 text-[11px] font-bold text-slate-800">
-                                    <div className="font-mono text-[9px] text-[#0d5c5a] font-normal mb-0.5">
-                                      {log.timeSlot || '08:00 - 09:00'}
-                                    </div>
-                                    {renderEditableBlock(`log-activity-${log.id}`, 'កិច្ចការ', log.activity, (val) => {
-                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, activity: val } : l);
-                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                    })}
+                                  {/* Date */}
+                                  <td className="p-3 border-r border-slate-200 text-center font-mono font-bold text-slate-600">
+                                    {log.date || selectedReport.date}
                                   </td>
 
-                                  {/* Status Checkboxes: ☐ Completed ☐ In Progress */}
-                                  <td className="p-2 text-center">
-                                    <div className="flex justify-center items-center gap-3">
-                                      {/* Completed Option */}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, status: 'Completed' as const } : l);
-                                          handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                        }}
-                                        className="flex items-center gap-1 text-[10px] font-bold text-emerald-800 hover:scale-105 transition cursor-pointer"
-                                      >
-                                        <span className="text-sm font-semibold">
-                                          {log.status === 'Completed' ? '☑' : '☐'}
-                                        </span>
-                                        <span>Completed</span>
-                                      </button>
+                                  {/* Description of Work */}
+                                  <td className="p-3 border-r border-slate-200 text-[11.5px] font-medium text-slate-800">
+                                    {log.activity}
+                                  </td>
 
-                                      {/* In Progress Option */}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, status: 'In Progress' as const } : l);
-                                          handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                        }}
-                                        className="flex items-center gap-1 text-[10px] font-bold text-slate-600 hover:scale-105 transition cursor-pointer"
-                                      >
-                                        <span className="text-sm font-semibold">
-                                          {log.status === 'In Progress' ? '☑' : '☐'}
-                                        </span>
-                                        <span>In Progress</span>
-                                      </button>
-                                    </div>
+                                  {/* Status Selectors */}
+                                  <td className="p-3 text-center w-52">
+                                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase border tracking-wider bg-white border-slate-300">
+                                      {log.status}
+                                    </span>
                                   </td>
 
                                 </tr>
@@ -1027,64 +1308,8 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                       </div>
                     </div>
 
-                    <div className="border border-slate-300 rounded-xl divide-y divide-slate-350 bg-slate-50/20 text-slate-800 p-4 space-y-4">
-                      
-                      {/* 2. Issues / Problems Encountered */}
-                      <div>
-                        <h4 className="text-[11px] font-black text-slate-900 font-moul flex items-center gap-1 border-b border-slate-200 pb-1">
-                          <span className="bg-amber-600 text-white rounded px-1.5 font-sans font-black mr-1 text-[8px]">2</span>
-                          Issues / Problems Encountered (បញ្ហាប្រឈម)
-                        </h4>
-                        <div className="mt-1 font-sans">
-                          {renderEditableBlock('issuesEncountered', 'បញ្ហាប្រឈម', selectedReport.issuesEncountered || '', (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'issuesEncountered', val);
-                          })}
-                        </div>
-                      </div>
-
-                      {/* 3. Actions Taken */}
-                      <div className="pt-3">
-                        <h4 className="text-[11px] font-black text-slate-900 font-moul flex items-center gap-1 border-b border-slate-200 pb-1">
-                          <span className="bg-blue-600 text-white rounded px-1.5 font-sans font-black mr-1 text-[8px]">3</span>
-                          Actions Taken (ដំណោះស្រាយដែលបានអនុវត្ត)
-                        </h4>
-                        <div className="mt-1 font-sans">
-                          {renderEditableBlock('actionsTaken', 'ដំណោះស្រាយដែលបានអនុវត្ត', selectedReport.actionsTaken || '', (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'actionsTaken', val);
-                          })}
-                        </div>
-                      </div>
-
-                      {/* 4. Plan for Tomorrow */}
-                      <div className="pt-3">
-                        <h4 className="text-[11px] font-black text-slate-900 font-moul flex items-center gap-1 border-b border-slate-200 pb-1">
-                          <span className="bg-[#073B3A] text-white rounded px-1.5 font-sans font-black mr-1 text-[8px]">4</span>
-                          Plan for Tomorrow (ផែនការសម្រាប់နေ့ស្អែក)
-                        </h4>
-                        <div className="mt-1 font-sans">
-                          {renderEditableBlock('planForTomorrow', 'ផែនការសម្រាប់ស្អែក', selectedReport.planForTomorrow || '', (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'planForTomorrow', val);
-                          })}
-                        </div>
-                      </div>
-
-                      {/* 5. Remarks */}
-                      <div className="pt-3">
-                        <h4 className="text-[11px] font-black text-slate-900 font-moul flex items-center gap-1 border-b border-slate-200 pb-1">
-                          <span className="bg-[#0d5c5a] text-white rounded px-1.5 font-sans font-black mr-1 text-[8px]">5</span>
-                          Remarks (កំណត់សម្គាល់ផ្សេងៗ)
-                        </h4>
-                        <div className="mt-1 font-sans">
-                          {renderEditableBlock('remarks', 'កំណត់សម្គាល់', selectedReport.remarks || '', (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'remarks', val);
-                          })}
-                        </div>
-                      </div>
-
-                    </div>
-
                     {/* Bottom Signatures Block */}
-                    <div className="signature-section relative mt-8 pt-6 border-t border-slate-300 grid grid-cols-2 gap-4 text-center text-xs">
+                    <div className="signature-section relative mt-10 pt-6 border-t border-slate-200 grid grid-cols-2 gap-6 text-center text-xs">
                       
                       {/* Seal element */}
                       <div className="absolute right-12 bottom-0 w-24 h-24 border-4 border-double border-rose-600 rounded-full flex flex-col items-center justify-center text-center opacity-75 select-none pointer-events-none rotate-6 shadow-[inset_0_0_6px_rgba(225,29,72,0.05)] z-20">
@@ -1095,27 +1320,25 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
 
                       {/* Signatory A: Submitted/Prepared by */}
                       <div>
-                        <p className="font-extrabold text-slate-500 text-[10px] uppercase">Prepared By (រៀបចំដោយ)</p>
+                        <p className="font-extrabold text-slate-500 text-[10px] uppercase tracking-wide">Prepared By (រៀបចំដោយ)</p>
                         <div className="h-10 flex items-end justify-center font-mono text-[11px] text-indigo-700 italic select-none pb-1">
                           {selectedReport.reporterName}
                         </div>
-                        <div className="font-moul text-[9px] text-[#073B3A] border-t border-slate-300/40 pt-1">
-                          {renderEditableBlock('reporterName', 'Prepared By', selectedReport.reporterName, (val) => {
-                            handleUpdateInlineField(selectedReport.id, 'reporterName', val);
-                          })}
+                        <div className="font-moul text-[9px] text-[#0d5c5a] border-t border-slate-200 pt-1">
+                          {selectedReport.reporterName}
                         </div>
                       </div>
 
                       {/* Signatory B: Approved by */}
                       <div>
-                        <p className="font-extrabold text-slate-500 text-[10px] uppercase">Approved By (ពិនិត្យ & យល់ព្រម)</p>
+                        <p className="font-extrabold text-slate-500 text-[10px] uppercase tracking-wide">Approved By (ពិនិត្យ & យល់ព្រម)</p>
                         <div className="h-10 flex items-center justify-center font-mono text-xs text-slate-350 select-none pb-1">
                           (ហត្ថលេខា ប្រធានការិយាល័យ)
                         </div>
-                        <p className="font-moul text-[9px] text-slate-705 border-t border-slate-300/40 pt-1">
+                        <p className="font-moul text-[9px] text-slate-700 border-t border-slate-200 pt-1">
                           _________________________________
                         </p>
-                        <p className="text-[8px] text-slate-450 mt-1">
+                        <p className="text-[8px] text-slate-450 mt-1 uppercase tracking-wider font-semibold">
                           Western International School Operations Board
                         </p>
                       </div>
@@ -1150,7 +1373,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
             >
               <div className="bg-[#073B3A] text-white p-4.5 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-amber-305" />
+                  <ClipboardList className="w-5 h-5 text-amber-400" />
                   <span className="text-sm font-black">
                     {editingReport ? 'កែសម្រួលរបាយការណ៍ប្រចាំថ្ងៃ' : 'បំពេញរបាយការណ៍ប្រតិបត្តិការប្រចាំថ្ងៃថ្មី'}
                   </span>
@@ -1174,7 +1397,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                       type="date"
                       value={formDate}
                       onChange={(e) => setFormDate(e.target.value)}
-                      className="w-full bg-white border border-slate-220 p-2 rounded-xl text-xs font-bold outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                      className="w-full bg-white border border-slate-200 p-2 rounded-xl text-xs font-bold outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
                       required
                     />
                   </div>
@@ -1185,7 +1408,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                       type="text"
                       value={formDepartment}
                       onChange={(e) => setFormDepartment(e.target.value)}
-                      className="w-full bg-white border border-slate-220 p-2 rounded-xl text-xs font-black outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full bg-white border border-slate-200 p-2 rounded-xl text-xs font-black outline-none focus:ring-1 focus:ring-emerald-500"
                       required
                     />
                   </div>
@@ -1196,45 +1419,71 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                       type="text"
                       value={formReporter}
                       onChange={(e) => setFormReporter(e.target.value)}
-                      className="w-full bg-white border border-slate-220 p-2 rounded-xl text-xs font-black outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full bg-white border border-slate-200 p-2 rounded-xl text-xs font-black outline-none focus:ring-1 focus:ring-emerald-500"
                       required
                     />
                   </div>
                 </div>
 
-                {/* hourly / weekly custom log builder representation */}
-                <div className="border border-indigo-100 bg-indigo-50/30 p-4 rounded-xl space-y-3">
-                  <h4 className="text-xs font-black text-indigo-900 uppercase tracking-wider">
-                    1. Summary of Activities Flow (បន្ថែមសកម្មភាពការងារ)
+                {/* Pin report option status */}
+                <div className="flex items-center gap-2.5 bg-amber-50/50 border border-amber-200/70 p-3.5 rounded-2xl no-print">
+                  <input
+                    type="checkbox"
+                    id="formPinned"
+                    checked={formPinned}
+                    onChange={(e) => setFormPinned(e.target.checked)}
+                    className="w-4 w-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer"
+                  />
+                  <label htmlFor="formPinned" className="text-xs font-black text-amber-900 cursor-pointer flex items-center gap-1.5 select-none">
+                    <Pin className={`w-4 h-4 ${formPinned ? 'fill-current text-amber-500' : 'text-slate-400'}`} />
+                    <span>ខ្ទាស់ទុកជាកំណត់ត្រាសំខាន់ (Pin as Important Daily Note/Report at top of the list)</span>
+                  </label>
+                </div>
+
+                {/* Activities custom log builder representation */}
+                <div className="border border-indigo-150 bg-indigo-50/20 p-4.5 rounded-2xl space-y-4">
+                  <h4 className="text-xs font-black text-indigo-950 uppercase tracking-wider flex items-center gap-1.5 border-b border-indigo-100 pb-2">
+                    <span className="bg-indigo-600 text-white rounded px-1.5 py-0.5 text-[9px] font-black">1</span>
+                    Summary of Activities (បន្ថែមសកម្មភាពការងារ)
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                    <div className="sm:col-span-6 space-y-1">
-                      <label className="text-[10px] font-bold text-indigo-900 block">ម៉ោង (Time Slot) e.g. 07:30 - 08:30</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
+                    
+                    {/* Activity Date */}
+                    <div className="sm:col-span-4 space-y-1">
+                      <label className="text-[10px] font-black text-indigo-900 block uppercase">Date (កាលបរិច្ឆេទ) *</label>
                       <input
-                        type="text"
-                        placeholder="07:30 - 08:30"
-                        value={currentSlotText}
-                        onChange={(e) => setCurrentSlotText(e.target.value)}
+                        type="date"
+                        value={currentLogDate}
+                        onChange={(e) => setCurrentLogDate(e.target.value)}
                         className="w-full bg-white border border-indigo-200 p-2 rounded-xl text-xs font-bold font-mono outline-none focus:ring-1 focus:ring-indigo-500"
+                        required
                       />
                     </div>
-                    <div className="sm:col-span-6 space-y-1">
-                      <label className="text-[10px] font-bold text-indigo-900 block">ស្ថានភាព (Status)</label>
+
+                    {/* Activity Status */}
+                    <div className="sm:col-span-4 space-y-1">
+                      <label className="text-[10px] font-black text-indigo-900 block uppercase">Status (ស្ថានភាព) *</label>
                       <select
                         value={currentStatus}
                         onChange={(e) => setCurrentStatus(e.target.value as any)}
-                        className="w-full bg-white border border-indigo-200 p-2 rounded-xl text-xs font-black outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full bg-white border border-indigo-200 p-2 rounded-xl text-xs font-black outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                        required
                       >
                         <option value="Completed">Completed (រួចរាល់)</option>
-                        <option value="In Progress">In Progress (កំពុងធ្វើ)</option>
+                        <option value="In progress">In progress (កំពុងដំណើរការ)</option>
+                        <option value="Pending">Pending (ពន្យារពេល)</option>
+                        <option value="Follow up">Follow up (តាមដានបន្ថែម)</option>
+                        <option value="Cancelled">Cancelled (លុបចោល)</option>
                       </select>
                     </div>
-                    <div className="col-span-12 space-y-1">
-                      <label className="text-[10px] font-black text-indigo-950 block">សេចក្តីពិពណ៌នាការងារ (Work Description) *</label>
+
+                    {/* Work Description Input */}
+                    <div className="sm:col-span-12 space-y-1">
+                      <label className="text-[10px] font-black text-indigo-950 block uppercase">Description of Work (សេចក្តីពិពណ៌នាការងារ) *</label>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="text"
-                          placeholder="ឧ. ត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ និងកម្លាំងยាមល្បាតតាមច្រកទ្វារ..."
+                          placeholder="ឧ. ត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ និងកម្លាំងល្បាត..."
                           value={currentActivity}
                           onChange={(e) => setCurrentActivity(e.target.value)}
                           className="flex-1 bg-white border border-indigo-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
@@ -1242,7 +1491,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                         <button
                           type="button"
                           onClick={handleAddHourlyLog}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                          className="bg-indigo-600 hover:bg-indigo-750 text-white font-black text-xs px-5 py-2.5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 shadow"
                         >
                           <Plus className="w-4 h-4 shrink-0" />
                           <span>បន្ថែម (Add)</span>
@@ -1251,77 +1500,45 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                     </div>
                   </div>
 
-                  {/* Flow list table */}
-                  <div className="space-y-1.5 pt-1">
-                    {formHourlyLogs.map((log, index) => (
-                      <div key={log.id} className="bg-white border rounded-xl p-2.5 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[9px] bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded font-bold">
-                            {index + 1}. {log.timeSlot}
-                          </span>
-                          <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${log.status === 'Completed' ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-800'}`}>
-                            {log.status}
-                          </span>
-                          <span className="font-extrabold text-slate-700">{log.activity}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveHourlyLog(log.id)}
-                          className="text-slate-400 hover:text-rose-605 p-1 hover:bg-rose-50 rounded"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                  {/* Flow list representation */}
+                  <div className="space-y-2 pt-2 border-t border-indigo-100/50">
+                    <label className="text-[10px] font-black text-slate-500 block uppercase">Added Activities ({formHourlyLogs.length})</label>
+                    {formHourlyLogs.length === 0 ? (
+                      <p className="text-[11px] text-slate-400 italic text-center py-2">មិនទាន់មានសកម្មភាពត្រូវបានបន្ថែមនៅឡើយទេ</p>
+                    ) : (
+                      <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                        {formHourlyLogs.map((log, index) => (
+                          <div key={log.id} className="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center justify-between text-xs gap-3">
+                            <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
+                              <span className="font-mono text-[9px] bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded font-bold shrink-0">
+                                {index + 1}
+                              </span>
+                              <span className="font-mono text-[9px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold shrink-0">
+                                {log.date}
+                              </span>
+                              <span className={`text-[8px] font-black px-2 py-0.5 rounded-full shrink-0 ${
+                                log.status === 'Completed' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                  : log.status === 'In progress' ? 'bg-indigo-50 text-indigo-800 border border-indigo-200'
+                                  : log.status === 'Pending' ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  : log.status === 'Follow up' ? 'bg-purple-50 text-purple-800 border border-purple-200'
+                                  : 'bg-rose-50 text-rose-800 border border-rose-200'
+                              }`}>
+                                {log.status}
+                              </span>
+                              <span className="font-bold text-slate-800 truncate block">{log.activity}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveHourlyLog(log.id)}
+                              className="text-slate-400 hover:text-rose-600 p-1 hover:bg-rose-50 rounded shrink-0 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                </div>
-
-                {/* 2. Issues Encountered */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black text-slate-700 block">2. Issues / Problems Encountered (បញ្ហាប្រឈម)</label>
-                  <textarea
-                    rows={2}
-                    value={formIssuesEncountered}
-                    onChange={(e) => setFormIssuesEncountered(e.target.value)}
-                    placeholder="ឧ. គ្មានបញ្ហាកើតឡើង ឬ ម៉ាស៊ីនត្រជាក់បន្ទប់ ២០១ មិនត្រជាក់..."
-                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-
-                {/* 3. Actions Taken */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black text-slate-700 block">3. Actions Taken (ដំណោះស្រាយដែលបានអនុវត្ត)</label>
-                  <textarea
-                    rows={2}
-                    value={formActionsTaken}
-                    onChange={(e) => setFormActionsTaken(e.target.value)}
-                    placeholder="ឧ. បានទាក់ទងជាងបច្ចេកទេសឱ្យមកពិនិត្យ និងសម្អាតខ្យែកាបភ្លាមៗ..."
-                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-
-                {/* 4. Plan for Tomorrow */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black text-slate-700 block">4. Plan for Tomorrow (ផែនការសម្រាប់ថ្ងៃស្អែក)</label>
-                  <textarea
-                    rows={2}
-                    value={formPlanForTomorrow}
-                    onChange={(e) => setFormPlanForTomorrow(e.target.value)}
-                    placeholder="ឧ. តាមដានការជួសជុល និងសម្អាត AC បន្ថែម..."
-                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                </div>
-
-                {/* 5. Remarks */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black text-slate-700 block">5. Remarks (កំណត់សម្គាល់ផ្សេងៗ)</label>
-                  <textarea
-                    rows={2}
-                    value={formRemarks}
-                    onChange={(e) => setFormRemarks(e.target.value)}
-                    placeholder="ឧ. ការងារទូទៅក្នុងសាលាល្អប្រសើរ..."
-                    className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
                 </div>
 
                 {/* Actions Footer */}
@@ -1337,7 +1554,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                     type="submit"
                     className="px-6 py-2.5 bg-[#073B3A] hover:bg-[#0c5352] text-white font-black text-xs rounded-xl shadow transition cursor-pointer flex items-center gap-1.5 active:scale-95"
                   >
-                    <Save className="w-4 h-4 text-amber-305" />
+                    <Save className="w-4 h-4 text-amber-400" />
                     <span>រក្សាទុករបាយការណ៍ (Save Report)</span>
                   </button>
                 </div>

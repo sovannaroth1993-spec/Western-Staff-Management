@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Content:wght@400;700&family=Inter:wght@400;500;600;700;800;900&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Moul&family=Siemreap&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700;900&family=Content:wght@400;700&family=Inter:wght@400;500;600;700;800;900&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Moul&family=Siemreap&display=swap');
 @import "tailwindcss";
 
 @font-face {
@@ -75,8 +75,19 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Khmer OS Battambang';
+  src: url('https://raw.githubusercontent.com/danyphea/khmer-unicode/master/fonts/KhmerOS_battambang.ttf') format('truetype'),
+       url('https://raw.githubusercontent.com/sochiso/khmer-font/master/fonts/KhmerOS_battambang.ttf') format('truetype'),
+       url('https://raw.githubusercontent.com/Khmer-Documentation/khmer-fonts/master/fonts/KhmerOS_battambang.ttf') format('truetype'),
+       local('Khmer OS Battambang'), local('KhmerOS_battambang'), local('KhmerOS-battambang'), local('Battambang');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
   --font-sans: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-battambang: "Khmer OS Battambang", "Battambang", "KhmerOS_battambang", sans-serif;
   --font-moul: "Khmer OS Muol Light", "Moul", "Khmer OS Muol", "KhmerOS_muol_light", serif;
   --font-niroth: "Khmer OS Siemreap", "Siemreap", "Khmer OS Niroth", "KhmerOSniroth", sans-serif;
   --font-kbach: "Khmer OS Siemreap", "Siemreap", "AKbalthom Kbach", "Akbalthom Kbach", "AKbalthomKbach", sans-serif;
