@@ -594,6 +594,21 @@ export interface MedicineUsageLog {
   nurse: string;
 }
 
+export interface GepClassSchedule {
+  id: string;
+  startsOn: string;
+  shift: 'Morning' | 'Afternoon' | 'Evening';
+  time: string;
+  level: string;
+  roomNumber: string;
+  roomName: string;
+  floor: string;
+  remarks: 'Full time' | 'Part Time';
+  teacherName?: string;
+  totalStudents?: number;
+}
+
+
 
 
 

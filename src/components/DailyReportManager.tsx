@@ -6,7 +6,7 @@ import {
   Building, ChevronDown, Pin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { DailyReport, HourlyLog, UserAccount } from '../types';
+import { DailyReport, HourlyLog, UserAccount, DEPARTMENT_NAMES_KM } from '../types';
 
 // Standard English & Khmer default activities preset
 const DEFAULT_HOURLY_LOGS_DEMO: HourlyLog[] = [
@@ -149,6 +149,70 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
 
   // Hourly log listings in Form (Summary of Activities)
   const [formHourlyLogs, setFormHourlyLogs] = useState<HourlyLog[]>([]);
+
+  // Load staff list & attendance records from localStorage dynamically when date changes or form updates
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
+
+  useEffect(() => {
+    try {
+      const savedStaff = localStorage.getItem('wis_staff_list');
+      if (savedStaff) {
+        setStaffList(JSON.parse(savedStaff));
+      }
+      const savedAttendance = localStorage.getItem('wis_attendance_records');
+      if (savedAttendance) {
+        setAttendanceRecords(JSON.parse(savedAttendance));
+      }
+    } catch (e) {
+      console.error('Error reading staff/attendance from localStorage:', e);
+    }
+  }, [selectedReport?.date, isFormOpen]);
+
+  const dateAttendance = React.useMemo(() => {
+    if (!selectedReport) return [];
+    return attendanceRecords.filter((r: any) => r.date === selectedReport.date);
+  }, [attendanceRecords, selectedReport?.date]);
+
+  const attendanceStats = React.useMemo(() => {
+    const present = dateAttendance.filter((r: any) => r.status === 'Present').length;
+    const excused = dateAttendance.filter((r: any) => r.status === 'Excused').length;
+    const absent = dateAttendance.filter((r: any) => r.status === 'Absent').length;
+    const total = dateAttendance.length;
+    const rate = total > 0 ? ((present / total) * 100).toFixed(1) : '0';
+    return { present, excused, absent, total, rate };
+  }, [dateAttendance]);
+
+  const taskStats = React.useMemo(() => {
+    if (!selectedReport) return { total: 0, completed: 0, inProgress: 0, pending: 0, followUp: 0, cancelled: 0 };
+    const logs = selectedReport.hourlyLogs || [];
+    const total = logs.length;
+    const completed = logs.filter(l => l.status === 'Completed').length;
+    const inProgress = logs.filter(l => l.status === 'In progress').length;
+    const pending = logs.filter(l => l.status === 'Pending').length;
+    const followUp = logs.filter(l => l.status === 'Follow up').length;
+    const cancelled = logs.filter(l => l.status === 'Cancelled').length;
+    return { total, completed, inProgress, pending, followUp, cancelled };
+  }, [selectedReport]);
+
+  const absentOrExcusedStaff = React.useMemo(() => {
+    return dateAttendance.filter((r: any) => r.status === 'Absent' || r.status === 'Excused');
+  }, [dateAttendance]);
+
+  const departmentBreakdown = React.useMemo(() => {
+    const breakdown: Record<string, { present: number; excused: number; absent: number; total: number }> = {};
+    dateAttendance.forEach((r: any) => {
+      const dept = r.department || 'Other';
+      if (!breakdown[dept]) {
+        breakdown[dept] = { present: 0, excused: 0, absent: 0, total: 0 };
+      }
+      breakdown[dept].total++;
+      if (r.status === 'Present') breakdown[dept].present++;
+      else if (r.status === 'Excused') breakdown[dept].excused++;
+      else if (r.status === 'Absent') breakdown[dept].absent++;
+    });
+    return breakdown;
+  }, [dateAttendance]);
 
   // Activity log building in Form
   const [currentLogDate, setCurrentLogDate] = useState('');
@@ -471,6 +535,16 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
             .no-print, [title="Upload custom logo"], .group\/edit:hover svg {
               display: none !important;
             }
+
+            .page-break-inside-avoid {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
+
+            .signature-section {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+            }
           </style>
         </head>
         <body class="bg-white">
@@ -762,6 +836,23 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
               })
             )}
           </div>
+
+          <div className="mt-4 pt-4 border-t border-slate-200/60 flex flex-col gap-2 shrink-0 no-print">
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("តើអ្នកចង់កំណត់ឡើងវិញនូវទិន្នន័យគំរូទាំងអស់ឬទេ? (រាល់ការកែប្រែនឹងត្រូវបាត់បង់)")) {
+                  localStorage.setItem('wis_daily_reports', JSON.stringify(INITIAL_REPORTS_MOCK));
+                  setReports(INITIAL_REPORTS_MOCK);
+                  setSelectedReport(INITIAL_REPORTS_MOCK[0]);
+                }
+              }}
+              className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 text-[10px] font-black uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer border border-slate-200/50"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+              <span>កំណត់ឡើងវិញទិន្នន័យគំរូ (Reset Demo Data)</span>
+            </button>
+          </div>
         </div>
 
         {/* Right Detail Presentation View (Clean A4 Standard) */}
@@ -801,8 +892,8 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                 <style dangerouslySetInnerHTML={{ __html: `
                   @media print {
                     @page {
-                      size: A4;
-                      margin: 1.5cm 1.2cm;
+                      size: A4 portrait;
+                      margin: 1.2cm 1.0cm;
                     }
                     body * {
                       visibility: hidden !important;
@@ -833,6 +924,23 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                     .no-print {
                       display: none !important;
                     }
+                    .page-break-inside-avoid {
+                      page-break-inside: avoid !important;
+                      break-inside: avoid !important;
+                    }
+                    .signature-section {
+                      page-break-inside: avoid !important;
+                      break-inside: avoid !important;
+                    }
+                    /* Crisp typography */
+                    .font-moul {
+                      font-family: "Khmer OS Muol Light", "Moul", "Khmer OS Muol", serif !important;
+                    }
+                    body {
+                      font-family: "Khmer OS Siemreap", "Siemreap", "Kantumruy Pro", "Inter", sans-serif !important;
+                      -webkit-print-color-adjust: exact !important;
+                      print-color-adjust: exact !important;
+                    }
                   }
                 `}} />
 
@@ -840,7 +948,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-50 border border-slate-200 p-4 rounded-2xl no-print">
                   <div className="text-xs text-slate-500 font-bold flex items-center gap-1">
                     <FileText className="w-4 h-4 text-emerald-600" />
-                    <span>លោកអ្នកអាចកែសម្រួលទិន្នន័យរបាយការណ៍ផ្ទាល់នៅលើទម្រង់បញ្ចូលទិន្នន័យខាងក្រោមយ៉ាងងាយស្រួល និងរហ័ស។</span>
+                    <span>ចុចលើប្រអប់ព័ត៌មានខាងក្រោមក្រដាស A4 ផ្ទាល់ ដើម្បីកែសម្រួលរហ័ស។</span>
                   </div>
                   
                   <div className="flex items-center gap-2 self-end flex-wrap">
@@ -931,248 +1039,8 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                   </div>
                 </div>
 
-                {/* 1. On-Screen Modern Form & Data Entry View */}
-                <div className="space-y-6 no-print">
-                  {/* Title & Metadata Card */}
-                  <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                      <div>
-                        <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold uppercase px-2.5 py-1 rounded-full border border-emerald-200">
-                          Active Reporting Sheet
-                        </span>
-                        <h2 className="text-base font-black text-slate-800 font-moul mt-1.5 leading-relaxed">
-                          ទម្រង់បញ្ចូលទិន្នន័យរបាយការណ៍ប្រចាំថ្ងៃ
-                        </h2>
-                        <p className="text-slate-400 text-[11px] font-semibold mt-0.5">
-                          Daily Operations Reporting Form (Direct Interactive Editor)
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 self-start shrink-0">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Auto-Saving Connected</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Date */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10.5px] font-bold text-slate-500 block">Date (កាលបរិច្ឆេទ) *</label>
-                        <input
-                          type="date"
-                          value={selectedReport.date}
-                          onChange={(e) => handleUpdateInlineField(selectedReport.id, 'date', e.target.value)}
-                          className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 p-2.5 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-emerald-500 font-mono transition"
-                          required
-                        />
-                      </div>
-
-                      {/* Department */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10.5px] font-bold text-slate-500 block">Department (ផ្នែក) *</label>
-                        <input
-                          type="text"
-                          value={selectedReport.department || 'Operations'}
-                          onChange={(e) => handleUpdateInlineField(selectedReport.id, 'department', e.target.value)}
-                          className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 p-2.5 rounded-xl text-xs font-black outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                          required
-                        />
-                      </div>
-
-                      {/* Prepared By */}
-                      <div className="space-y-1.5">
-                        <label className="text-[10.5px] font-bold text-slate-500 block">Prepared By (រៀបចំដោយ) *</label>
-                        <input
-                          type="text"
-                          value={selectedReport.reporterName}
-                          onChange={(e) => handleUpdateInlineField(selectedReport.id, 'reporterName', e.target.value)}
-                          className="w-full bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200/80 p-2.5 rounded-xl text-xs font-black outline-none focus:ring-2 focus:ring-emerald-500 transition"
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Inline Activities Builder Block */}
-                  <div className="bg-emerald-50/20 border border-emerald-100 rounded-3xl p-6 space-y-4 shadow-3xs">
-                    <div className="border-b border-emerald-100 pb-3 flex items-center justify-between">
-                      <h3 className="text-xs font-black text-[#073B3A] uppercase tracking-wider flex items-center gap-1.5">
-                        <Plus className="w-4 h-4 text-emerald-600" />
-                        <span>បន្ថែមសកម្មភាព / ការងារលម្អិត (Quick Activity Addition Form)</span>
-                      </h3>
-                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
-                        {selectedReport.hourlyLogs.length} សកម្មភាពសរុប
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                      <div className="md:col-span-3">
-                        <label className="text-[10px] font-black text-slate-500 block mb-1.5">កាលបរិច្ឆេទ (Date)</label>
-                        <input
-                          type="date"
-                          value={inlineLogDate}
-                          onChange={(e) => setInlineLogDate(e.target.value)}
-                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-bold font-mono focus:ring-2 focus:ring-emerald-500 outline-none transition"
-                        />
-                      </div>
-                      <div className="md:col-span-3">
-                        <label className="text-[10px] font-black text-slate-500 block mb-1.5">ស្ថានភាពការងារ (Status)</label>
-                        <select
-                          value={inlineLogStatus}
-                          onChange={(e) => setInlineLogStatus(e.target.value as any)}
-                          className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-black focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer transition"
-                        >
-                          <option value="Completed">Completed (រួចរាល់)</option>
-                          <option value="In progress">In progress (កំពុងដំណើរការ)</option>
-                          <option value="Pending">Pending (ពន្យារពេល)</option>
-                          <option value="Follow up">Follow up (តាមដានបន្ថែម)</option>
-                          <option value="Cancelled">Cancelled (លុបចោល)</option>
-                        </select>
-                      </div>
-                      <div className="md:col-span-6 flex gap-2">
-                        <div className="flex-1">
-                          <label className="text-[10px] font-black text-slate-500 block mb-1.5">សេចក្តីពិពណ៌នាការងារ (Description of Work)</label>
-                          <input
-                            type="text"
-                            placeholder="ឧ. ត្រួតពិនិត្យវត្តមានបុគ្គលិកសន្តិសុខ..."
-                            value={inlineLogActivity}
-                            onChange={(e) => setInlineLogActivity(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleInlineAddActivity();
-                              }
-                            }}
-                            className="w-full bg-white border border-slate-200 p-2.5 rounded-xl text-xs font-bold focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 transition"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleInlineAddActivity}
-                          className="bg-emerald-700 hover:bg-emerald-850 text-white font-black text-xs px-5 rounded-xl transition cursor-pointer flex items-center justify-center gap-1 mt-5 h-[38px] shrink-0 active:scale-95 shadow-sm"
-                        >
-                          <Plus className="w-4 h-4" />
-                          <span>បន្ថែម</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Summary of Activities (Responsive Modern Table) */}
-                  <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
-                    <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                      <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                        <ClipboardList className="w-4 h-4 text-[#073B3A]" />
-                        <span>បញ្ជីសកម្មភាពការងារ (Summary of Activities)</span>
-                      </h3>
-                      <p className="text-[10px] text-slate-400 font-bold hidden sm:block">កែសម្រួលផ្ទាល់លើជួរដេកនីមួយៗ (Direct Row Editing)</p>
-                    </div>
-
-                    <div className="overflow-x-auto w-full">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-slate-50/80 text-[10px] font-black text-slate-500 border-b border-slate-200 uppercase tracking-wider">
-                            <th className="p-4 text-center w-16">No</th>
-                            <th className="p-4 text-center w-40">Date (កាលបរិច្ឆេទ)</th>
-                            <th className="p-4">Description of Work (ការពិពណ៌នាការងារ)</th>
-                            <th className="p-4 text-center w-44">Status (ស្ថានភាព)</th>
-                            <th className="p-4 text-center w-16">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-xs font-bold text-slate-700">
-                          {selectedReport.hourlyLogs.length === 0 ? (
-                            <tr>
-                              <td colSpan={5} className="p-10 text-center text-slate-400 italic">
-                                មិនទាន់មានសកម្មភាពការងារណាមួយត្រូវបានបន្ថែមនៅឡើយទេ។ សូមប្រើប្រាស់ទម្រង់ខាងលើដើម្បីបន្ថែម។
-                              </td>
-                            </tr>
-                          ) : (
-                            selectedReport.hourlyLogs.map((log, index) => (
-                              <tr key={log.id} className="hover:bg-slate-50/50 transition">
-                                {/* No. */}
-                                <td className="p-4 text-center font-mono text-xs text-slate-400 bg-slate-50/10">
-                                  {index + 1}
-                                </td>
-
-                                {/* Date Input */}
-                                <td className="p-3">
-                                  <input
-                                    type="date"
-                                    value={log.date || selectedReport.date}
-                                    onChange={(e) => {
-                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, date: e.target.value } : l);
-                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                    }}
-                                    className="bg-transparent hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-200 text-center py-1.5 px-2 rounded-lg text-xs font-bold font-mono text-slate-700 focus:outline-none transition w-full focus:ring-1 focus:ring-emerald-500"
-                                  />
-                                </td>
-
-                                {/* Activity Input */}
-                                <td className="p-3">
-                                  <textarea
-                                    value={log.activity}
-                                    onChange={(e) => {
-                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, activity: e.target.value } : l);
-                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                    }}
-                                    rows={1}
-                                    className="bg-transparent hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-200 py-1.5 px-2.5 rounded-lg text-xs font-bold text-slate-800 focus:outline-none transition w-full focus:ring-1 focus:ring-emerald-500 resize-y scrollbar-thin"
-                                  />
-                                </td>
-
-                                {/* Status Select badge */}
-                                <td className="p-3 text-center">
-                                  <div className="relative inline-block w-full max-w-[140px] mx-auto">
-                                    <select
-                                      value={log.status}
-                                      onChange={(e) => {
-                                        const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, status: e.target.value as any } : l);
-                                        handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                      }}
-                                      className={`w-full py-1.5 pl-3 pr-8 rounded-xl text-[10px] font-black cursor-pointer border duration-150 outline-none text-center appearance-none transition focus:ring-1 focus:ring-offset-1 ${
-                                        log.status === 'Completed' ? 'bg-emerald-50 text-emerald-800 border-emerald-200 focus:ring-emerald-400'
-                                          : log.status === 'In progress' ? 'bg-purple-50 text-purple-800 border-purple-200 focus:ring-purple-400'
-                                          : log.status === 'Pending' ? 'bg-amber-50 text-amber-800 border-amber-200 focus:ring-amber-400'
-                                          : log.status === 'Follow up' ? 'bg-blue-50 text-blue-800 border-blue-200 focus:ring-blue-400'
-                                          : 'bg-rose-50 text-rose-800 border-rose-200 focus:ring-rose-400'
-                                      }`}
-                                    >
-                                      <option value="Completed">Completed</option>
-                                      <option value="In progress">In progress</option>
-                                      <option value="Pending">Pending</option>
-                                      <option value="Follow up">Follow up</option>
-                                      <option value="Cancelled">Cancelled</option>
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
-                                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                                    </div>
-                                  </div>
-                                </td>
-
-                                {/* Action */}
-                                <td className="p-3 text-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const updated = selectedReport.hourlyLogs.filter(l => l.id !== log.id);
-                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
-                                    }}
-                                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
-                                    title="លុបសកម្មភាព"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Hidden Official A4 Printable Template (Purely used to generate printed document via handlePrint) */}
-                <div className="absolute top-[-9999px] left-[-9999px] w-[810px] pointer-events-none opacity-0 select-none no-print">
+                {/* Main A4 Styled Sheet */}
+                <div className="bg-slate-200 p-2 sm:p-5 rounded-3xl border border-slate-300 overflow-x-auto w-full">
                   <div 
                     className="bg-white border border-slate-400 p-8 sm:p-[0.8in] relative font-sans mx-auto flex flex-col justify-between text-slate-900 shadow-2xl space-y-6"
                     style={{ maxWidth: '800px', width: '100%', minHeight: '1050px' }}
@@ -1203,7 +1071,7 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                         </div>
                       </div>
 
-                      <div className="text-center sm:text-right mt-2 sm:mt-0 space-y-0.5">
+                      <div className="text-center sm:text-right mt-2 sm:mt-0 space-y-0.5 animate-fadeIn">
                         <p className="font-moul text-[10px] leading-tight text-slate-900 tracking-wide">
                           ព្រះរាជាណាចក្រកម្ពុជា
                         </p>
@@ -1236,15 +1104,98 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-slate-500 shrink-0">Date (កាលបរិច្ឆេទ) :</span>
                         <div className="font-bold text-slate-800 font-mono block">
-                          {selectedReport.date}
+                          {renderEditableBlock('date', 'កាលបរិច្ឆេទ', selectedReport.date, (val) => {
+                            handleUpdateInlineField(selectedReport.id, 'date', val);
+                          })}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-slate-500 shrink-0">Department (ផ្នែក) :</span>
                         <div className="font-bold text-slate-800 col-span-1">
-                          {selectedReport.department || 'Operations'}
+                          {renderEditableBlock('department', 'ផ្នែក', selectedReport.department || 'Operations', (val) => {
+                            handleUpdateInlineField(selectedReport.id, 'department', val);
+                          })}
                         </div>
                       </div>
+                    </div>
+ 
+                    {/* Executive Operations Overview Dashboard */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2 border border-slate-300 rounded-2xl p-4 bg-slate-50/50 print:bg-white print:border-slate-400">
+                      
+                      {/* Attendance Summary Panel */}
+                      <div className="space-y-2 border-b sm:border-b-0 sm:border-r border-slate-200 sm:pr-4 print:border-slate-350">
+                        <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-850 uppercase tracking-wide">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0 no-print" />
+                          <span>Staff Attendance Summary</span>
+                        </div>
+                        <p className="font-moul text-[9px] text-[#0d5c5a] leading-tight mt-0.5">
+                          សេចក្តីសង្ខេបវត្តមានបុគ្គលិកប្រចាំថ្ងៃ
+                        </p>
+                        
+                        {/* Attendance Stats Grid */}
+                        <div className="grid grid-cols-4 gap-1.5 pt-2 text-center">
+                          <div className="bg-emerald-50/60 p-2 rounded-xl border border-emerald-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-emerald-800 uppercase block tracking-wider">Present</span>
+                            <span className="text-xs font-black text-emerald-700 font-mono block mt-1">{attendanceStats.present}</span>
+                          </div>
+                          <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-amber-800 uppercase block tracking-wider">Excused</span>
+                            <span className="text-xs font-black text-amber-700 font-mono block mt-1">{attendanceStats.excused}</span>
+                          </div>
+                          <div className="bg-rose-50/60 p-2 rounded-xl border border-rose-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-rose-800 uppercase block tracking-wider">Absent</span>
+                            <span className="text-xs font-black text-rose-700 font-mono block mt-1">{attendanceStats.absent}</span>
+                          </div>
+                          <div className="bg-indigo-50/60 p-2 rounded-xl border border-indigo-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-indigo-800 uppercase block tracking-wider">Rate</span>
+                            <span className="text-xs font-black text-indigo-700 font-mono block mt-1">{attendanceStats.rate}%</span>
+                          </div>
+                        </div>
+
+                        {/* Headcount Subtitle Info */}
+                        <div className="text-[9.5px] text-slate-500 font-medium pt-1">
+                          Total Logged Staff: <span className="font-bold text-slate-800 font-mono">{attendanceStats.total}</span>
+                        </div>
+                      </div>
+
+                      {/* Tasks/Activities Summary Panel */}
+                      <div className="space-y-2 sm:pl-4">
+                        <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-slate-855 uppercase tracking-wide">
+                          <ClipboardList className="w-3.5 h-3.5 text-indigo-600 shrink-0 no-print" />
+                          <span>Daily Tasks Summary</span>
+                        </div>
+                        <p className="font-moul text-[9px] text-[#0d5c5a] leading-tight mt-0.5">
+                          សេចក្តីសង្ខេបស្ថានភាពសកម្មភាពការងារ
+                        </p>
+
+                        {/* Tasks Stats Grid */}
+                        <div className="grid grid-cols-4 gap-1.5 pt-2 text-center">
+                          <div className="bg-emerald-50/60 p-2 rounded-xl border border-emerald-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-emerald-800 uppercase block tracking-wider">Done</span>
+                            <span className="text-xs font-black text-emerald-700 font-mono block mt-1">{taskStats.completed}</span>
+                          </div>
+                          <div className="bg-purple-50/60 p-2 rounded-xl border border-purple-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-purple-800 uppercase block tracking-wider">Active</span>
+                            <span className="text-xs font-black text-purple-700 font-mono block mt-1">{taskStats.inProgress}</span>
+                          </div>
+                          <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200/50 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-amber-800 uppercase block tracking-wider">Pending</span>
+                            <span className="text-xs font-black text-amber-700 font-mono block mt-1">{taskStats.pending + taskStats.followUp}</span>
+                          </div>
+                          <div className="bg-slate-100 p-2 rounded-xl border border-slate-200 print:bg-white print:border-slate-300">
+                            <span className="text-[8px] font-black text-slate-800 uppercase block tracking-wider">Total</span>
+                            <span className="text-xs font-black text-slate-800 font-mono block mt-1">{taskStats.total}</span>
+                          </div>
+                        </div>
+
+                        {/* Completion Subtitle Info */}
+                        <div className="text-[9.5px] text-slate-500 font-medium pt-1">
+                          Tasks Completion Rate: <span className="font-bold text-slate-800 font-mono">
+                            {taskStats.total > 0 ? ((taskStats.completed / taskStats.total) * 100).toFixed(0) : 0}%
+                          </span>
+                        </div>
+                      </div>
+
                     </div>
 
                     {/* 1. Summary of Activities (No, Date, Description, Status) */}
@@ -1285,17 +1236,64 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
 
                                   {/* Date */}
                                   <td className="p-3 border-r border-slate-200 text-center font-mono font-bold text-slate-600">
-                                    {log.date || selectedReport.date}
+                                    {renderEditableBlock(`log-date-${log.id}`, 'កាលបរិច្ឆេទ', log.date || selectedReport.date, (val) => {
+                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, date: val } : l);
+                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                    }, true)}
                                   </td>
 
                                   {/* Description of Work */}
-                                  <td className="p-3 border-r border-slate-200 text-[11.5px] font-medium text-slate-800">
-                                    {log.activity}
+                                  <td className="p-3 border-r border-slate-200 font-medium text-slate-800 max-w-sm whitespace-pre-line leading-relaxed text-left">
+                                    {renderEditableBlock(`log-activity-${log.id}`, 'កិច្ចការ', log.activity, (val) => {
+                                      const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, activity: val } : l);
+                                      handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                    })}
                                   </td>
 
                                   {/* Status Selectors */}
                                   <td className="p-3 text-center w-52">
-                                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase border tracking-wider bg-white border-slate-300">
+                                    {/* Non-print: beautiful custom-styled select badge */}
+                                    <div className="relative inline-block no-print mx-auto">
+                                      <select
+                                        value={log.status}
+                                        onChange={(e) => {
+                                          const st = e.target.value as any;
+                                          const updated = selectedReport.hourlyLogs.map(l => l.id === log.id ? { ...l, status: st } : l);
+                                          handleUpdateInlineField(selectedReport.id, 'hourlyLogs', updated);
+                                        }}
+                                        className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold cursor-pointer transition-all border duration-150 outline-none text-center pr-8 appearance-none hover:shadow-xs shadow-2xs ${
+                                          log.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-300 focus:ring-1 focus:ring-emerald-400'
+                                            : log.status === 'In progress' ? 'bg-purple-50 text-purple-700 border-purple-300 focus:ring-1 focus:ring-purple-400'
+                                            : log.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-300 focus:ring-1 focus:ring-amber-400'
+                                            : log.status === 'Follow up' ? 'bg-blue-50 text-blue-700 border-blue-300 focus:ring-1 focus:ring-blue-400'
+                                            : 'bg-rose-50 text-rose-700 border-rose-300 focus:ring-1 focus:ring-rose-400'
+                                        }`}
+                                      >
+                                        <option value="Completed" className="text-emerald-700 font-bold">Completed</option>
+                                        <option value="In progress" className="text-purple-700 font-bold">In progress</option>
+                                        <option value="Pending" className="text-amber-700 font-bold">Pending</option>
+                                        <option value="Follow up" className="text-blue-700 font-bold">Follow up</option>
+                                        <option value="Cancelled" className="text-rose-700 font-bold">Cancelled</option>
+                                      </select>
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
+                                        <ChevronDown className={`w-3.5 h-3.5 opacity-80 ${
+                                          log.status === 'Completed' ? 'text-emerald-600'
+                                            : log.status === 'In progress' ? 'text-purple-600'
+                                            : log.status === 'Pending' ? 'text-amber-600'
+                                            : log.status === 'Follow up' ? 'text-blue-600'
+                                            : 'text-rose-600'
+                                        }`} />
+                                      </div>
+                                    </div>
+
+                                    {/* Print-only: static elegant badge */}
+                                    <span className={`hidden print:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase border tracking-wider ${
+                                      log.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                        : log.status === 'In progress' ? 'bg-purple-50 text-purple-700 border-purple-300'
+                                        : log.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                        : log.status === 'Follow up' ? 'bg-blue-50 text-blue-700 border-blue-300'
+                                        : 'bg-rose-50 text-rose-700 border-rose-300'
+                                    }`}>
                                       {log.status}
                                     </span>
                                   </td>
@@ -1308,12 +1306,113 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                       </div>
                     </div>
 
+                    {/* 2. Detailed Staff Attendance & Absences (Department Headcounts & Leave Registry) */}
+                    <div className="space-y-4 mt-6 page-break-inside-avoid">
+                      <h3 className="text-[11.5px] font-extrabold text-slate-900 border-b border-slate-200 pb-2 flex items-center gap-1">
+                        <span className="inline-flex items-center justify-center bg-[#0d5c5a] text-white rounded-full w-5 h-5 text-[10px] font-black font-sans shrink-0 mr-1">2</span>
+                        <span className="font-sans font-bold">Staff Attendance Breakdown</span>
+                        <span className="font-moul text-[10.5px] text-[#0d5c5a] font-normal ml-1">
+                          ( របាយការណ៍វត្តមានបុគ្គលិកលម្អិត )
+                        </span>
+                      </h3>
+
+                      {dateAttendance.length === 0 ? (
+                        <p className="text-[11px] text-slate-400 italic py-4 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/20">
+                          មិនមានទិន្នន័យវត្តមានសម្រាប់ថ្ងៃនេះត្រូវបានកត់ត្រាក្នុងប្រព័ន្ធឡើយ។ (No attendance records logged for this date.)
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {/* Department Headcount Breakdown Table */}
+                          <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-3xs">
+                            <table className="w-full text-left border-collapse">
+                              <thead>
+                                <tr className="bg-[#f8fafc] text-[9.5px] font-black text-slate-700 border-b border-slate-200 uppercase">
+                                  <th className="p-2.5 text-left pl-4 border-r border-slate-200 text-slate-600">DEPARTMENT ( ផ្នែក )</th>
+                                  <th className="p-2.5 text-center border-r border-slate-200 text-slate-600 w-24">TOTAL ( សរុប )</th>
+                                  <th className="p-2.5 text-center border-r border-slate-200 text-slate-600 w-28">PRESENT ( មក )</th>
+                                  <th className="p-2.5 text-center border-r border-slate-200 text-slate-600 w-28">EXCUSED ( ច្បាប់ )</th>
+                                  <th className="p-2.5 text-center text-slate-600 w-28">ABSENT ( អត់ច្បាប់ )</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white text-[10.5px] font-medium text-slate-800">
+                                {Object.entries(departmentBreakdown).map(([deptKey, stats]: [string, any]) => (
+                                  <tr key={deptKey} className="border-b border-slate-150 last:border-b-0 hover:bg-slate-50/30">
+                                    <td className="p-2.5 border-r border-slate-200 font-bold text-slate-700 text-left pl-4">
+                                      {DEPARTMENT_NAMES_KM[deptKey as any] || deptKey}
+                                    </td>
+                                    <td className="p-2.5 border-r border-slate-200 text-center font-mono font-bold text-slate-600 bg-slate-50/10">
+                                      {stats.total}
+                                    </td>
+                                    <td className="p-2.5 border-r border-slate-200 text-center font-mono font-black text-emerald-600 bg-emerald-50/5">
+                                      {stats.present}
+                                    </td>
+                                    <td className="p-2.5 border-r border-slate-200 text-center font-mono font-bold text-amber-600 bg-amber-50/5">
+                                      {stats.excused}
+                                    </td>
+                                    <td className="p-2.5 text-center font-mono font-bold text-rose-600 bg-rose-50/5">
+                                      {stats.absent}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Excused & Absent Staff Members List */}
+                          {absentOrExcusedStaff.length > 0 && (
+                            <div className="space-y-2 mt-3 page-break-inside-avoid">
+                              <h4 className="text-[10px] font-extrabold text-rose-800 uppercase tracking-wider flex items-center gap-1">
+                                <span className="inline-block w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                                <span>Absence & Leave Registry (បញ្ជីឈ្មោះបុគ្គលិកសុំច្បាប់ និងអវត្តមាន)</span>
+                              </h4>
+                              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-3xs">
+                                <table className="w-full text-left border-collapse">
+                                  <thead>
+                                    <tr className="bg-slate-50 text-[9px] font-black text-slate-600 border-b border-slate-200 uppercase">
+                                      <th className="p-2 pl-3 border-r border-slate-150 w-24 text-center">Staff ID</th>
+                                      <th className="p-2 pl-3 border-r border-slate-150">Name ( ឈ្មោះ )</th>
+                                      <th className="p-2 pl-3 border-r border-slate-150">Department ( ផ្នែក )</th>
+                                      <th className="p-2 pl-3 border-r border-slate-150 w-36 text-center">Status ( ស្ថានភាព )</th>
+                                      <th className="p-2 pl-3">Notes/Reason ( មូលហេតុ )</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="bg-white text-[10px] text-slate-700">
+                                    {absentOrExcusedStaff.map((r: any) => (
+                                      <tr key={r.id} className="border-b border-slate-150 last:border-b-0 hover:bg-slate-50/40">
+                                        <td className="p-2 border-r border-slate-150 font-mono text-slate-500 text-center">{r.staffId}</td>
+                                        <td className="p-2 pl-3 border-r border-slate-150 font-bold text-slate-800 text-left">{r.staffName}</td>
+                                        <td className="p-2 pl-3 border-r border-slate-150 text-left">
+                                          {DEPARTMENT_NAMES_KM[r.department] || r.department}
+                                        </td>
+                                        <td className="p-2 border-r border-slate-150 text-center font-bold">
+                                          <span className={`inline-block px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${
+                                            r.status === 'Excused' 
+                                              ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                                              : 'bg-rose-50 text-rose-700 border border-rose-200'
+                                          }`}>
+                                            {r.status === 'Excused' ? 'Excused (ច្បាប់)' : 'Absent (អវត្តមាន)'}
+                                          </span>
+                                        </td>
+                                        <td className="p-2 pl-3 text-slate-500 text-left italic">
+                                          {r.notes || <span className="text-slate-300">-</span>}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Bottom Signatures Block */}
                     <div className="signature-section relative mt-10 pt-6 border-t border-slate-200 grid grid-cols-2 gap-6 text-center text-xs">
                       
                       {/* Seal element */}
                       <div className="absolute right-12 bottom-0 w-24 h-24 border-4 border-double border-rose-600 rounded-full flex flex-col items-center justify-center text-center opacity-75 select-none pointer-events-none rotate-6 shadow-[inset_0_0_6px_rgba(225,29,72,0.05)] z-20">
-                        <div className="text-[6.5px] font-black text-rose-650 tracking-widest uppercase mb-0.5">WESTERN INT. SCHOOL</div>
+                        <div className="text-[6.5px] font-black text-rose-650 tracking-widest uppercase mb-0.5">WESTERN INT. WIS_SCHOOL</div>
                         <div className="border-t border-b border-rose-600/50 py-0.5 px-1 font-moul text-[6px] text-rose-600">យល់ព្រមអនុម័ត</div>
                         <div className="text-[6.5px] font-black text-rose-650 tracking-wider">APPROVED</div>
                       </div>
@@ -1325,7 +1424,9 @@ export default function DailyReportManager({ initialDate, onClearInitialDate, cu
                           {selectedReport.reporterName}
                         </div>
                         <div className="font-moul text-[9px] text-[#0d5c5a] border-t border-slate-200 pt-1">
-                          {selectedReport.reporterName}
+                          {renderEditableBlock('reporterName', 'Prepared By', selectedReport.reporterName, (val) => {
+                            handleUpdateInlineField(selectedReport.id, 'reporterName', val);
+                          }, true)}
                         </div>
                       </div>
 

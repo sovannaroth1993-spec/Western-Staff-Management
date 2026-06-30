@@ -493,102 +493,117 @@ export default function DashboardStats({
   return (
     <div className="space-y-6">
       
-      {/* 3 Summary Highlight Cards */}
+      {/* 3 Summary Highlight Cards with Premium Flowing Animation Border Effect */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Card 1: Total Staff */}
-        <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 border border-amber-500 shadow-md relative overflow-hidden group hover:border-amber-600 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
-          <div className="flex items-start justify-between gap-2">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse shadow-sm shadow-slate-900/50" />
-                <p className="text-xs sm:text-sm font-black text-slate-900 font-sans tracking-wide">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
+        <div className="relative p-[2.5px] overflow-hidden rounded-[20px] bg-amber-400/10 shadow-md hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group">
+          {/* Animated Glowing Laser Border Beam */}
+          <div className="absolute inset-[-1000%] bg-[conic-gradient(from_0deg,#0d5c5a_0deg,#38bdf8_60deg,transparent_120deg,transparent_180deg,#0d5c5a_180deg,#f59e0b_240deg,transparent_300deg,transparent_360deg)] animate-border-spin pointer-events-none" />
+          
+          <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-[18px] p-4 relative overflow-hidden group hover:shadow-inner transition-all duration-300 select-none h-full">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse shadow-sm shadow-slate-900/50" />
+                  <p className="text-xs sm:text-sm font-black text-slate-900 font-sans tracking-wide">ចំនួនបុគ្គលិកសរុប (Total Staff)</p>
+                </div>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-2xl sm:text-3xl font-mono font-black text-slate-950 tracking-tight">{staffList.length}</span>
+                  <span className="text-sm sm:text-base font-bold text-slate-900 font-sans ml-1">នាក់</span>
+                </div>
+                <div className="pt-1">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-950/10 border border-slate-950/20 text-[10px] font-bold text-slate-900 rounded-lg">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    កំពុងបំពេញការងារប្រចាំថ្ងៃ
+                  </span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl sm:text-3xl font-mono font-black text-slate-950 tracking-tight">{staffList.length}</span>
-                <span className="text-sm sm:text-base font-bold text-slate-900 font-sans ml-1">នាក់</span>
-              </div>
-              <div className="pt-1">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-950/10 border border-slate-950/20 text-[10px] font-bold text-slate-900 rounded-lg">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                  កំពុងបំពេញការងារប្រចាំថ្ងៃ
-                </span>
+              <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 transition-all duration-300 group-hover:scale-110 shrink-0">
+                <Users className="w-5 h-5 stroke-[2.2]" />
               </div>
             </div>
-            <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 transition-all duration-300 group-hover:scale-110 shrink-0">
-              <Users className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
         </div>
 
         {/* Card 2: Presence Rate */}
-        <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 border border-amber-500 shadow-md relative overflow-hidden group hover:border-amber-600 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
-          <div className="flex items-start justify-between gap-2">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse shadow-sm shadow-slate-900/50" />
-                <p className="text-xs sm:text-sm font-black text-slate-900 font-sans tracking-wide">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
+        <div className="relative p-[2.5px] overflow-hidden rounded-[20px] bg-amber-400/10 shadow-md hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group">
+          {/* Animated Glowing Laser Border Beam */}
+          <div className="absolute inset-[-1000%] bg-[conic-gradient(from_0deg,#0d5c5a_0deg,#38bdf8_60deg,transparent_120deg,transparent_180deg,#0d5c5a_180deg,#f59e0b_240deg,transparent_300deg,transparent_360deg)] animate-border-spin pointer-events-none" style={{ animationDelay: '-2s' }} />
+          
+          <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-[18px] p-4 relative overflow-hidden group hover:shadow-inner transition-all duration-300 select-none h-full">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all group-hover:scale-125" />
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-slate-900 rounded-full animate-pulse shadow-sm shadow-slate-900/50" />
+                  <p className="text-xs sm:text-sm font-black text-slate-900 font-sans tracking-wide">អត្រាវត្តមានសរុបថ្ងៃនេះ (Attendance)</p>
+                </div>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-2xl sm:text-3xl font-mono font-black text-slate-950 tracking-tight">{presentRate}</span>
+                  <span className="text-lg sm:text-xl font-bold text-slate-900 ml-0.5">%</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-950/10 border border-slate-950/15 text-[10px] font-bold text-slate-900 rounded-md">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    វត្តមាន <strong className="font-mono ml-0.5">{totalPresent}</strong>
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-950/10 border border-slate-950/15 text-[10px] font-bold text-slate-900 rounded-md">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                    ច្បាប់ <strong className="font-mono ml-0.5">{totalExcused}</strong>
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-650/15 border border-rose-600/30 text-[10px] font-bold text-rose-800 rounded-md">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+                    អត់ <strong className="font-mono ml-0.5">{totalAbsent}</strong>
+                  </span>
+                </div>
               </div>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="text-2xl sm:text-3xl font-mono font-black text-slate-950 tracking-tight">{presentRate}</span>
-                <span className="text-lg sm:text-xl font-bold text-slate-900 ml-0.5">%</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-950/10 border border-slate-950/15 text-[10px] font-bold text-slate-900 rounded-md">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                  វត្តមាន <strong className="font-mono ml-0.5">{totalPresent}</strong>
-                </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-slate-950/10 border border-slate-950/15 text-[10px] font-bold text-slate-900 rounded-md">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                  ច្បាប់ <strong className="font-mono ml-0.5">{totalExcused}</strong>
-                </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-650/15 border border-rose-600/30 text-[10px] font-bold text-rose-800 rounded-md">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
-                  អត់ <strong className="font-mono ml-0.5">{totalAbsent}</strong>
-                </span>
+              <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 transition-all duration-300 group-hover:scale-110 shrink-0">
+                <UserCheck className="w-5 h-5 stroke-[2.2]" />
               </div>
             </div>
-            <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 transition-all duration-300 group-hover:scale-110 shrink-0">
-              <UserCheck className="w-5 h-5 stroke-[2.2]" />
-            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600" />
         </div>
 
         {/* Card 3: Date Display Banner */}
-        <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 border border-amber-500 shadow-md relative overflow-hidden group hover:border-amber-600 hover:shadow-lg transition-all duration-300 select-none">
-          <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
-          <div className="flex items-start justify-between gap-1">
-            <div className="space-y-1.5">
-              <div className="inline-block">
-                <span className="bg-slate-950 text-amber-400 font-moul font-normal text-[8.5px] px-2 py-0.5 rounded-md shadow-sm leading-none">
-                  កាលបរិច្ឆេទស្រង់
-                </span>
+        <div className="relative p-[2.5px] overflow-hidden rounded-[20px] bg-amber-400/10 shadow-md hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group">
+          {/* Animated Glowing Laser Border Beam */}
+          <div className="absolute inset-[-1000%] bg-[conic-gradient(from_0deg,#0d5c5a_0deg,#38bdf8_60deg,transparent_120deg,transparent_180deg,#0d5c5a_180deg,#f59e0b_240deg,transparent_300deg,transparent_360deg)] animate-border-spin pointer-events-none" style={{ animationDelay: '-4s' }} />
+          
+          <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-amber-500 rounded-[18px] p-4 relative overflow-hidden group hover:shadow-inner transition-all duration-300 select-none h-full">
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none transition-all duration-500 group-hover:scale-150" />
+            <div className="flex items-start justify-between gap-1">
+              <div className="space-y-1.5">
+                <div className="inline-block">
+                  <span className="bg-slate-950 text-amber-400 font-moul font-normal text-[8.5px] px-2 py-0.5 rounded-md shadow-sm leading-none">
+                    កាលបរិច្ឆេទស្រង់
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-xl sm:text-2xl font-black font-mono text-slate-950 tracking-wider mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
+                    {selectedDate}
+                  </h4>
+                </div>
+                <p className="text-[11px] font-semibold text-slate-900 flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-slate-900" />
+                  រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)
+                </p>
+                
+                <div className="bg-slate-950/10 border border-slate-950/20 rounded-lg px-2 py-1 text-[10.5px] font-bold text-slate-900 flex items-center gap-1.5 mt-2 transition max-w-max">
+                  <Clock className="w-3.5 h-3.5 text-slate-800 animate-spin-slow shrink-0" />
+                  <span>ស្រង់ដោយ៖ <strong className="tracking-wide">LOUNG Veasna</strong></span>
+                </div>
               </div>
-              <div>
-                <h4 className="text-xl sm:text-2xl font-black font-mono text-slate-950 tracking-wider mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
-                  {selectedDate}
-                </h4>
-              </div>
-              <p className="text-[11px] font-semibold text-slate-900 flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-slate-900" />
-                រៀងរាល់ថ្ងៃធ្វើការ (ច័ន្ទ - សុក្រ)
-              </p>
               
-              <div className="bg-slate-950/10 border border-slate-950/20 rounded-lg px-2 py-1 text-[10.5px] font-bold text-slate-900 flex items-center gap-1.5 mt-2 transition max-w-max">
-                <Clock className="w-3.5 h-3.5 text-slate-800 animate-spin-slow shrink-0" />
-                <span>ស្រង់ដោយ៖ <strong className="tracking-wide">LOUNG Veasna</strong></span>
+              <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 shrink-0 leading-none flex items-center justify-center">
+                <Clock className="w-5 h-5 stroke-[2.2] animate-pulse" />
               </div>
             </div>
-            
-            <div className="bg-slate-950 text-amber-400 p-2.5 rounded-xl border border-slate-800 shrink-0 leading-none flex items-center justify-center">
-              <Clock className="w-5 h-5 stroke-[2.2] animate-pulse" />
-            </div>
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
           </div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600" />
         </div>
 
       </div>

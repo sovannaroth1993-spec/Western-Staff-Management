@@ -664,6 +664,8 @@ export default function UserDashboard({
                                     { key: 'telegram', labelKh: 'Telegram Alert', labelEn: 'Telegram Alert', icon: '🤖' },
                                     { key: 'schoolevents', labelKh: 'ផែនការសកម្មភាពសាលា', labelEn: 'School Events', icon: '📅' },
                                     { key: 'monthlyreport', labelKh: 'របាយការណ៍សង្ខេបប្រចាំខែ', labelEn: 'Monthly Reports', icon: '📋' },
+                                    { key: 'gepclassschedule', labelKh: 'កាលវិភាគថ្នាក់ GEP', labelEn: 'GEP Classes Schedule', icon: '📅' },
+                                    { key: 'abapayment', labelKh: 'ទូទាត់ប្រាក់ ABA QR Code', labelEn: 'ABA KHQR Payment', icon: '💵' },
                                     { key: 'usermanager', labelKh: 'គ្រប់គ្រងអ្នកប្រើប្រាស់', labelEn: 'User Manager', icon: '⚙️' }
                                   ].map((perm) => {
                                     const hasAccess = u.role === 'admin' || (u.permissions && u.permissions.includes(perm.key));

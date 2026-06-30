@@ -27,6 +27,8 @@ import StudentStatistics from './components/StudentStatistics';
 import WesternSchoolInfo from './components/WesternSchoolInfo';
 import { SchoolEventsManager } from './components/SchoolEventsManager';
 import { MonthlyReportManager } from './components/MonthlyReportManager';
+import { GepClassScheduleManager } from './components/GepClassScheduleManager';
+import { AbaPaymentManager } from './components/AbaPaymentManager';
 import TaskFollowupManager from './components/TaskFollowupManager';
 import MedicineManager from './components/MedicineManager';
 import { DatabaseStatusManager } from './components/DatabaseStatusManager';
@@ -38,7 +40,7 @@ import { DEFAULT_STUDENTS } from './data/defaultStudents';
 import { 
   Building, LayoutDashboard, Users, UserCheck, 
   HelpCircle, Sparkles, LogOut, CheckCircle, Smartphone, Zap, Droplet, Send, Map, HardDrive, ShieldCheck, Wind, FolderOpen, School, Layers, Coffee, Link2, Calendar, GraduationCap, Video, Clock, BarChart2, Shield, UserX, FileText,
-  Monitor, Laptop, Tablet, RefreshCw, Pill, Database
+  Monitor, Laptop, Tablet, RefreshCw, Pill, Database, DollarSign
 } from 'lucide-react';
 import LoginScreen from './components/LoginScreen';
 import UserManager from './components/UserManager';
@@ -150,11 +152,11 @@ export default function App() {
   const t = translations[lang];
 
   // Tab Selection State
-  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal' | 'schoolevents' | 'monthlyreport' | 'followup' | 'medicine' | 'dbstatus'>(() => {
+  const [activeTab, setActiveTab ] = useState<'dashboard' | 'electricity' | 'water' | 'fixedassets' | 'insurance' | 'admindocs' | 'otherlinks' | 'staff' | 'students' | 'studentstatistics' | 'schoolinfo' | 'attendance' | 'telegram' | 'khmercalendar' | 'cctv' | 'classroomequipment' | 'dailyreport' | 'usermanager' | 'staff-portal' | 'schoolevents' | 'monthlyreport' | 'gepclassschedule' | 'abapayment' | 'followup' | 'medicine' | 'dbstatus'>(() => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const tabParam = searchParams.get('tab');
-      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal', 'schoolevents', 'monthlyreport', 'followup', 'medicine', 'dbstatus'];
+      const validTabs = ['dashboard', 'electricity', 'water', 'fixedassets', 'insurance', 'admindocs', 'otherlinks', 'staff', 'students', 'studentstatistics', 'schoolinfo', 'attendance', 'telegram', 'khmercalendar', 'cctv', 'classroomequipment', 'dailyreport', 'usermanager', 'staff-portal', 'schoolevents', 'monthlyreport', 'gepclassschedule', 'abapayment', 'followup', 'medicine', 'dbstatus'];
       if (tabParam && validTabs.includes(tabParam)) {
         return tabParam as any;
       }
@@ -636,6 +638,14 @@ export default function App() {
               <MonthlyReportManager currentUser={currentUser} />
             )}
 
+            {activeTab === 'gepclassschedule' && (
+              <GepClassScheduleManager currentUser={currentUser} lang={lang} />
+            )}
+
+            {activeTab === 'abapayment' && (
+              <AbaPaymentManager currentUser={currentUser} lang={lang} />
+            )}
+
             {activeTab === 'followup' && (
               <TaskFollowupManager currentUser={currentUser} lang={lang} />
             )}
@@ -976,6 +986,36 @@ export default function App() {
             >
               <FileText className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
               <span className="flex-1">{t.monthlyReport}</span>
+            </button>
+          )}
+
+          {/* Tab 1.13.5.5: GEP Classes Schedule */}
+          {hasPermission('gepclassschedule') && (
+            <button
+              onClick={() => setActiveTab('gepclassschedule')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'gepclassschedule'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <Calendar className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+              <span className="flex-1">{t.gepClassSchedule}</span>
+            </button>
+          )}
+
+          {/* Tab 1.13.5.6: ABA QR KH Payment */}
+          {hasPermission('abapayment') && (
+            <button
+              onClick={() => setActiveTab('abapayment')}
+              className={`w-full flex items-center gap-3 py-3 rounded-xl text-left text-xs sm:text-sm font-normal tracking-wide transition-all duration-250 cursor-pointer ${
+                activeTab === 'abapayment'
+                  ? 'bg-[#0d5c5a] text-amber-300 font-bold border-l-4 border-amber-400 pl-3 shadow-md'
+                  : 'text-emerald-100/95 hover:text-white hover:bg-[#0c5352]/50 pl-4'
+              }`}
+            >
+              <DollarSign className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+              <span className="flex-1">{t.abaPayment}</span>
             </button>
           )}
 

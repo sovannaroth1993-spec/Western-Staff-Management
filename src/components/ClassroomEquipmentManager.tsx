@@ -43,6 +43,7 @@ export interface EquipmentItemType {
   color: string;
 }
 
+
 const DEFAULT_EQUIPMENT_TYPES: EquipmentItemType[] = [
   { key: 'studentDesk', label: 'តុសិស្ស (Student Desk)', iconName: 'School', color: 'text-emerald-600 bg-emerald-50' },
   { key: 'studentChair', label: 'កៅអីសិស្ស (Student Chair)', iconName: 'School', color: 'text-emerald-600 bg-emerald-50' },
@@ -56,6 +57,434 @@ const DEFAULT_EQUIPMENT_TYPES: EquipmentItemType[] = [
   { key: 'other', label: 'ឧបករណ៍ផ្សេងៗ (Other Equipment)', iconName: 'Laptop', color: 'text-slate-650 bg-slate-100' }
 ];
 
+export interface EquipmentRealIconProps {
+  itemKey: string;
+  iconName?: string;
+  className?: string;
+}
+
+export function EquipmentRealIcon({ itemKey, iconName, className = "w-10 h-10" }: EquipmentRealIconProps) {
+  // If we match a specific standard key:
+  switch (itemKey) {
+    case 'studentDesk':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 42 L14 58 M50 42 L50 58 M20 42 L20 54 M44 42 L44 54" stroke="#475569" strokeWidth="3" strokeLinecap="round"/>
+          <rect x="10" y="26" width="44" height="12" rx="3" fill="url(#deskBodyGrad)" stroke="#78350F" strokeWidth="1.5"/>
+          <path d="M6 24 C6 21 12 20 32 20 C52 20 58 21 58 24 C58 27 52 28 32 28 C12 28 6 27 6 24 Z" fill="url(#deskTopGrad)" stroke="#92400E" strokeWidth="1.5"/>
+          <rect x="28" y="30" width="8" height="4" rx="1" fill="#451A03" opacity="0.3"/>
+          <defs>
+            <linearGradient id="deskTopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FBBF24" />
+              <stop offset="100%" stopColor="#D97706" />
+            </linearGradient>
+            <linearGradient id="deskBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#92400E" />
+              <stop offset="100%" stopColor="#78350F" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'studentChair':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 42 L12 58 M46 42 L52 58 M24 42 L20 56 M40 42 L44 56" stroke="#475569" strokeWidth="3.5" strokeLinecap="round"/>
+          <path d="M15 48 L49 48" stroke="#64748B" strokeWidth="2"/>
+          <rect x="14" y="34" width="36" height="8" rx="4" fill="url(#chairSeatGrad)" stroke="#047857" strokeWidth="1.5"/>
+          <path d="M22 34 L22 14 M42 34 L42 14" stroke="#334155" strokeWidth="3" strokeLinecap="round"/>
+          <rect x="18" y="12" width="28" height="16" rx="4" fill="url(#chairBackGrad)" stroke="#047857" strokeWidth="1.5"/>
+          <defs>
+            <linearGradient id="chairSeatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#34D399" />
+              <stop offset="100%" stopColor="#059669" />
+            </linearGradient>
+            <linearGradient id="chairBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10B981" />
+              <stop offset="100%" stopColor="#047857" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'teacherDesk':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="24" width="44" height="32" rx="4" fill="url(#tDeskBodyGrad)" stroke="#451A03" strokeWidth="2" />
+          <line x1="10" y1="34" x2="54" y2="34" stroke="#451A03" strokeWidth="1.5" />
+          <line x1="32" y1="34" x2="32" y2="56" stroke="#451A03" strokeWidth="1.5" />
+          <rect x="18" y="29" width="6" height="2" rx="1" fill="#FBBF24" />
+          <rect x="40" y="29" width="6" height="2" rx="1" fill="#FBBF24" />
+          <rect x="18" y="42" width="6" height="2" rx="1" fill="#FBBF24" />
+          <rect x="40" y="42" width="6" height="2" rx="1" fill="#FBBF24" />
+          <rect x="6" y="16" width="52" height="8" rx="2" fill="url(#tDeskTopGrad)" stroke="#78350F" strokeWidth="2" />
+          <path d="M26 16 L38 16" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round"/>
+          <defs>
+            <linearGradient id="tDeskTopGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#F59E0B" />
+              <stop offset="50%" stopColor="#D97706" />
+              <stop offset="100%" stopColor="#B45309" />
+            </linearGradient>
+            <linearGradient id="tDeskBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#78350F" />
+              <stop offset="100%" stopColor="#451A03" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'teacherChair':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 46 L32 54 M20 56 L44 56 M32 54 L22 58 M32 54 L42 58" stroke="#1E293B" strokeWidth="3" strokeLinecap="round" />
+          <circle cx="20" cy="57" r="2.5" fill="#0F172A" />
+          <circle cx="44" cy="57" r="2.5" fill="#0F172A" />
+          <circle cx="22" cy="59" r="2.5" fill="#0F172A" />
+          <circle cx="42" cy="59" r="2.5" fill="#0F172A" />
+          <path d="M14 30 L14 24 C14 20 18 20 18 20 M50 30 L50 24 C50 20 46 20 46 20" stroke="#334155" strokeWidth="3" strokeLinecap="round" />
+          <rect x="16" y="32" width="32" height="8" rx="4" fill="url(#tChairSeatGrad)" stroke="#1E293B" strokeWidth="1.5" />
+          <rect x="20" y="10" width="24" height="22" rx="6" fill="url(#tChairBackGrad)" stroke="#1E293B" strokeWidth="2" />
+          <path d="M24 14 H40 M24 18 H40 M24 22 H40 M24 26 H40" stroke="#475569" strokeWidth="1" strokeDasharray="2 2" />
+          <defs>
+            <linearGradient id="tChairSeatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#475569" />
+              <stop offset="100%" stopColor="#0F172A" />
+            </linearGradient>
+            <linearGradient id="tChairBackGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#334155" />
+              <stop offset="100%" stopColor="#1E293B" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'projector':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 4 L32 18" stroke="#64748B" strokeWidth="4" strokeLinecap="round" />
+          <path d="M26 18 H38" stroke="#475569" strokeWidth="2" />
+          <rect x="12" y="18" width="40" height="18" rx="4" fill="url(#projBodyGrad)" stroke="#94A3B8" strokeWidth="2" />
+          <circle cx="42" cy="27" r="6" fill="url(#lensGrad)" stroke="#475569" strokeWidth="2" />
+          <circle cx="42" cy="27" r="2.5" fill="#38BDF8" />
+          <polygon points="46,27 60,12 60,42" fill="url(#beamGrad)" opacity="0.15" />
+          <line x1="18" y1="23" x2="28" y2="23" stroke="#94A3B8" strokeWidth="2" />
+          <line x1="18" y1="27" x2="28" y2="27" stroke="#94A3B8" strokeWidth="2" />
+          <line x1="18" y1="31" x2="28" y2="31" stroke="#94A3B8" strokeWidth="2" />
+          <circle cx="34" cy="23" r="1.5" fill="#EF4444" />
+          <circle cx="34" cy="27" r="1.5" fill="#10B981" />
+          <defs>
+            <linearGradient id="projBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#F8FAFC" />
+              <stop offset="100%" stopColor="#E2E8F0" />
+            </linearGradient>
+            <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0F172A" />
+              <stop offset="100%" stopColor="#334155" />
+            </linearGradient>
+            <linearGradient id="beamGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity="1" />
+              <stop offset="100%" stopColor="#0EA5E9" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'whiteboard':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 16 L8 56 M48 16 L56 56" stroke="#94A3B8" strokeWidth="3" strokeLinecap="round" />
+          <path d="M10 52 H54" stroke="#64748B" strokeWidth="2" />
+          <rect x="8" y="10" width="48" height="32" rx="3" fill="url(#wbFrameGrad)" stroke="#475569" strokeWidth="2" />
+          <rect x="11" y="13" width="42" height="26" fill="#FFFFFF" />
+          <rect x="18" y="40" width="28" height="2" fill="#64748B" />
+          <rect x="22" y="38" width="4" height="2" fill="#EF4444" />
+          <rect x="28" y="38" width="4" height="2" fill="#2563EB" />
+          <rect x="36" y="37" width="6" height="3" rx="1" fill="#1E293B" />
+          <path d="M16 20 C20 18, 22 25, 26 22 C30 20, 32 26, 36 21" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+          <path d="M18 28 C22 27, 25 32, 30 29 C34 26, 38 31, 42 28" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+          <defs>
+            <linearGradient id="wbFrameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#CBD5E1" />
+              <stop offset="100%" stopColor="#94A3B8" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'ac':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="16" width="52" height="20" rx="3" fill="url(#acBodyGrad)" stroke="#CBD5E1" strokeWidth="1.5" />
+          <rect x="10" y="31" width="44" height="3" rx="1" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="1" />
+          <line x1="10" y1="34" x2="54" y2="34" stroke="#475569" strokeWidth="1" />
+          <circle cx="48" cy="22" r="1.5" fill="#10B981" />
+          <rect x="36" y="20" width="8" height="4" rx="1" fill="#1E293B" />
+          <text x="37" y="23.5" fill="#38BDF8" fontSize="3.5" fontFamily="monospace" fontWeight="bold">24</text>
+          <line x1="12" y1="22" x2="22" y2="22" stroke="#94A3B8" strokeWidth="1" />
+          <path d="M14 42 C14 46, 18 44, 18 48" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" opacity="0.75" />
+          <path d="M23 42 C23 47, 27 45, 27 50" stroke="#0EA5E9" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+          <path d="M32 42 C32 46, 36 44, 36 48" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" opacity="0.75" />
+          <path d="M41 42 C41 47, 45 45, 45 50" stroke="#0EA5E9" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+          <path d="M50 42 C50 46, 54 44, 54 48" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" opacity="0.75" />
+          <defs>
+            <linearGradient id="acBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="#F1F5F9" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'speaker':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="14" y="10" width="36" height="44" rx="4" fill="url(#spkCabinetGrad)" stroke="#451A03" strokeWidth="2.5" />
+          <rect x="18" y="14" width="28" height="36" rx="2" fill="#1E293B" stroke="#0F172A" strokeWidth="1.5" />
+          <circle cx="32" cy="24" r="5" fill="#0F172A" stroke="#475569" strokeWidth="1.5" />
+          <circle cx="32" cy="24" r="2" fill="#94A3B8" />
+          <circle cx="32" cy="38" r="9" fill="#0F172A" stroke="#475569" strokeWidth="2" />
+          <circle cx="32" cy="38" r="6" fill="#334155" />
+          <circle cx="32" cy="38" r="2.5" fill="#EF4444" />
+          <path d="M8 20 C6 24, 6 30, 8 34" stroke="#6366F1" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+          <path d="M5 16 C2 22, 2 32, 5 38" stroke="#4F46E5" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+          <path d="M56 20 C58 24, 58 30, 56 34" stroke="#6366F1" strokeWidth="1.5" strokeLinecap="round" opacity="0.5" />
+          <path d="M59 16 C62 22, 62 32, 59 38" stroke="#4F46E5" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+          <defs>
+            <linearGradient id="spkCabinetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#78350F" />
+              <stop offset="100%" stopColor="#451A03" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'locker':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="14" y="8" width="36" height="48" rx="4" fill="url(#lockBodyGrad)" stroke="#374151" strokeWidth="2.5" />
+          <line x1="32" y1="8" x2="32" y2="56" stroke="#1F2937" strokeWidth="2" />
+          <line x1="20" y1="14" x2="26" y2="14" stroke="#4B5563" strokeWidth="1.5" />
+          <line x1="20" y1="18" x2="26" y2="18" stroke="#4B5563" strokeWidth="1.5" />
+          <line x1="20" y1="22" x2="26" y2="22" stroke="#4B5563" strokeWidth="1.5" />
+          <line x1="38" y1="14" x2="44" y2="14" stroke="#4B5563" strokeWidth="1.5" />
+          <line x1="38" y1="18" x2="44" y2="18" stroke="#4B5563" strokeWidth="1.5" />
+          <line x1="38" y1="22" x2="44" y2="22" stroke="#4B5563" strokeWidth="1.5" />
+          <rect x="26" y="30" width="3" height="8" rx="1" fill="#9CA3AF" stroke="#374151" strokeWidth="1" />
+          <rect x="35" y="30" width="3" height="8" rx="1" fill="#9CA3AF" stroke="#374151" strokeWidth="1" />
+          <circle cx="27.5" cy="32" r="0.75" fill="#1F2937" />
+          <circle cx="36.5" cy="32" r="0.75" fill="#1F2937" />
+          <defs>
+            <linearGradient id="lockBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#9CA3AF" />
+              <stop offset="50%" stopColor="#6B7280" />
+              <stop offset="100%" stopColor="#4B5563" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+    case 'other':
+      return (
+        <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 28 L32 18 L52 28 L32 38 Z" fill="url(#boxTopGrad)" stroke="#D97706" strokeWidth="1.5" />
+          <path d="M12 28 L12 48 L32 58 L32 38 Z" fill="url(#boxLeftGrad)" stroke="#B45309" strokeWidth="1.5" />
+          <path d="M32 38 L32 58 L52 48 L52 28 Z" fill="url(#boxRightGrad)" stroke="#92400E" strokeWidth="1.5" />
+          <polygon points="12,28 8,20 28,16 32,24" fill="#F59E0B" stroke="#D97706" strokeWidth="1" opacity="0.9" />
+          <polygon points="52,28 56,20 36,16 32,24" fill="#F59E0B" stroke="#D97706" strokeWidth="1" opacity="0.9" />
+          <path d="M28 20 L36 14 L42 18 L34 24 Z" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="1" />
+          <line x1="32" y1="18" x2="38" y2="21" stroke="#38BDF8" strokeWidth="1" />
+          <defs>
+            <linearGradient id="boxTopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#D97706" />
+            </linearGradient>
+            <linearGradient id="boxLeftGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#D97706" />
+              <stop offset="100%" stopColor="#B45309" />
+            </linearGradient>
+            <linearGradient id="boxRightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#B45309" />
+              <stop offset="100%" stopColor="#78350F" />
+            </linearGradient>
+          </defs>
+        </svg>
+      );
+  }
+
+  // Fallback to stylized custom icons if iconName is provided
+  if (iconName) {
+    switch (iconName) {
+      case 'School':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="24" width="44" height="32" rx="4" fill="url(#schBody2)" stroke="#1E293B" strokeWidth="1.5" />
+            <polygon points="6,24 32,10 58,24" fill="url(#schRoof2)" stroke="#1E293B" strokeWidth="1.5" />
+            <rect x="26" y="38" width="12" height="18" fill="#B45309" stroke="#78350F" strokeWidth="1" />
+            <circle cx="30" cy="47" r="1" fill="#FBBF24" />
+            <rect x="16" y="30" width="8" height="10" rx="1" fill="#E2E8F0" stroke="#475569" strokeWidth="1" />
+            <rect x="40" y="30" width="8" height="10" rx="1" fill="#E2E8F0" stroke="#475569" strokeWidth="1" />
+            <line x1="32" y1="10" x2="32" y2="2" stroke="#475569" strokeWidth="1.5" />
+            <path d="M32 2 L42 5 L32 8 Z" fill="#EF4444" />
+            <defs>
+              <linearGradient id="schBody2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#E2E8F0" />
+                <stop offset="100%" stopColor="#94A3B8" />
+              </linearGradient>
+              <linearGradient id="schRoof2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#EF4444" />
+                <stop offset="100%" stopColor="#B91C1C" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'Laptop':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="12" y="14" width="40" height="26" rx="3" fill="#1E293B" stroke="#64748B" strokeWidth="2" />
+            <rect x="15" y="17" width="34" height="20" rx="1" fill="url(#lapDisplay2)" />
+            <path d="M18 21 H28 M18 25 H34 M18 29 H24" stroke="#F1F5F9" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+            <path d="M6 40 H58 L54 48 H10 Z" fill="url(#lapBase2)" stroke="#475569" strokeWidth="1.5" />
+            <rect x="27" y="42" width="10" height="4" rx="0.5" fill="#94A3B8" />
+            <defs>
+              <linearGradient id="lapDisplay2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#3B82F6" />
+                <stop offset="50%" stopColor="#8B5CF6" />
+                <stop offset="100%" stopColor="#EC4899" />
+              </linearGradient>
+              <linearGradient id="lapBase2" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#E2E8F0" />
+                <stop offset="100%" stopColor="#94A3B8" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'Tv':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M26 54 L38 54" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
+            <path d="M32 44 L32 54" stroke="#334155" strokeWidth="4" />
+            <rect x="6" y="12" width="52" height="32" rx="2" fill="#1E293B" stroke="#0F172A" strokeWidth="2" />
+            <rect x="8" y="14" width="48" height="28" fill="url(#tvScreenGrad2)" />
+            <circle cx="32" cy="28" r="6" fill="#FFFFFF" opacity="0.2" />
+            <circle cx="54" cy="41" r="1" fill="#EF4444" />
+            <defs>
+              <linearGradient id="tvScreenGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#06B6D4" />
+                <stop offset="50%" stopColor="#3B82F6" />
+                <stop offset="100%" stopColor="#1D4ED8" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'Wind':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="32" cy="54" rx="14" ry="4" fill="#64748B" stroke="#475569" strokeWidth="1.5" />
+            <path d="M32 36 L32 54" stroke="#475569" strokeWidth="4" />
+            <circle cx="32" cy="24" r="16" fill="url(#fanCageBack2)" stroke="#94A3B8" strokeWidth="1" />
+            <path d="M32 24 C28 14 36 14 32 24 Z" fill="url(#fanBlades2)" stroke="#0369A1" strokeWidth="1" />
+            <path d="M32 24 C42 20 42 28 32 24 Z" fill="url(#fanBlades2)" stroke="#0369A1" strokeWidth="1" />
+            <path d="M32 24 C36 34 28 34 32 24 Z" fill="url(#fanBlades2)" stroke="#0369A1" strokeWidth="1" />
+            <path d="M32 24 C22 28 22 20 32 24 Z" fill="url(#fanBlades2)" stroke="#0369A1" strokeWidth="1" />
+            <circle cx="32" cy="24" r="3.5" fill="#0284C7" />
+            <line x1="32" y1="8" x2="32" y2="40" stroke="#CBD5E1" strokeWidth="0.75" />
+            <line x1="16" y1="24" x2="48" y2="24" stroke="#CBD5E1" strokeWidth="0.75" />
+            <path d="M48 16 Q54 18 58 14 M49 24 Q56 25 60 22" stroke="#38BDF8" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+            <defs>
+              <linearGradient id="fanCageBack2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#F1F5F9" />
+                <stop offset="100%" stopColor="#E2E8F0" />
+              </linearGradient>
+              <linearGradient id="fanBlades2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38BDF8" />
+                <stop offset="100%" stopColor="#0284C7" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'Volume2':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="14" y="10" width="36" height="44" rx="4" fill="url(#spkCabinetGrad2)" stroke="#451A03" strokeWidth="2.5" />
+            <rect x="18" y="14" width="28" height="36" rx="2" fill="#1E293B" stroke="#0F172A" strokeWidth="1.5" />
+            <circle cx="32" cy="24" r="5" fill="#0F172A" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="32" cy="24" r="2" fill="#94A3B8" />
+            <circle cx="32" cy="38" r="9" fill="#0F172A" stroke="#475569" strokeWidth="2" />
+            <circle cx="32" cy="38" r="6" fill="#334155" />
+            <circle cx="32" cy="38" r="2.5" fill="#EF4444" />
+            <defs>
+              <linearGradient id="spkCabinetGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#78350F" />
+                <stop offset="100%" stopColor="#451A03" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'HardDrive':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="14" y="8" width="36" height="48" rx="4" fill="url(#lockBodyGrad2)" stroke="#374151" strokeWidth="2.5" />
+            <line x1="32" y1="8" x2="32" y2="56" stroke="#1F2937" strokeWidth="2" />
+            <line x1="20" y1="14" x2="26" y2="14" stroke="#4B5563" strokeWidth="1.5" />
+            <line x1="20" y1="18" x2="26" y2="18" stroke="#4B5563" strokeWidth="1.5" />
+            <line x1="38" y1="14" x2="44" y2="14" stroke="#4B5563" strokeWidth="1.5" />
+            <line x1="38" y1="18" x2="44" y2="18" stroke="#4B5563" strokeWidth="1.5" />
+            <rect x="26" y="30" width="3" height="8" rx="1" fill="#9CA3AF" stroke="#374151" strokeWidth="1" />
+            <rect x="35" y="30" width="3" height="8" rx="1" fill="#9CA3AF" stroke="#374151" strokeWidth="1" />
+            <defs>
+              <linearGradient id="lockBodyGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#9CA3AF" />
+                <stop offset="50%" stopColor="#6B7280" />
+                <stop offset="100%" stopColor="#4B5563" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'Settings':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g className="animate-spin-slow" style={{ transformOrigin: '32px 32px', animationDuration: '10s' }}>
+              <circle cx="32" cy="32" r="14" fill="url(#gearGrad2)" stroke="#B45309" strokeWidth="2" />
+              <path d="M32 10 L32 15" stroke="#B45309" strokeWidth="5" strokeLinecap="round" />
+              <path d="M32 49 L32 54" stroke="#B45309" strokeWidth="5" strokeLinecap="round" />
+              <path d="M10 32 L15 32" stroke="#B45309" strokeWidth="5" strokeLinecap="round" />
+              <path d="M49 32 L54 32" stroke="#B45309" strokeWidth="5" strokeLinecap="round" />
+              <circle cx="32" cy="32" r="5" fill="#FFFFFF" stroke="#B45309" strokeWidth="1.5" />
+            </g>
+            <defs>
+              <linearGradient id="gearGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#FBBF24" />
+                <stop offset="100%" stopColor="#D97706" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+      case 'Info':
+        return (
+          <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="22" fill="url(#infoGrad2)" stroke="#1D4ED8" strokeWidth="2" />
+            <circle cx="32" cy="20" r="3.5" fill="#FFFFFF" />
+            <rect x="29" y="28" width="6" height="18" rx="2" fill="#FFFFFF" />
+            <rect x="26" y="28" width="6" height="2" fill="#FFFFFF" />
+            <defs>
+              <linearGradient id="infoGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#3B82F6" />
+                <stop offset="100%" stopColor="#1D4ED8" />
+              </linearGradient>
+            </defs>
+          </svg>
+        );
+    }
+  }
+
+  // Fallback to simple generic document card/box
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="16" y="12" width="32" height="40" rx="4" fill="url(#genGrad)" stroke="#64748B" strokeWidth="2" />
+      <circle cx="32" cy="24" r="5" fill="#FFFFFF" opacity="0.5" />
+      <line x1="24" y1="36" x2="40" y2="36" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      <line x1="24" y1="42" x2="36" y2="42" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      <defs>
+        <linearGradient id="genGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#94A3B8" />
+          <stop offset="100%" stopColor="#475569" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 const AVAILABLE_ICONS = [
   { name: 'School', label: 'សាលារៀន (School)' },
   { name: 'Laptop', label: 'កុំព្យូទ័រ (Computer)' },
@@ -63,6 +492,7 @@ const AVAILABLE_ICONS = [
   { name: 'Wind', label: 'ម៉ាស៊ីនត្រជាក់/កង្ហារ (AC/Fan)' },
   { name: 'Volume2', label: 'បាស (Speaker)' },
   { name: 'HardDrive', label: 'ទូ/លុកឃ័រ (Locker/Cabinet)' },
+
   { name: 'Settings', label: 'គ្រឿងម៉ាស៊ីន (Machine/Settings)' },
   { name: 'Info', label: 'ផ្សេងៗ (Other)' }
 ];
@@ -1433,30 +1863,60 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
         </button>
       </div>
 
+
+      {/* CSS Animation inject for Running Border Light Effect */}
+      <style>{`
+        @keyframes border-glow-run {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .running-border-glow {
+          background-image: linear-gradient(90deg, #10b981, #fbbf24, #6366f1, #38bdf8, #10b981);
+          background-size: 300% 300%;
+          animation: border-glow-run 6s linear infinite;
+        }
+        .running-border-glow-subtle {
+          background-image: linear-gradient(90deg, #047857, #b45309, #4338ca, #0ea5e9, #047857);
+          background-size: 300% 300%;
+          animation: border-glow-run 8s linear infinite;
+        }
+      `}</style>
+
       {/* School Equipment Master Sum Box */}
-      <div className="bg-[#073B3A] text-white rounded-2xl p-4.5 mb-6 border border-[#0d5c5a]/45 relative overflow-hidden shadow-sm">
-        <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none transform translate-y-3 translate-x-3">
-          <School className="w-56 h-56" />
-        </div>
+      <div className="p-[1.5px] rounded-3xl running-border-glow mb-6 shadow-md relative overflow-hidden">
+        <div className="bg-[#073B3A] text-white rounded-[22.5px] p-5.5 relative overflow-hidden">
+          <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none transform translate-y-3 translate-x-3">
+            <School className="w-56 h-56" />
+          </div>
 
-        <h4 className="flex items-center gap-2 mb-4 flex-wrap">
-          <Layers className="w-4.5 h-4.5 animate-pulse text-amber-300 shrink-0" />
-          <span className="font-moul text-[11px] text-amber-300 tracking-wide font-normal">ចំនួនសម្ភារៈ-ឧបករណ៍សរុបប្រចាំសាលា</span>
-          <span className="text-[9px] text-[#2ba8a5] font-sans font-extrabold uppercase tracking-wider">| School-wide Inventory Summary</span>
-        </h4>
+          <h4 className="flex items-center gap-2 mb-5 flex-wrap">
+            <Layers className="w-5 h-5 animate-pulse text-amber-300 shrink-0" />
+            <span className="font-moul text-[11px] text-amber-300 tracking-wide font-normal">ចំនួនសម្ភារៈ-ឧបករណ៍សរុបប្រចាំសាលា</span>
+            <span className="text-[10px] text-[#2ba8a5] font-sans font-extrabold uppercase tracking-wider">| School-wide Inventory Summary</span>
+          </h4>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-3.5 text-center">
-          {equipmentTypes.map(it => {
-            const labelShort = it.label.split('(')[0].trim();
-            return (
-              <div key={it.key} className="border border-[#0c4e4c] rounded-xl p-3 flex flex-col justify-between bg-slate-950/20 hover:bg-[#052e2c]/30 transition-all duration-200">
-                <span className="text-[10px] text-emerald-100/90 font-semibold tracking-wide truncate" title={it.label}>{labelShort}</span>
-                <span className="text-sm sm:text-base font-extrabold font-mono text-amber-300 block mt-1">{grandTotals[it.key] || 0}</span>
-              </div>
-            );
-          })}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-3.5 text-center">
+            {equipmentTypes.map(it => {
+              const labelShort = it.label.split('(')[0].trim();
+              const amount = grandTotals[it.key] || 0;
+              
+              return (
+                <div key={it.key} className="p-[1px] rounded-2xl running-border-glow-subtle hover:scale-[1.05] transition-all duration-300 shadow-2xs">
+                  <div className="bg-slate-950/80 rounded-[15px] p-3.5 h-full flex flex-col items-center justify-between backdrop-blur-xs">
+                    <div className="w-12 h-12 mb-2 shrink-0 flex items-center justify-center p-1.5 bg-white/5 rounded-xl border border-white/10 shadow-3xs">
+                      <EquipmentRealIcon itemKey={it.key} iconName={it.iconName} className="w-10 h-10" />
+                    </div>
+                    <span className="text-[10px] text-emerald-100/90 font-extrabold tracking-wide truncate max-w-full block" title={it.label}>{labelShort}</span>
+                    <span className="text-sm sm:text-base font-black font-mono text-amber-300 block mt-1.5 leading-none">{amount}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
+
 
       {/* Google Sheets Inventory Sync Panel */}
       <div className="mb-6 bg-white border border-slate-200 rounded-3xl p-4.5 shadow-2xs">
@@ -2190,22 +2650,6 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
                       {summaryDamagedLogs.map(({ room, log, days }) => {
                         const itemType = equipmentTypes.find(t => t.key === log.equipmentKey);
                         const keyLabel = itemType ? itemType.label.split('(')[0].trim() : log.equipmentKey;
-                        const itemColor = itemType ? itemType.color : 'text-slate-600 bg-slate-50';
-
-                        // Icon Resolver
-                        const IconComponent = (() => {
-                          if (!itemType) return Info;
-                          switch (itemType.iconName) {
-                            case 'School': return School;
-                            case 'Laptop': return Laptop;
-                            case 'Tv': return Tv;
-                            case 'Wind': return Wind;
-                            case 'Volume2': return Volume2;
-                            case 'HardDrive': return HardDrive;
-                            case 'Settings': return Settings;
-                            default: return Info;
-                          }
-                        })();
 
                         // Condition details
                         const condLabel = log.condition === 'NeedRepair' ? 'ត្រូវការជួសជុល' : 'ខូចខាត';
@@ -2242,8 +2686,8 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
                             <div className="space-y-3">
                               {/* Classroom & Item Name header */}
                               <div className="flex items-center gap-2">
-                                <div className={`p-1.5 rounded-lg shrink-0 ${itemColor}`}>
-                                  <IconComponent className="w-4 h-4" />
+                                <div className="w-10 h-10 p-1 bg-slate-50 border border-slate-100 rounded-xl shrink-0 flex items-center justify-center shadow-3xs">
+                                  <EquipmentRealIcon itemKey={log.equipmentKey} iconName={itemType?.iconName} className="w-8 h-8" />
                                 </div>
                                 <div className="max-w-[70%]">
                                   <span className="text-xs font-black text-slate-800 block truncate" title={itemType?.label || keyLabel}>{keyLabel}</span>
@@ -2376,31 +2820,57 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
                 const isSelected = selectedRoom?.id === room.id;
                 const totalItemAmount = (Object.values(room.equipment) as number[]).reduce((a, b) => a + b, 0);
 
+                // Get first 4 equipment keys with quantity > 0 to preview them
+                const activeItems = equipmentTypes
+                  .filter(it => (room.equipment[it.key] || 0) > 0)
+                  .slice(0, 4);
+
                 return (
                   <div
                     key={room.id}
                     onClick={() => setSelectedRoom(room)}
-                    className={`rounded-xl p-3 border text-left cursor-pointer transition-all flex items-center justify-between ${
+                    className={`rounded-2xl p-4 border text-left cursor-pointer transition-all duration-200 flex items-center justify-between hover:scale-[1.01] active:scale-[0.99] ${
                       isSelected 
-                        ? 'bg-[#073B3A]/5 border-emerald-800 shadow-xs' 
-                        : 'bg-white/80 hover:bg-slate-50 border-slate-200'
+                        ? 'bg-gradient-to-br from-emerald-50/40 to-teal-50/10 border-emerald-750 shadow-xs ring-1 ring-emerald-600/10' 
+                        : 'bg-white/90 hover:bg-slate-50 border-slate-200 shadow-3xs'
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-sm text-slate-900">{room.roomNumber}</span>
-                        <span className="text-[9px] bg-emerald-50 text-emerald-700 font-black px-1.5 py-0.5 rounded-md">
-                          {CONST_FLOORS.find(f => f.value === room.floor)?.kh || room.floor}
-                        </span>
+                    <div className="space-y-2.5 max-w-[70%]">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm text-slate-900 leading-none">{room.roomNumber}</span>
+                          <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-150 font-black px-1.5 py-0.5 rounded-lg leading-none">
+                            {CONST_FLOORS.find(f => f.value === room.floor)?.kh || room.floor}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-semibold mt-1 truncate" title={room.location}>{room.location}</p>
                       </div>
-                      <p className="text-[10px] text-slate-450 font-bold mt-0.5 line-clamp-1">{room.location}</p>
-                      {room.remarks && <p className="text-[9.5px] text-slate-500 italic mt-0.5">{room.remarks}</p>}
+
+                      {/* Little equipment visual indicator preview */}
+                      {activeItems.length > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          {activeItems.map(it => (
+                            <div 
+                              key={it.key} 
+                              className="w-6.5 h-6.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center p-0.5 shadow-3xs"
+                              title={`${it.label.split('(')[0].trim()}: ${room.equipment[it.key]}`}
+                            >
+                              <EquipmentRealIcon itemKey={it.key} iconName={it.iconName} className="w-5 h-5" />
+                            </div>
+                          ))}
+                          {equipmentTypes.filter(it => (room.equipment[it.key] || 0) > 0).length > 4 && (
+                            <span className="text-[8.5px] font-black text-slate-400 pl-0.5">
+                              +{equipmentTypes.filter(it => (room.equipment[it.key] || 0) > 0).length - 4}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="text-right shrink-0">
-                      <span className="text-[10px] text-slate-400 font-bold block">សម្ភារៈសរុប</span>
-                      <span className="text-xs font-bold text-slate-700 font-mono block mt-0.5">
-                        {totalItemAmount} គ្រឿង
+                    <div className="text-right shrink-0 flex flex-col justify-center items-end">
+                      <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block">សម្ភារៈសរុប</span>
+                      <span className="text-sm font-black text-slate-800 font-mono block mt-1 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100 shadow-3xs">
+                        {totalItemAmount} <span className="font-moul text-[9px] font-normal text-slate-400">គ្រឿង</span>
                       </span>
                     </div>
                   </div>
@@ -2497,58 +2967,51 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
                       {equipmentTypes.map(item => {
                         const typedKey = item.key;
                         const val = selectedRoom.equipment[typedKey] || 0;
-                        const IconComponent = (() => {
-                          switch (item.iconName) {
-                            case 'School': return School;
-                            case 'Laptop': return Laptop;
-                            case 'Tv': return Tv;
-                            case 'Wind': return Wind;
-                            case 'Volume2': return Volume2;
-                            case 'HardDrive': return HardDrive;
-                            case 'Settings': return Settings;
-                            default: return Info;
-                          }
-                        })();
 
                         return (
                           <div 
                             key={item.key} 
-                            className="py-2.5 px-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-xs"
+                            className="p-3.5 bg-white border border-slate-200/80 rounded-2xl flex items-center justify-between shadow-xs hover:shadow-sm hover:border-emerald-700/20 transition-all duration-200"
                           >
-                            <div className="flex items-center gap-2 max-w-[200px]">
-                              <div className={`p-1.5 rounded-lg ${item.color} shrink-0`}>
-                                <IconComponent className="w-4 h-4" />
+                            <div className="flex items-center gap-3 max-w-[65%]">
+                              <div className="w-12 h-12 p-1 bg-slate-50 border border-slate-100 rounded-xl shrink-0 flex items-center justify-center shadow-3xs">
+                                <EquipmentRealIcon itemKey={item.key} iconName={item.iconName} className="w-9 h-9" />
                               </div>
-                              <div>
-                                <span className="text-xs font-extrabold text-slate-800 block leading-tight">{item.label}</span>
+                              <div className="truncate">
+                                <span className="text-xs font-extrabold text-slate-800 block leading-tight truncate" title={item.label}>
+                                  {item.label.split('(')[0].trim()}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-mono font-bold block mt-1">
+                                  {item.label.includes('(') ? item.label.split('(')[1].replace(')', '') : 'Equipment'}
+                                </span>
                               </div>
                             </div>
 
                             {/* Interactive Plus Minus controls */}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 shrink-0 bg-slate-50/50 p-1.5 rounded-xl border border-slate-100">
                               <button
                                 type="button"
                                 onClick={() => adjustEquipmentQty(selectedRoom.id, typedKey, -1)}
-                                className="text-slate-400 hover:text-slate-800 transition active:scale-90"
+                                className="text-slate-400 hover:text-slate-800 hover:scale-110 active:scale-90 transition duration-150 cursor-pointer"
                                 title="ដកចេញ ១"
                               >
-                                <MinusCircle className="w-5 h-5" />
+                                <MinusCircle className="w-5.5 h-5.5" />
                               </button>
 
                               <input
                                 type="text"
                                 value={val}
                                 onChange={(e) => setEquipmentQtyDirect(selectedRoom.id, typedKey, e.target.value)}
-                                className="w-10 text-center bg-slate-50 border border-slate-200 rounded-md font-mono text-xs font-black text-slate-800 py-1"
+                                className="w-9 text-center bg-white border border-slate-200 rounded-lg font-mono text-xs font-black text-slate-800 py-1"
                               />
 
                               <button
                                 type="button"
                                 onClick={() => adjustEquipmentQty(selectedRoom.id, typedKey, 1)}
-                                className="text-emerald-500 hover:text-emerald-700 transition active:scale-90"
+                                className="text-emerald-500 hover:text-emerald-700 hover:scale-110 active:scale-90 transition duration-150 cursor-pointer"
                                 title="បន្ថែម ១"
                               >
-                                <PlusCircle className="w-5 h-5" />
+                                <PlusCircle className="w-5.5 h-5.5" />
                               </button>
                             </div>
                           </div>
@@ -2990,18 +3453,6 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
                   <label className="text-[11px] font-black text-slate-650 block">ជ្រើសរើសរូបតំណាង (Pick Icon)</label>
                   <div className="grid grid-cols-4 gap-2">
                     {AVAILABLE_ICONS.map(ic => {
-                      const IconComponent = (() => {
-                        switch (ic.name) {
-                          case 'School': return School;
-                          case 'Laptop': return Laptop;
-                          case 'Tv': return Tv;
-                          case 'Wind': return Wind;
-                          case 'Volume2': return Volume2;
-                          case 'HardDrive': return HardDrive;
-                          case 'Settings': return Settings;
-                          default: return Info;
-                        }
-                      })();
                       const isSelected = customItemIcon === ic.name;
 
                       return (
@@ -3009,16 +3460,18 @@ export default function ClassroomEquipmentManager({ currentUser }: ClassroomEqui
                           key={ic.name}
                           type="button"
                           onClick={() => setCustomItemIcon(ic.name)}
-                          className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                          className={`p-2.5 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-[1.03] ${
                             isSelected 
-                              ? 'border-emerald-600 bg-emerald-50/50 text-emerald-800 scale-102 ring-1 ring-emerald-500' 
+                              ? 'border-emerald-600 bg-emerald-50/40 text-emerald-900 scale-102 ring-1 ring-emerald-500 shadow-sm' 
                               : 'border-slate-200 hover:bg-slate-50 text-slate-500'
                           }`}
                           title={ic.label}
                         >
-                          <IconComponent className="w-5 h-5 shrink-0" />
-                          <span className="text-[8px] font-black tracking-tighter truncate max-w-full">
-                            {ic.name}
+                          <div className="w-9 h-9 flex items-center justify-center">
+                            <EquipmentRealIcon itemKey="" iconName={ic.name} className="w-8 h-8 shrink-0" />
+                          </div>
+                          <span className="text-[8.5px] font-extrabold tracking-tighter truncate max-w-full">
+                            {ic.label.split('(')[0].trim()}
                           </span>
                         </button>
                       );
